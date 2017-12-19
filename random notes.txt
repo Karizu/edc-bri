@@ -1,0 +1,54 @@
+2/3/2016 10:29:41 AM
+
+- Tambah TID MID di setting .
+- Initialize -> cek sam .
+- Tap Listener -> hapus tombol ok dan back ke prev menu (klo bisa pake timer untuk listener) . 
+- Logon kurang MID .
+
+
+insert into iso_data(channel_uid, service_id, iso_bit_uid, meta_type_uid,  influx, iso_value, meta_length) values (40000002,'L00001',42,0,1,null,3);
+insert into iso_data(channel_uid, service_id, iso_bit_uid, meta_type_uid,  influx, iso_value, meta_length) values (40000002,'L00001',42,0,2,null,3);
+
+insert into reff_meta_type(meta_type_uid, meta_type, meta_alias, meta_format, pader, padto) values (14,'vendor_id',30,null,'0','R');
+
+insert into iso_data(channel_uid, service_id, iso_bit_uid, meta_type_uid,  influx, iso_value, meta_length) values (40000002,'L00001',63,14,1,'60440592',2);
+insert into iso_data(channel_uid, service_id, iso_bit_uid, meta_type_uid,  influx, iso_value, meta_length) values (40000002,'L00001',63,14,1,'000000000000000000000060440592',2);
+
+I/ISO_DUMP(13424): Message received
+I/ISO_DUMP(13424): Bit 3
+I/ISO_DUMP(13424): 920000
+I/ISO_DUMP(13424): Bit 11
+I/ISO_DUMP(13424): 000006
+I/ISO_DUMP(13424): Bit 24
+I/ISO_DUMP(13424): 0007
+I/ISO_DUMP(13424): Bit 39
+I/ISO_DUMP(13424): 00
+I/ISO_DUMP(13424): Bit 41
+I/ISO_DUMP(13424): 00000006
+I/ISO_DUMP(13424): Bit 42
+I/ISO_DUMP(13424): 000001210000020
+I/ISO_DUMP(13424): Bit 62
+wkey - > I/ISO_DUMP(13424): D851C9B12BDCEFB7
+I/ISO_DUMP(13424): Bit 63
+I/ISO_DUMP(13424): 60440592                                                    D7927D41BDB280AE000020100000000895000000065000
+I/ISO_DUMP(13424): It was for message with STAN : 000006
+
+
+
+insert into screen_component (screen_id,comp_id,sequence) values ('2100000','I0004',0);
+
+
+2/4/2016 1:20:16 PM
+
+- Back Pressed .
+- PIN Validation (5-6 digit) -> ganti modul
+- Application name ganti jgn Brizzi .
+
+2/5/2016 5:39:01 PM
+
+- Pembayaran BRIZZI jadi bug
+- Deposit (Topup, Info dan Aktivasi) dump di fto (update)
+- Cari bug global
+- PrintLogTrx BRIZZI -> 11 tx terakhir per card
+- Memastikan semua controller close saat masuk menu
+- STAN start dari 20k

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.wizarpos.apidemo.activity"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+
+    <uses-permission android:name = "android.permission.DISABLE_KEYGUARD"/><!-- 屏蔽HOME键需要的权限 -->
+
+    <!-- android.permission.WRITE_SETTINGS -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.CLOUDPOS_LED" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- 屏蔽HOME按钮为指定activity -->
+    <uses-permission android:name="android.permission.CLOUDPOS_DISABLE_HOME_KEY_IN_ACTIVITY" />
+    <!-- 摄像机权限 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" />
+    <!-- 访问扩展设备的权限。 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CLOUDPOS_LED" />
+    <!-- 打印机权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PRINTER" />
+    <!-- MSR权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_MSR" />
+    <!-- Contactless card权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_CONTACTLESS_CARD" />
+    <!-- SmartCard 权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SMARTCARD" />
+    <!-- 串口权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_SERIAL" />
+    <!-- Pinpad权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_PIN_GET_PIN_BLOCK"/>
+    <uses-permission android:name="android.permission.CLOUDPOS_PIN_MAC" />
+    <uses-permission android:name="android.permission.CLOUDPOS_PIN_ENCRYPT_DATA"/>
+    <uses-permission android:name="android.permission.CLOUDPOS_PIN_UPDATE_USER_KEY"/>
+    <uses-permission android:name="android.permission.CLOUDPOS_PIN_UPDATE_MASTER_KEY"/>    <!-- 身份证权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_IDCard" />
+
+    <!-- 钱箱权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_MONEYBOX" />
+    <!-- 客显权限 -->
+    <uses-permission android:name="android.permission.CLOUDPOS_CUSTOMER_DISPLAY" />
+    <!-- NET -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 蓝牙 -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+
+
+</manifest>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_gravity="center"
+    android:padding="10dp"
+    style="@style/AlertDialog.AppCompat.Light">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center">
+
+        <TextView
+            android:id="@+id/cardLabel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Nomor Kartu"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:visibility="gone"
+            android:editable="false" />
+
+        <TextView
+            android:id="@+id/cardNumber"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cardLabel"
+            android:text="PAN"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:visibility="gone"
+            android:editable="false" />
+
+        <TextView
+            android:id="@+id/pinPass"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cardNumber"
+            android:text="Silahkan Masukkan Pin Anda"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:editable="false" />
+
+        <EditText
+            android:id="@+id/editTextDialogUserInput"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:maxLength="6"
+            android:inputType="textPassword"
+            android:layout_below="@+id/pinPass"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+
+            <requestFocus />
+
+        </EditText>
+
+        <TextView
+            android:id="@+id/pinAlert"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/editTextDialogUserInput"
+            android:text="Panjang PIN Harus Antara 5 Sampai 6 Digit"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:editable="false" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            android:id="@+id/btnOk"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/dialogFoot"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:minHeight="2sp"
+            android:visibility="gone"/>
+    </RelativeLayout>
+
+</LinearLayout>

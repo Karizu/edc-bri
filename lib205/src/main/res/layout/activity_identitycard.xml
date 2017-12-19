@@ -1,0 +1,151 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="姓名："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/nation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/sex"
+        android:layout_below="@+id/sex"
+        android:text="民族："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/born"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/nation"
+        android:layout_below="@+id/nation"
+        android:text="出生日期："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/born"
+        android:layout_below="@+id/born"
+        android:text="住址："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/id_no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/grantdept"
+        android:text="身份证号："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/userlifebegin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_no"
+        android:text="有效开始日期："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/sex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:text="性别："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/grantdept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userlifeend"
+        android:layout_below="@+id/address"
+        android:text="发证机关："
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/userlifeend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/userlifebegin"
+        android:text="有效截止日期："
+        android:textSize="28sp" />
+
+    <ImageView
+        android:id="@+id/picture"
+        android:layout_width="136dp"
+        android:layout_height="168dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/photo" />
+
+    <Button
+        android:id="@+id/begin_button"
+        android:layout_width="200dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:textSize="32sp" 
+        android:text="开始读卡" />
+
+    <FrameLayout
+        android:id="@+id/btn_layout"
+        android:layout_width="200dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="#10000000" >
+
+        <!-- orientation是排列方向的意思。你可以选择vertical即垂直排列,也可以选择水平horizontal -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="50dip"
+            android:orientation="vertical"
+            android:padding="3dip" >
+
+            <TextView
+                android:id="@+id/app_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="center_horizontal|center_vertical"
+                android:singleLine="false"
+                android:text="结束扫描并\n返回"
+                android:textSize="32sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/end_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/favorite_background"
+            android:focusable="true" />
+    </FrameLayout>
+
+    <!--
+         <Button
+        android:id="@+id/end_button"
+        android:layout_width="200dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="退出" />
+    -->
+
+</RelativeLayout>

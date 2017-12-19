@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <EditText
+        android:id="@+id/editTextOldKey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Old Master Key"
+        android:inputType="textPassword"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/editTextNewKey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPassword"
+        android:hint="New Master Key" />
+
+    <Button
+        android:id="@+id/buttonUpdateKey"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Update" />
+
+</LinearLayout>

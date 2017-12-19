@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<id.co.bri.brizzi.module.TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/base_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="4dp">
+    <com.rey.material.widget.TextView
+        android:id="@+id/lbl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:text=""
+        app:v_styleId="@array/text_body" />
+    <com.rey.material.widget.TextView
+        android:id="@+id/lbl_values"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text=""
+        android:textAlignment="gravity"
+        app:v_styleId="@array/text_body" />
+</id.co.bri.brizzi.module.TextView>

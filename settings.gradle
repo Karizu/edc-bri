@@ -1,0 +1,5 @@
+include ':app', ':lib', ':material'
+project(':material').projectDir = new File('lib-material')
+include ':lib205'
+
+include ':libhalapi'

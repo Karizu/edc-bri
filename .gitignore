@@ -1,0 +1,40 @@
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Eclipse project files
+.classpath
+.project
+
+# Android Studio
+.idea/
+build/
+.gradle
+/*/local.properties
+/*/out/
+/*/*/build/
+/*/*/production/
+*.iml
+*.iws
+*.ipr
+*~
+*.swp
+/.nb-gradle/
+.nb-gradle-properties
+app/private/cache/retriever/schemas.android.com/apk/res-auto.xml
+app/private/cache/retriever/schemas.android.com/apk/res/android.xml
+app/private/
+app/src/main/assets/files/lain

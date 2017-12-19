@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name" translatable="false">EDC Android BRI</string>
+    <string name="action_settings" translatable="false">Settings</string>
+    <string name="title_activity_test" translatable="false">TestActivity</string>
+    <string name="title_activity_admin" translatable="false">Admin Settings</string>
+    <string name="title_activity_apn" translatable="false">APN Settings</string>
+    <string name="title_activity_super_visor" translatable="false">SuperVisorActivity</string>
+    <string name="tab" translatable="false">\u0009</string>
+    <string name="space" translatable="false">\u0020</string>
+    <string name="hello_world" translatable="false">Hello world!</string>
+</resources>

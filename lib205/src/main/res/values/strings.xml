@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">APIDemo</string>
+    <string name="menu_settings" translatable="false">Settings</string>
+    <string name="title_activity_second_main" translatable="false">SecondMainActivity</string>
+    <string name="btn_ok" translatable="false">DO</string>
+    <string name="btn_cancel" translatable="false">Quit</string>
+    <string name="editText_input_hint" translatable="false">input data</string>
+    <string name="txv_result_hint" translatable="false">calculate result</string>
+
+</resources>
