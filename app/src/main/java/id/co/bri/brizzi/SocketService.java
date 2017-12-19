@@ -24,12 +24,17 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 import id.co.bri.brizzi.common.CommonConfig;
 import id.co.bri.brizzi.handler.GPSService;
+import id.co.bri.brizzi.handler.MenuListResolver;
 import id.co.bri.brizzi.handler.WebSocketClient;
 
 public class SocketService extends Service implements WebSocketClient.Listener {
@@ -55,6 +61,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
             Executors.newSingleThreadScheduledExecutor();
     private String serialNum = Build.SERIAL;
     private boolean DEBUG_MODE = CommonConfig.DEBUG_MODE;
+    private static MenuListResolver mlr = new MenuListResolver();
     public enum MessageMethod {
         LOGIN, LOGOUT, UPDATE_SOFTWARE, UPDATE_MENU,UPDATE_SETTINGS, MESSAGE, HEARTBEAT, PENDING_MESSAGE;
     }
@@ -233,7 +240,127 @@ public class SocketService extends Service implements WebSocketClient.Listener {
 
     }
 
-    private void updateSettings(JSONObject json) throws JSONException {
+    private void updateSettings(JSONObject json) {
+        SharedPreferences preferencesConfig = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+        String hostname = preferencesConfig.getString("hostname", CommonConfig.HTTP_REST_URL);
+        try {
+            Log.i("conf",json.toString(2));
+            //checkIsNeedUpdate
+            SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+            SharedPreferences preferences = preferencesSetting;
+            String ip = preferences.getString("ip",CommonConfig.DEV_SOCKET_IP);
+            String port = preferences.getString("port",CommonConfig.DEV_SOCKET_PORT);
+            String initScreen = preferences.getString("init_screen",CommonConfig.INIT_REST_ACT);
+            String diskonId = preferences.getString("diskon_id",CommonConfig.DEFAULT_DISCOUNT_TYPE);
+            String diskon = preferences.getString("diskon",CommonConfig.DEFAULT_DISCOUNT_RATE);
+            String terminalId = preferences.getString("terminal_id",CommonConfig.DEV_TERMINAL_ID);
+            String merchantId = preferences.getString("merchant_id",CommonConfig.DEV_MERCHANT_ID);
+            String merchantName = preferences.getString("merchant_name",CommonConfig.INIT_MERCHANT_NAME);
+            String merchantAddr1 = preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1);
+            String merchantAddr2 = preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2);
+            String passSettlement = preferences.getString("pass_settlement", CommonConfig.DEFAULT_SETTLEMENT_PASS);
+            String minDeduct = preferences.getString("minimum_deduct", CommonConfig.DEFAULT_MIN_BALANCE_BRIZZI);
+            String maxDeduct = preferences.getString("maximum_deduct", CommonConfig.DEFAULT_MAX_MONTHLY_DEDUCT);
+            boolean isNeedUpdate = false;
+            if (!ip.equals(json.getString("ip"))) {
+                isNeedUpdate = true;
+            }
+            if (!port.equals(json.getString("port"))) {
+                isNeedUpdate = true;
+            }
+            if (!hostname.equals(json.getString("hostname"))) {
+                isNeedUpdate = true;
+            }
+            if (!diskonId.equals(json.getString("diskon_id"))) {
+                isNeedUpdate = true;
+            }
+            if (!diskon.equals(json.getString("diskon"))) {
+                isNeedUpdate = true;
+            }
+            if (!terminalId.equals(json.getString("terminal_id"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantId.equals(json.getString("merchant_id"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantName.equals(json.getString("merchant_name"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantAddr1.equals(json.getString("merchant_address1"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantAddr2.equals(json.getString("merchant_address2"))) {
+                isNeedUpdate = true;
+            }
+            if (!passSettlement.equals(json.getString("pass_settlement"))) {
+                isNeedUpdate = true;
+            }
+            if (!minDeduct.equals(json.getString("minimum_deduct"))) {
+                isNeedUpdate = true;
+            }
+            if (!maxDeduct.equals(json.getString("maximum_deduct"))) {
+                isNeedUpdate = true;
+            }
+            if (isNeedUpdate) {
+                if (mlr.hasUnsettledData(this)) {
+                    if (mNotificationManager == null) {
+                        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    }
+                    Intent intent = new Intent(this, UpdateAppActivity.class);
+                    intent.putExtra("method", 1181);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification.Builder builder = new Notification.Builder(this)
+                            .setContentTitle("Informasi")
+                            .setContentIntent(pendingIntent)
+                            .setContentText("Update setting EDC telah tersedia, silahkan lakukan settlement sebelum memasangkan update")
+                            .setSmallIcon(R.drawable.logo_bri_002)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.if_email));
+                    Notification n;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        n = builder.build();
+                    } else {
+                        n = builder.getNotification();
+                    }
+                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+                    mNotificationManager.notify(1181, n);
+                } else {
+                    preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
+                    preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
+                    preferencesSetting.edit().putString("merchant_address2", json.getString("kanwil")).apply();
+                    preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
+                    preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
+                    preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();
+                    preferencesSetting.edit().putString("primary_phone", json.getString("primaryphone")).apply();
+                    preferencesSetting.edit().putString("secondary_phone", json.getString("secondaryphone")).apply();
+                    preferencesSetting.edit().putString("master", json.getString("master")).apply();
+                    preferencesSetting.edit().putString("ip", json.getString("ip")).apply();
+                    preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
+                    preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
+                    preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
+                    preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
+                    preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
+                    preferencesSetting.edit().putString("port", json.getString("port")).apply();
+                    settingSuccess();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void settingSuccess() throws IOException, JSONException {
+        SharedPreferences preferences = this.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+        String hostname = preferences.getString("hostname", CommonConfig.HTTP_REST_URL);
+        String serialNum = Build.SERIAL;
+        // Create an unbound socket
+//        Log.d("SN_DEVICE",serialNum);
+        URL url = new URL("http://" + hostname + "/device/" + serialNum + "/syncConfSuccess");
+        url.openStream();
+    }
+
+    private void updateSettingsEx(JSONObject json) throws JSONException {
         SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
         preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();

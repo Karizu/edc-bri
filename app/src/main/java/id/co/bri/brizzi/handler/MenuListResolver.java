@@ -897,4 +897,51 @@ public class MenuListResolver {
         return loadMenu(context, menuId, dummy);
     }
 
+    public boolean hasUnsettledData(Context context) {
+        boolean status = false;
+        if (context!=null) {
+            helperDb = new DataBaseHelper(context);
+            SQLiteDatabase clientDB = null;
+            try {
+                helperDb.openDataBase();
+                clientDB = helperDb.getActiveDatabase();
+                String Select = "select count(*) as num from edc_log where service_id like 'A2%' and (settled is null or settled <> 't');";
+                t = clientDB.rawQuery(Select, null);
+                if (t.moveToFirst()) {
+                    int unsettledTxCount = t.getInt(t.getColumnIndex("num"));
+                    if (unsettledTxCount>0) {
+                        status = true;
+                    }
+                }
+                if (t!=null) {
+                    t.close();
+                    t = null;
+                }
+                if (clientDB!=null) {
+                    clientDB.close();
+                    clientDB = null;
+                }
+                helperDb.close();
+                helperDb = null;
+            } catch (Exception e) {
+                if (t!=null) {
+                    t.close();
+                    t = null;
+                }
+                if (clientDB!=null) {
+                    if (clientDB.isOpen()) {
+                        clientDB.close();
+                    }
+                    clientDB = null;
+                }
+                if (helperDb!=null) {
+                    helperDb.close();
+                    helperDb = null;
+                }
+                Log.e("ERR", "Check settlement");
+            }
+        }
+        return status;
+    }
+
 }

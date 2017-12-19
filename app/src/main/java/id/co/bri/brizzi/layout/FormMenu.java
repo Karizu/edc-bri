@@ -162,6 +162,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
     private int pinpadState = PINPAD_IDLE;
     private Messenger syncMessenger = null;
     private ActivityList parent;
+    private boolean isAntiDDOSPrint = false;
 
     public FormMenu(Activity context, String id) {
         super(context);
@@ -2117,237 +2118,242 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
     }
 
     private void print() throws JSONException {
-        SharedPreferences preferences;
-        DataBaseHelper helperDb = new DataBaseHelper(context);
-        SQLiteDatabase clientDB = null;
-        List<PrintSize> data = new ArrayList<>();
-        List<String> mdata = new ArrayList<>();
-        try {
-            helperDb.openDataBase();
-            clientDB = helperDb.getActiveDatabase();
-        } catch (Exception ex) {
-            Log.e("TX", "DB error");
-        }
-        String getStanSeq = "select stan from edc_log order by log_id desc";
-        Cursor stanSeq = clientDB.rawQuery(getStanSeq, null);
-        int msgStan = 0;
-        if (stanSeq!=null) {
-            if (stanSeq.moveToFirst()) {
-                msgStan = Integer.parseInt(stanSeq.getString(0));
-            } else {
-                msgStan = 1;
+        if (!isAntiDDOSPrint) {
+            isAntiDDOSPrint = true;
+            SharedPreferences preferences;
+            DataBaseHelper helperDb = new DataBaseHelper(context);
+            SQLiteDatabase clientDB = null;
+            List<PrintSize> data = new ArrayList<>();
+            List<String> mdata = new ArrayList<>();
+            try {
+                helperDb.openDataBase();
+                clientDB = helperDb.getActiveDatabase();
+            } catch (Exception ex) {
+                Log.e("TX", "DB error");
             }
-        }
-//        Log.d("DEBUG", "STAN : " + msgStan);
-        stanSeq.close();
-
-        String batchNo = "";
-        if (formId.startsWith("2")) {
-            String getBatchNo = "select batch from holder";
-            Cursor batchSeq = clientDB.rawQuery(getBatchNo, null);
-            int b = 0;
-            if (batchSeq!=null) {
-                if (batchSeq.moveToFirst()) {
-                    b = batchSeq.getInt(0);
-                    batchNo = StringLib.fillZero(String.valueOf(b), 6);
+            String getStanSeq = "select stan from edc_log order by log_id desc";
+            Cursor stanSeq = clientDB.rawQuery(getStanSeq, null);
+            int msgStan = 0;
+            if (stanSeq != null) {
+                if (stanSeq.moveToFirst()) {
+                    msgStan = Integer.parseInt(stanSeq.getString(0));
+                } else {
+                    msgStan = 1;
                 }
             }
-            batchSeq.close();
-            batchSeq = null;
-        }
-        preferences  = context.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
-        mdata.add(preferences.getString("merchant_name", CommonConfig.INIT_MERCHANT_NAME));
-        mdata.add(preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1));
-        mdata.add(preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2));
-        String tid = preferences.getString("terminal_id", CommonConfig.DEV_TERMINAL_ID);
-        String mid = preferences.getString("merchant_id", CommonConfig.DEV_MERCHANT_ID);
-        String stan = "";
+//        Log.d("DEBUG", "STAN : " + msgStan);
+            stanSeq.close();
 
-        String array_sID[] = {"00001",
-                "549410", "54B110", "54A100", "541100", "542110", "542210", "543110", "543210",
-                "549110", "514100", "531000", "532110", "532210", "549210", "549310",
-                "544100", "544310", "544330", "544410", "544430", "544510", "544530", "544610",
-                "545100", "545200", "545300", "545400", "545500", "545600", "570000", "572000",
-                "574000", "580000", "544210", "544230", "54C100", "54C200", "54C510", "54C520",
-                "54C530", "54C540", "521000", "522100", "522200", "523000", "549500", "547100",
-                "547200", "548000", "590000", "543310",
-
-                "710010", "720000", "720010", "730000",
-
-                "610000", "620000", "630000",
-
-                "211000", "220000", "221000", "230000", "231000",
-                "291000", "2A1000", "2B0000", "2B1000", "2D1000", "2A2000",
-                "910000", "920000", "930000", "940000"};
-        Log.d("PRINT ARRAY","DILUAR FOR");
-        boolean matched_array = false;
-        for(int i=0; i < array_sID.length; i++){
-//            Log.d("LOOP ARRAY",formId +"  "+array_sID[i]);
-            if(formId.contains(array_sID[i])){
-                matched_array = true;
-//                Log.d("PRINT ARRAY",formId +"  "+array_sID[i]);
-                i = array_sID.length;
+            String batchNo = "";
+            if (formId.startsWith("2")) {
+                String getBatchNo = "select batch from holder";
+                Cursor batchSeq = clientDB.rawQuery(getBatchNo, null);
+                int b = 0;
+                if (batchSeq != null) {
+                    if (batchSeq.moveToFirst()) {
+                        b = batchSeq.getInt(0);
+                        batchNo = StringLib.fillZero(String.valueOf(b), 6);
+                    }
+                }
+                batchSeq.close();
+                batchSeq = null;
             }
-        }
-        if (!matched_array){
-            Log.d("PRINT ARRAY","Dalam if");
-            stan = StringLib.fillZero(String.valueOf(msgStan),6);
-        }else {
-            Log.d("PRINT ARRAY","Dalam else");
-            stan = "000000";
-        }
+            preferences = context.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+            mdata.add(preferences.getString("merchant_name", CommonConfig.INIT_MERCHANT_NAME));
+            mdata.add(preferences.getString("merchant_address1", CommonConfig.INIT_MERCHANT_ADDRESS1));
+            mdata.add(preferences.getString("merchant_address2", CommonConfig.INIT_MERCHANT_ADDRESS2));
+            String tid = preferences.getString("terminal_id", CommonConfig.DEV_TERMINAL_ID);
+            String mid = preferences.getString("merchant_id", CommonConfig.DEV_MERCHANT_ID);
+            String stan = "";
 
-        data.add(new PrintSize(FontSize.EMPTY, "\n"));
-        if(magneticSwipe != null&&(!formId.equals("640000F"))){
-            String track2Data = magneticSwipe.getText().toString();
-            if(!track2Data.equals("")){
-                track2Data = track2Data.split("=")[0];
-                track2Data = track2Data.substring(0,6)+"******"+track2Data.substring(12);
+            String array_sID[] = {"00001",
+                    "549410", "54B110", "54A100", "541100", "542110", "542210", "543110", "543210",
+                    "549110", "514100", "531000", "532110", "532210", "549210", "549310",
+                    "544100", "544310", "544330", "544410", "544430", "544510", "544530", "544610",
+                    "545100", "545200", "545300", "545400", "545500", "545600", "570000", "572000",
+                    "574000", "580000", "544210", "544230", "54C100", "54C200", "54C510", "54C520",
+                    "54C530", "54C540", "521000", "522100", "522200", "523000", "549500", "547100",
+                    "547200", "548000", "590000", "543310",
+
+                    "710010", "720000", "720010", "730000",
+
+                    "610000", "620000", "630000",
+
+                    "211000", "220000", "221000", "230000", "231000",
+                    "291000", "2A1000", "2B0000", "2B1000", "2D1000", "2A2000",
+                    "910000", "920000", "930000", "940000"};
+            Log.d("PRINT ARRAY", "DILUAR FOR");
+            boolean matched_array = false;
+            for (int i = 0; i < array_sID.length; i++) {
+//            Log.d("LOOP ARRAY",formId +"  "+array_sID[i]);
+                if (formId.contains(array_sID[i])) {
+                    matched_array = true;
+//                Log.d("PRINT ARRAY",formId +"  "+array_sID[i]);
+                    i = array_sID.length;
+                }
+            }
+            if (!matched_array) {
+                Log.d("PRINT ARRAY", "Dalam if");
+                stan = StringLib.fillZero(String.valueOf(msgStan), 6);
+            } else {
+                Log.d("PRINT ARRAY", "Dalam else");
+                stan = "000000";
+            }
+
+            data.add(new PrintSize(FontSize.EMPTY, "\n"));
+            if (magneticSwipe != null && (!formId.equals("640000F"))) {
+                String track2Data = magneticSwipe.getText().toString();
+                if (!track2Data.equals("")) {
+                    track2Data = track2Data.split("=")[0];
+                    track2Data = track2Data.substring(0, 6) + "******" + track2Data.substring(12);
 //                data.add(new PrintSize(FontSize.BOLD, "No Kartu : "));
 //                data.add(new PrintSize(FontSize.EMPTY, "\n"));
 //                data.add(new PrintSize(FontSize.BOLD, track2Data + "\n"));
 //                data.add(new PrintSize(FontSize.EMPTY, "\n"));
 //                nomorKartu = "************" + track2Data.substring(12);
-                nomorKartu = track2Data;
-            }
-        }
-        if (formId.equals("640000F")) {
-            nomorKartu = "";
-        }
-        data.add(new PrintSize(FontSize.TITLE, comp.getString("title") + "\n"));
-        data.add(new PrintSize(FontSize.EMPTY, "\n"));
-        JSONArray array = comp.getJSONObject("comps").getJSONArray("comp");
-        for (int i = 0; i < array.length(); i++) {
-            for (int j = 0; j < array.length(); j++) {
-                final JSONObject dataArr = array.getJSONObject(j);
-                int seq = dataArr.getInt("seq");
-                if (seq == i) {
-                    if (dataArr.isNull("comp_values")) continue;
-                    JSONObject val = dataArr.getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0);
-                    FontSize size = FontSize.NORMAL;
-                    String lbl = dataArr.getString("comp_lbl");
-                    String value = val.getString("print");
-                    if (lbl.startsWith("[")) {
-                        String tag = lbl.substring(1, lbl.indexOf("]"));
-                        if (tag.matches(".*\\d+.*")) {
-
-                            if (tag.startsWith("B")) {
-                                tag = tag.substring(1);
-                                tag = "BOLD_" + tag;
-
-                            } else {
-                                tag = "NORMAL_" + tag;
-                            }
-                        } else {
-
-                            if (tag.startsWith("B")) {
-                                tag = "BOLD_2";
-
-                            } else {
-                                tag = "NORMAL";
-                            }
-                        }
-                        Log.i("zzzz", tag);
-                        size = FontSize.valueOf(tag);
-                        lbl = lbl.substring(lbl.indexOf("]") + 1);
-                    }
-
-                    if (lbl.equals("TRANSAKSI BERHASIL") && formId.equals("721000F")){
-                        data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
-                        data.add(new PrintSize(size, lbl));
-                        data.add(new PrintSize(size, " "));
-                    }
-                    else{
-                        data.add(new PrintSize(size, lbl));
-                        data.add(new PrintSize(size, " "));
-                    }
-
-                    if (value.startsWith("[")) {
-                        String tag = value.substring(1, value.indexOf("]"));
-                        if (tag.matches(".*\\d+.*")) {
-
-                            if (tag.startsWith("B")) {
-                                tag = tag.substring(1);
-                                tag = "BOLD_" + tag;
-
-                            } else {
-                                tag = "NORMAL_" + tag;
-                            }
-                        } else {
-
-                            if (tag.startsWith("B")) {
-                                tag = "BOLD_2";
-
-                            } else {
-                                tag = "NORMAL";
-                            }
-                        }
-                        Log.i("zzzz", tag);
-                        size = FontSize.valueOf(tag);
-                        value = value.substring(value.indexOf("]") + 1);
-                    }
-                    data.add(new PrintSize(size, value + "\n"));
-//                    data.add(new PrintSize(FontSize.EMPTY, "\n"));
+                    nomorKartu = track2Data;
                 }
             }
-        }
-//        Thread thread = new Thread(new PrintData(data));
-        String ptx = "";
-        if (comp.has("print_text")) {
-            ptx = comp.getString("print_text");
-        }
-        if (countPrintButton<5) {
-            Thread thread = new Thread(new PrintData(data, mdata, tid, mid, stan, ptx,
-                    countPrintButton, serverRef, serverDate, serverTime, nomorKartu, cardType, batchNo, serverAppr));
-            thread.start();
-        }
-        countPrintButton++;
-
-        if (countPrintButton<5) {
-            confirmationText.setText(printConfirm[countPrintButton]);
-        }
-
-        if (!(formId.equals("71000FF")||formId.equals("721000F")||
-                formId.equals("731000F")||formId.equals("521000F")||
-                ptx.startsWith("STL")||ptx.startsWith("RP"))) {
-            confirmationText.setText(printConfirm[countPrintButton]);
-        }
-        if (formId.equals("71000FF")||formId.equals("721000F")||formId.equals("731000F")) {
-            confirmationText.setText(printConfirmTbank[countPrintButton]);
-        }
-        if (formId.equals("290000F")) {
-            confirmationText.setText(printConfirm[countPrintButton]);
-        }
-        if (formId.equals("521000F")||
-//                formId.equals("220000F")||
-                formId.equals("2B0000F")||
-                formId.equals("231000F")) {
-//            printBtn.setVisibility(GONE);
-            if (clientDB.isOpen()) {
-                clientDB.close();            }
-            context.onBackPressed();
-        }
-        if (ptx.startsWith("STL")) {
-//            printBtn.setVisibility(GONE);
-            if (clientDB.isOpen()) {
-                clientDB.close();            }
-            context.onBackPressed();
-        }
-        if (ptx.startsWith("RP")) {
-            if (clientDB.isOpen()) {
-                clientDB.close();
+            if (formId.equals("640000F")) {
+                nomorKartu = "";
             }
-            context.onBackPressed();
-        }
+            data.add(new PrintSize(FontSize.TITLE, comp.getString("title") + "\n"));
+            data.add(new PrintSize(FontSize.EMPTY, "\n"));
+            JSONArray array = comp.getJSONObject("comps").getJSONArray("comp");
+            for (int i = 0; i < array.length(); i++) {
+                for (int j = 0; j < array.length(); j++) {
+                    final JSONObject dataArr = array.getJSONObject(j);
+                    int seq = dataArr.getInt("seq");
+                    if (seq == i) {
+                        if (dataArr.isNull("comp_values")) continue;
+                        JSONObject val = dataArr.getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0);
+                        FontSize size = FontSize.NORMAL;
+                        String lbl = dataArr.getString("comp_lbl");
+                        String value = val.getString("print");
+                        if (lbl.startsWith("[")) {
+                            String tag = lbl.substring(1, lbl.indexOf("]"));
+                            if (tag.matches(".*\\d+.*")) {
+
+                                if (tag.startsWith("B")) {
+                                    tag = tag.substring(1);
+                                    tag = "BOLD_" + tag;
+
+                                } else {
+                                    tag = "NORMAL_" + tag;
+                                }
+                            } else {
+
+                                if (tag.startsWith("B")) {
+                                    tag = "BOLD_2";
+
+                                } else {
+                                    tag = "NORMAL";
+                                }
+                            }
+                            Log.i("zzzz", tag);
+                            size = FontSize.valueOf(tag);
+                            lbl = lbl.substring(lbl.indexOf("]") + 1);
+                        }
+
+                        if (lbl.equals("TRANSAKSI BERHASIL") && formId.equals("721000F")) {
+                            data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
+                            data.add(new PrintSize(size, lbl));
+                            data.add(new PrintSize(size, " "));
+                        } else {
+                            data.add(new PrintSize(size, lbl));
+                            data.add(new PrintSize(size, " "));
+                        }
+
+                        if (value.startsWith("[")) {
+                            String tag = value.substring(1, value.indexOf("]"));
+                            if (tag.matches(".*\\d+.*")) {
+
+                                if (tag.startsWith("B")) {
+                                    tag = tag.substring(1);
+                                    tag = "BOLD_" + tag;
+
+                                } else {
+                                    tag = "NORMAL_" + tag;
+                                }
+                            } else {
+
+                                if (tag.startsWith("B")) {
+                                    tag = "BOLD_2";
+
+                                } else {
+                                    tag = "NORMAL";
+                                }
+                            }
+                            Log.i("zzzz", tag);
+                            size = FontSize.valueOf(tag);
+                            value = value.substring(value.indexOf("]") + 1);
+                        }
+                        data.add(new PrintSize(size, value + "\n"));
+//                    data.add(new PrintSize(FontSize.EMPTY, "\n"));
+                    }
+                }
+            }
+//        Thread thread = new Thread(new PrintData(data));
+            String ptx = "";
+            if (comp.has("print_text")) {
+                ptx = comp.getString("print_text");
+            }
+            if (countPrintButton < 5) {
+                Thread thread = new Thread(new PrintData(data, mdata, tid, mid, stan, ptx,
+                        countPrintButton, serverRef, serverDate, serverTime, nomorKartu, cardType, batchNo, serverAppr));
+                thread.start();
+            }
+            countPrintButton++;
+
+            if (countPrintButton < 5) {
+                confirmationText.setText(printConfirm[countPrintButton]);
+            }
+
+            if (!(formId.equals("71000FF") || formId.equals("721000F") ||
+                    formId.equals("731000F") || formId.equals("521000F") ||
+                    ptx.startsWith("STL") || ptx.startsWith("RP"))) {
+                confirmationText.setText(printConfirm[countPrintButton]);
+            }
+            if (formId.equals("71000FF") || formId.equals("721000F") || formId.equals("731000F")) {
+                confirmationText.setText(printConfirmTbank[countPrintButton]);
+            }
+            if (formId.equals("290000F")) {
+                confirmationText.setText(printConfirm[countPrintButton]);
+            }
+            if (formId.equals("521000F") ||
+//                formId.equals("220000F")||
+                    formId.equals("2B0000F") ||
+                    formId.equals("231000F")) {
+//            printBtn.setVisibility(GONE);
+                if (clientDB.isOpen()) {
+                    clientDB.close();
+                }
+                context.onBackPressed();
+            }
+            if (ptx.startsWith("STL")) {
+//            printBtn.setVisibility(GONE);
+                if (clientDB.isOpen()) {
+                    clientDB.close();
+                }
+                context.onBackPressed();
+            }
+            if (ptx.startsWith("RP")) {
+                if (clientDB.isOpen()) {
+                    clientDB.close();
+                }
+                context.onBackPressed();
+            }
 //        Log.d(TAG, "PTEXT    : " + ptx);
 //        Log.d(TAG, "Count PB : " + String.valueOf(countPrintButton));
 //        Log.d(TAG, "PB Label : " + printConfirm[countPrintButton]);
-        if (countPrintButton>2) {
+            if (countPrintButton > 2) {
 //            printBtn.setVisibility(GONE);
-            if (clientDB.isOpen()) {
-                clientDB.close();
+                if (clientDB.isOpen()) {
+                    clientDB.close();
+                }
+                context.onBackPressed();
             }
-            context.onBackPressed();
+            isAntiDDOSPrint = false;
         }
     }
 

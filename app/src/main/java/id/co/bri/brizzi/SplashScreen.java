@@ -244,12 +244,12 @@ public class SplashScreen extends Activity {
             thread.start();
         } else {
 //        }
-            PackageInfo pInfo = null;
+//            PackageInfo pInfo = null;
             try {
-                pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+//                pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                 JsonCompHandler.loadConf(this);
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
+//            } catch (PackageManager.NameNotFoundException e) {
+//                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }

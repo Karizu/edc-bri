@@ -5,8 +5,13 @@
  */
 package id.co.bri.brizzi.handler;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.Log;
 
@@ -31,6 +36,8 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
 
+import id.co.bri.brizzi.R;
+import id.co.bri.brizzi.UpdateAppActivity;
 import id.co.bri.brizzi.common.CommonConfig;
 
 /**
@@ -39,6 +46,7 @@ import id.co.bri.brizzi.common.CommonConfig;
 public class JsonCompHandler {
 
     private static MenuListResolver mlr = new MenuListResolver();
+    private static NotificationManager mNotificationManager;
 
     public JsonCompHandler() {
 
@@ -104,24 +112,106 @@ public class JsonCompHandler {
             String jsonText = readAll(rd);
             json = new JSONObject(jsonText);
             Log.i("conf",json.toString(2));
+            //checkIsNeedUpdate
             SharedPreferences preferencesSetting = ctx.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
-            preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
-            preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
-            preferencesSetting.edit().putString("merchant_address2", json.getString("kanwil")).apply();
-            preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
-            preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
-            preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();
-            preferencesSetting.edit().putString("primary_phone", json.getString("primaryphone")).apply();
-            preferencesSetting.edit().putString("secondary_phone", json.getString("secondaryphone")).apply();
-            preferencesSetting.edit().putString("master", json.getString("master")).apply();
-            preferencesSetting.edit().putString("ip", json.getString("ip")).apply();
-            preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
-            preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
-            preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
-            preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
-            preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
-            preferencesSetting.edit().putString("port", json.getString("port")).apply();
-            settingSuccess(ctx);
+            SharedPreferences preferences = preferencesSetting;
+            String ip = preferences.getString("ip",CommonConfig.DEV_SOCKET_IP);
+            String port = preferences.getString("port",CommonConfig.DEV_SOCKET_PORT);
+            String initScreen = preferences.getString("init_screen",CommonConfig.INIT_REST_ACT);
+            String diskonId = preferences.getString("diskon_id",CommonConfig.DEFAULT_DISCOUNT_TYPE);
+            String diskon = preferences.getString("diskon",CommonConfig.DEFAULT_DISCOUNT_RATE);
+            String terminalId = preferences.getString("terminal_id",CommonConfig.DEV_TERMINAL_ID);
+            String merchantId = preferences.getString("merchant_id",CommonConfig.DEV_MERCHANT_ID);
+            String merchantName = preferences.getString("merchant_name",CommonConfig.INIT_MERCHANT_NAME);
+            String merchantAddr1 = preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1);
+            String merchantAddr2 = preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2);
+            String passSettlement = preferences.getString("pass_settlement", CommonConfig.DEFAULT_SETTLEMENT_PASS);
+            String minDeduct = preferences.getString("minimum_deduct", CommonConfig.DEFAULT_MIN_BALANCE_BRIZZI);
+            String maxDeduct = preferences.getString("maximum_deduct", CommonConfig.DEFAULT_MAX_MONTHLY_DEDUCT);
+            boolean isNeedUpdate = false;
+            if (!ip.equals(json.getString("ip"))) {
+                isNeedUpdate = true;
+            }
+            if (!port.equals(json.getString("port"))) {
+                isNeedUpdate = true;
+            }
+            if (!hostname.equals(json.getString("hostname"))) {
+                isNeedUpdate = true;
+            }
+            if (!diskonId.equals(json.getString("diskon_id"))) {
+                isNeedUpdate = true;
+            }
+            if (!diskon.equals(json.getString("diskon"))) {
+                isNeedUpdate = true;
+            }
+            if (!terminalId.equals(json.getString("terminal_id"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantId.equals(json.getString("merchant_id"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantName.equals(json.getString("merchant_name"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantAddr1.equals(json.getString("merchant_address1"))) {
+                isNeedUpdate = true;
+            }
+            if (!merchantAddr2.equals(json.getString("merchant_address2"))) {
+                isNeedUpdate = true;
+            }
+            if (!passSettlement.equals(json.getString("pass_settlement"))) {
+                isNeedUpdate = true;
+            }
+            if (!minDeduct.equals(json.getString("minimum_deduct"))) {
+                isNeedUpdate = true;
+            }
+            if (!maxDeduct.equals(json.getString("maximum_deduct"))) {
+                isNeedUpdate = true;
+            }
+            if (isNeedUpdate) {
+                if (mlr.hasUnsettledData(ctx)) {
+                    if (mNotificationManager == null) {
+                        mNotificationManager = (NotificationManager) ctx.getSystemService(ctx.NOTIFICATION_SERVICE);
+                    }
+                    Intent intent = new Intent(ctx, UpdateAppActivity.class);
+                    intent.putExtra("method", 1181);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(ctx,
+                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification.Builder builder = new Notification.Builder(ctx)
+                            .setContentTitle("Informasi")
+                            .setContentIntent(pendingIntent)
+                            .setContentText("Update setting EDC telah tersedia, silahkan lakukan settlement sebelum memasangkan update")
+                            .setSmallIcon(R.drawable.logo_bri_002)
+                            .setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(), R.drawable.if_email));
+                    Notification n;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        n = builder.build();
+                    } else {
+                        n = builder.getNotification();
+                    }
+                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+                    mNotificationManager.notify(1181, n);
+                } else {
+                    preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
+                    preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
+                    preferencesSetting.edit().putString("merchant_address2", json.getString("kanwil")).apply();
+                    preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
+                    preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
+                    preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();
+                    preferencesSetting.edit().putString("primary_phone", json.getString("primaryphone")).apply();
+                    preferencesSetting.edit().putString("secondary_phone", json.getString("secondaryphone")).apply();
+                    preferencesSetting.edit().putString("master", json.getString("master")).apply();
+                    preferencesSetting.edit().putString("ip", json.getString("ip")).apply();
+                    preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
+                    preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
+                    preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
+                    preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
+                    preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
+                    preferencesSetting.edit().putString("port", json.getString("port")).apply();
+                    settingSuccess(ctx);
+                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         } finally {

@@ -174,6 +174,27 @@ public class UpdateAppActivity extends AppCompatActivity {
                 };
                 builder.setTitle("Konfirmasi update software");
                 break;
+            case 1181://Update Setting
+                click = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                try {
+                                    JsonCompHandler.loadConf(UpdateAppActivity.this);
+                                } catch (Exception e) {
+                                    Log.i("UPDS", "Error " + e.getMessage());
+                                }
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                break;
+                        }
+                    }
+                };
+                builder.setTitle("Konfirmasi update setting");
+                break;
         }
         builder.setMessage("Lakukan update sekarang?");
         builder.setPositiveButton("Sekarang", click).setNegativeButton("Tidak Sekarang", click).show();
