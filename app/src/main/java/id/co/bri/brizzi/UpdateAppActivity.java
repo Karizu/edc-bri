@@ -195,6 +195,9 @@ public class UpdateAppActivity extends AppCompatActivity {
                                         }).show();
                                     } else {
                                         JsonCompHandler.loadConf(ctx);
+                                        String ns = Context.NOTIFICATION_SERVICE;
+                                        NotificationManager nMgr = (NotificationManager) UpdateAppActivity.this.getSystemService(ns);
+                                        nMgr.cancel(method);
                                         Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
                                         startActivity(intent);
                                     }
