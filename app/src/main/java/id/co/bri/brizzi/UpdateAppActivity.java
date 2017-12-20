@@ -181,7 +181,23 @@ public class UpdateAppActivity extends AppCompatActivity {
                         switch (which) {
                             case DialogInterface.BUTTON_POSITIVE:
                                 try {
-                                    JsonCompHandler.loadConf(UpdateAppActivity.this);
+                                    Context ctx = UpdateAppActivity.this;
+                                    if (JsonCompHandler.hasUnsettleData(ctx)) {
+                                        AlertDialog.Builder warn = new AlertDialog.Builder(ctx);
+                                        warn.setTitle("Gagal");
+                                        warn.setMessage("Tidak dapat melakukan update, masih terdapat data transaksi yang belum dilakukan settelement");
+                                        warn.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        }).show();
+                                    } else {
+                                        JsonCompHandler.loadConf(ctx);
+                                        Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                    }
                                 } catch (Exception e) {
                                     Log.i("UPDS", "Error " + e.getMessage());
                                 }
@@ -197,6 +213,9 @@ public class UpdateAppActivity extends AppCompatActivity {
                 break;
         }
         builder.setMessage("Lakukan update sekarang?");
+        if (method==1181) {
+            builder.setMessage("Lakukan update sekarang?\n\nPastikan settlement telah dilakukan. Update tidak dapat dilakukan apabila terdapat transaksi yang belum settlement.");
+        }
         builder.setPositiveButton("Sekarang", click).setNegativeButton("Tidak Sekarang", click).show();
     }
 

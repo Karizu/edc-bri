@@ -97,6 +97,12 @@ public class JsonCompHandler {
 //        Log.d("SN_DEVICE",serialNum);
         URL url = new URL("http://" + hostname + "/device/" + serialNum + "/syncMenuSuccess");
         url.openStream();
+        url = new URL("http://" + hostname + "/device/" + serialNum + "/loadMenuSuccess");
+        url.openStream();
+    }
+
+    public static boolean hasUnsettleData(Context ctx) {
+        return mlr.hasUnsettledData(ctx);
     }
 
     public static void loadConf(Context ctx) throws IOException {
@@ -136,28 +142,25 @@ public class JsonCompHandler {
             if (!port.equals(json.getString("port"))) {
                 isNeedUpdate = true;
             }
-            if (!hostname.equals(json.getString("hostname"))) {
-                isNeedUpdate = true;
-            }
             if (!diskonId.equals(json.getString("diskon_id"))) {
                 isNeedUpdate = true;
             }
             if (!diskon.equals(json.getString("diskon"))) {
                 isNeedUpdate = true;
             }
-            if (!terminalId.equals(json.getString("terminal_id"))) {
+            if (!terminalId.equals(json.getString("terminalid"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantId.equals(json.getString("merchant_id"))) {
+            if (!merchantId.equals(json.getString("merchantid"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantName.equals(json.getString("merchant_name"))) {
+            if (!merchantName.equals(json.getString("merchantname"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantAddr1.equals(json.getString("merchant_address1"))) {
+            if (!merchantAddr1.equals(json.getString("alamat"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantAddr2.equals(json.getString("merchant_address2"))) {
+            if (!merchantAddr2.equals(json.getString("kanwil"))) {
                 isNeedUpdate = true;
             }
             if (!passSettlement.equals(json.getString("pass_settlement"))) {
@@ -170,7 +173,9 @@ public class JsonCompHandler {
                 isNeedUpdate = true;
             }
             if (isNeedUpdate) {
+                Log.i("SSS", "Need update setting");
                 if (mlr.hasUnsettledData(ctx)) {
+                    Log.i("SSS", "Pending update setting, unsettled data");
                     if (mNotificationManager == null) {
                         mNotificationManager = (NotificationManager) ctx.getSystemService(ctx.NOTIFICATION_SERVICE);
                     }
@@ -194,6 +199,7 @@ public class JsonCompHandler {
                     n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
                     mNotificationManager.notify(1181, n);
                 } else {
+                    Log.i("SSS", "Do update setting");
                     preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
                     preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
                     preferencesSetting.edit().putString("merchant_address2", json.getString("kanwil")).apply();

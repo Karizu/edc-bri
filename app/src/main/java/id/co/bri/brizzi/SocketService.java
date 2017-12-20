@@ -277,28 +277,25 @@ public class SocketService extends Service implements WebSocketClient.Listener {
             if (!port.equals(json.getString("port"))) {
                 isNeedUpdate = true;
             }
-            if (!hostname.equals(json.getString("hostname"))) {
-                isNeedUpdate = true;
-            }
             if (!diskonId.equals(json.getString("diskon_id"))) {
                 isNeedUpdate = true;
             }
             if (!diskon.equals(json.getString("diskon"))) {
                 isNeedUpdate = true;
             }
-            if (!terminalId.equals(json.getString("terminal_id"))) {
+            if (!terminalId.equals(json.getString("terminalid"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantId.equals(json.getString("merchant_id"))) {
+            if (!merchantId.equals(json.getString("merchantid"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantName.equals(json.getString("merchant_name"))) {
+            if (!merchantName.equals(json.getString("merchantname"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantAddr1.equals(json.getString("merchant_address1"))) {
+            if (!merchantAddr1.equals(json.getString("alamat"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantAddr2.equals(json.getString("merchant_address2"))) {
+            if (!merchantAddr2.equals(json.getString("kanwil"))) {
                 isNeedUpdate = true;
             }
             if (!passSettlement.equals(json.getString("pass_settlement"))) {
