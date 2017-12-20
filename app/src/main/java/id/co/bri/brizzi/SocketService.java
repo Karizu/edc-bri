@@ -99,18 +99,27 @@ public class SocketService extends Service implements WebSocketClient.Listener {
         mBinder = new LocalBinder();
         SharedPreferences preferences = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         DEBUG_MODE = preferences.getBoolean("debug_mode",DEBUG_MODE);
+//        Log.i("SoSrv", "Starting socket service");
         if(!DEBUG_MODE){
-            client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname",CommonConfig.WEBSOCKET_URL) + "/push"), this, extraHeaders);
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            if (!isConnect) {
-                client.connect();
+            try {
+                client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname", CommonConfig.WEBSOCKET_URL) + "/push"), this, extraHeaders);
+                if (Looper.myLooper() == null) {
+                    Looper.prepare();
+                }
+                if (!isConnect) {
+                    client.connect();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 //        Log.d(TAG, "WebSocket instance created");
         }
-        final Thread gpsService = new Thread(new GPSService(this));
-        gpsService.start();
+        try {
+            final Thread gpsService = new Thread(new GPSService(this));
+            gpsService.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        Log.d(TAG, "GPS Service started");
     }
 

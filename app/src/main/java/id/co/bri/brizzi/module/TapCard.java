@@ -53,13 +53,14 @@ import id.co.bri.brizzi.handler.ISO8583Parser;
 import id.co.bri.brizzi.handler.LogHandler;
 import id.co.bri.brizzi.handler.MenuListResolver;
 import id.co.bri.brizzi.handler.txHandler;
+import id.co.bri.brizzi.module.listener.FinishedPrint;
 import id.co.bri.brizzi.module.listener.ReqListener;
 import id.co.bri.brizzi.module.listener.TapListener;
 
 /**
  * Created by indra on 24/11/15.
  */
-public class TapCard extends RelativeLayout implements ReqListener {
+public class TapCard extends RelativeLayout implements ReqListener, FinishedPrint {
 
     public static final String INITIALIZE = "2100000";
     public static final String INFO_SALDO = "2200000";
@@ -136,6 +137,7 @@ public class TapCard extends RelativeLayout implements ReqListener {
             "Print Merchant Copy ?", "",
             "Print Duplicate Copy ?", "", "", ""
     };
+    private boolean printInUse = false;
 
     private boolean enablePrint = false;
     private JSONObject formReponse = new JSONObject();
@@ -415,41 +417,45 @@ public class TapCard extends RelativeLayout implements ReqListener {
         btnPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (printcountbutton > 1) {
-                    btnOk.performClick();
-                }
-                if (printcountbutton == 0) {
-                    footerAdded = false;
-                }
-                try {
-                    nomorKartu = cardNumber();
-                } catch (Exception exception) {
+                if (!printInUse) {
+                    if (printcountbutton > 1) {
+                        btnOk.performClick();
+                    }
+                    if (printcountbutton == 0) {
+                        footerAdded = false;
+                    }
+                    try {
+                        nomorKartu = cardNumber();
+                    } catch (Exception exception) {
 
+                    }
+                    new Thread(new PrintData(printSizes, mdata, tid, mid, stan, nomorKartu, TapCard.this)).start();
+                    if (cData.getWhatToDo().equals(INFO_SALDO)) {
+                        btnOk.performClick();
+                    }
+                    printcountbutton++;
+                    refreshConfirmation();
                 }
-                new Thread(new PrintData(printSizes,mdata,tid,mid,stan, nomorKartu)).start();
-                if (cData.getWhatToDo().equals(INFO_SALDO)) {
-                    btnOk.performClick();
-                }
-                printcountbutton ++;
-                refreshConfirmation();
             }
         });
     }
 
     private void onPrintListener(View v) {
-        if (printcountbutton > 1) {
-            printPanelVisibility(GONE);
-        }
-        if (printcountbutton == 0) {
-            footerAdded = false;
-        }
-        try {
-            nomorKartu = cardNumber();
-        } catch (Exception exception) {
+        if (!printInUse) {
+            if (printcountbutton > 1) {
+                printPanelVisibility(GONE);
+            }
+            if (printcountbutton == 0) {
+                footerAdded = false;
+            }
+            try {
+                nomorKartu = cardNumber();
+            } catch (Exception exception) {
 
+            }
+            new Thread(new PrintData(printSizes, mdata, tid, mid, stan, nomorKartu, TapCard.this)).start();
+            printcountbutton++;
         }
-        new Thread(new PrintData(printSizes,mdata,tid,mid,stan,nomorKartu)).start();
-        printcountbutton ++;
     }
 
     public void addTapListener(TapListener tapListener) {
@@ -4839,6 +4845,16 @@ public class TapCard extends RelativeLayout implements ReqListener {
         this.formListener = formListener;
     }
 
+    @Override
+    public void imBegin() {
+        printInUse = true;
+    }
+
+    @Override
+    public void imFinised() {
+        printInUse = false;
+    }
+
     public interface FormListener {
         public void onSuccesListener(JSONObject obj);
     }
@@ -4850,12 +4866,15 @@ public class TapCard extends RelativeLayout implements ReqListener {
         private String mid;
         private String stan;
         private String nomorKartu;
+        private boolean isRunning;
+        private FinishedPrint flagMe;
 
         public PrintData(List<PrintSize> data) {
             this.data = data;
+            this.isRunning = false;
         }
 
-        public PrintData(List<PrintSize> data, List<String> mdata, String tid, String mid, String stan, String nomorKartu) {
+        public PrintData(List<PrintSize> data, List<String> mdata, String tid, String mid, String stan, String nomorKartu, FinishedPrint flagMe) {
             if (!footerAdded) {
                 data = addStandardFooter(data);
                 footerAdded = true;
@@ -4866,6 +4885,9 @@ public class TapCard extends RelativeLayout implements ReqListener {
             this.mid = mid;
             this.stan = stan;
             this.nomorKartu = nomorKartu;
+            this.flagMe = flagMe;
+            this.isRunning = false;
+            flagMe.imBegin();
         }
 
         public List<PrintSize> addStandardFooter(List<PrintSize> data) {
@@ -4881,35 +4903,48 @@ public class TapCard extends RelativeLayout implements ReqListener {
 
         @Override
         public void run() {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            AssetManager assetManager = context.getAssets();
-            String bmp_path = "bri-small.jpg";
-            InputStream inputStream = null;
             try {
-                inputStream = assetManager.open(bmp_path);
-            } catch (IOException e) {
-                Log.e("PRINT", "CANNOT OPEN BITMAP");
-            }
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-            Log.d("SWIPE", nomorKartu);
-            if (tid != null) {
-                String cardType = "BRIZZI CARD (FLY)";
-                String txRefNum = "000000000000";
-                String svrDate = "0";
-                String svrTime = "0";
-                String svrAppr = "00000000";
-                if (cData.getHash4B()!=null) {
-                    if (!cData.getHash4B().equals("")) {
-                        svrAppr = cData.getHash4B();
-                    }
+                this.isRunning = true;
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                AssetManager assetManager = context.getAssets();
+                String bmp_path = "bri-small.jpg";
+                InputStream inputStream = null;
+                try {
+                    inputStream = assetManager.open(bmp_path);
+                } catch (IOException e) {
+                    Log.e("PRINT", "CANNOT OPEN BITMAP");
                 }
-                ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, printcount, txRefNum,
-                        svrDate, svrTime, cardType, nomorKartu, "TAPDIALOG", "000000", svrAppr);
-            } else {
-                ESCPOSApi.printStruk(bitmap, data);
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                Log.d("SWIPE", nomorKartu);
+                if (tid != null) {
+                    String cardType = "BRIZZI CARD (FLY)";
+                    String txRefNum = "000000000000";
+                    String svrDate = "0";
+                    String svrTime = "0";
+                    String svrAppr = "00000000";
+                    if (cData.getHash4B() != null) {
+                        if (!cData.getHash4B().equals("")) {
+                            svrAppr = cData.getHash4B();
+                        }
+                    }
+                    ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, printcount, txRefNum,
+                            svrDate, svrTime, cardType, nomorKartu, "TAPDIALOG", "000000", svrAppr);
+                } else {
+                    ESCPOSApi.printStruk(bitmap, data);
+                }
+                printcount++;
+            } catch (Exception e) {
+                this.isRunning = false;
+                flagMe.imFinised();
+            } finally {
+                this.isRunning = false;
+                flagMe.imFinised();
             }
-            printcount++;
+        }
+
+        public boolean isRunning() {
+            return isRunning;
         }
     }
 

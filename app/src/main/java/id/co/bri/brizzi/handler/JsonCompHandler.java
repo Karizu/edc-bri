@@ -103,11 +103,12 @@ public class JsonCompHandler {
         SharedPreferences preferencesConfig = ctx.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         String hostname = preferencesConfig.getString("hostname", CommonConfig.HTTP_REST_URL);
         String serialNum = Build.SERIAL;
+        InputStream is = null;
         // Create an unbound socket
-        URL url = new URL("http://" + hostname + "/device/" + serialNum + "/loadConf");
-        InputStream is = url.openStream();
         JSONObject json = new JSONObject();
         try {
+            URL url = new URL("http://" + hostname + "/device/" + serialNum + "/loadConf");
+            is = url.openStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
             json = new JSONObject(jsonText);
@@ -212,13 +213,15 @@ public class JsonCompHandler {
                     settingSuccess(ctx);
                 }
             }
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            is.close();
+            if (is!=null) {
+                is.close();
+            }
         }
-        url = new URL("http://" + hostname + "/device/" + serialNum + "/loadMenuSuccess");
-        url.openStream();
+//        url = new URL("http://" + hostname + "/device/" + serialNum + "/loadMenuSuccess");
+//        url.openStream();
     }
 
     public static JSONObject readJsonFromUrl(String id, Context ctx) throws IOException, JSONException {

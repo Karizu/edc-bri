@@ -92,10 +92,13 @@ public class SplashScreen extends Activity {
                         "/data/data/"+getPackageName()+"/files");
             }
         }
+//        Log.i("OP", "Preparing data");
         txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
+//        Log.i("OP", "Set thread");
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+//        Log.i("OP", "Prepare DB");
         DataBaseHelper helperDb = new DataBaseHelper(this.getApplicationContext());
         try {
             helperDb.createDataBase();
@@ -107,6 +110,7 @@ public class SplashScreen extends Activity {
             helperDb = null;
         }
         if (true) {
+//            Log.i("Op", "Starting service : Socket");
             startService(new Intent(this,SocketService.class));
             recheck();
         } else {

@@ -814,227 +814,227 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         }
     }
 
-    private void showSinglePinDialog(View v) {
-        try {
-            if (syncMessenger==null) {
-                Log.i("PINPAD", "Refresh sync messenger");
-                syncMessenger = parent.getSyncMessenger();
-            }
-            pinDialogCanceled = false;
-            LayoutInflater li = LayoutInflater.from(context);
-            View promptsView = li.inflate(R.layout.pinpad_dialog, null);
-            final android.widget.TextView alertText = (android.widget.TextView) promptsView.findViewById(R.id.pinAlert);
-            alertText.setVisibility(View.GONE);
-            pinpadWarningText = alertText;
-            pinDialogCounter++;
-            if (pinModuleCounter > 1) {
-                pinpadText = (EditText) pinpadTextList.get(pinModuleCounter - pinDialogCounter);
-            } else {
-                pinpadText = (EditText) pinpadTextList.get(pinDialogCloseCounter);
-            }
-            android.widget.TextView dialogLabel = (android.widget.TextView) promptsView.findViewById(R.id.pinPass);
-            if (pinpadText.getHint()!=null) {
-                if (!pinpadText.getHint().equals("PIN")) {
-                    dialogLabel.setText(pinpadText.getHint());
-                }
-            }
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-            // set prompts.xml to alertdialog builder
-            alertDialogBuilder.setView(promptsView);
-
-            final android.widget.EditText userInput = (android.widget.EditText) promptsView
-                    .findViewById(R.id.editTextDialogUserInput);
-
-            final android.widget.Button btnOk = (android.widget.Button) promptsView
-                    .findViewById(R.id.btnOk);
-            Boolean doIneedHSM = pinModuleCounter==pinDialogCounter;
-//            Log.d("PINPAD", String.valueOf(pinModuleCounter) + String.valueOf(pinDialogCounter));
-            if (!CommonConfig.getDeviceName().startsWith("WizarPOS")){
-                doIneedHSM = false;
-            }
-            final Boolean needHsm = doIneedHSM;
-            if (needHsm) {
-                if (formId.equals("7100000")||formId.equals("7300000")) {
-                    btnOk.setVisibility(GONE);
-                    android.widget.TextView dialogFoot = (android.widget.TextView) promptsView
-                            .findViewById(R.id.dialogFoot);
-                    dialogFoot.setVisibility(VISIBLE);
-                } else {
-                    android.widget.TextView cardLabel = (android.widget.TextView) promptsView
-                            .findViewById(R.id.cardLabel);
-                    android.widget.TextView cardNumber = (android.widget.TextView) promptsView
-                            .findViewById(R.id.cardNumber);
-                    cardLabel.setVisibility(VISIBLE);
-                    cardNumber.setText(panHolder);
-                    cardNumber.setVisibility(VISIBLE);
-                    btnOk.setVisibility(GONE);
-                    android.widget.TextView dialogFoot = (android.widget.TextView) promptsView
-                            .findViewById(R.id.dialogFoot);
-                    dialogFoot.setVisibility(VISIBLE);
-                }
-            }
-
-//        userInput.setKeyListener(null);
-            // set dialog message
-            if (CommonConfig.getDeviceName().startsWith("WizarPOS")) {
-                userInput.setInputType(InputType.TYPE_NULL);
-            } else {
-                userInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-            }
-            userInput.setTransformationMethod(new EditText.MyPasswordTransformationMethod());
-            alertDialogBuilder
-                    .setCancelable(false);
-            // create alert dialog
-            final AlertDialog alertDialog = alertDialogBuilder.create();
-            final WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-            lp.copyFrom(alertDialog.getWindow().getAttributes());
-            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-            lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-            final Button realProcess = (Button) v;
-            final Handler handler = new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    switch (msg.what) {
-                        case CommonConfig.CALLBACK_KEYPRESSED:
-                            Log.i(TAG, "receive callback");
-                            byte[] data = msg.getData().getByteArray("data");
-                            int datanol = 0;
-                            if (data != null) {
-                                datanol = Integer.valueOf(String.valueOf(data[0]));
-                            } else {
-                                if (btnOk.getVisibility() == View.GONE) {
-                                    btnOk.callOnClick();
-                                }
-                            }
-                            StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < datanol; i++) {
-                                sb.append("*");
-                            }
-                            userInput.setText(sb.toString());
-                            break;
-                        case CommonConfig.CALLBACK_RESULT:
-                            Log.i(TAG, "receive result");
-                            if (pinpadTextList.size() >= 0) {
-                                try {
-                                    String encPin = msg.getData().getString("data");
-                                    pinblockHolder = encPin;
-                                    pinpadText = (EditText) pinpadTextList.get(pinDialogCloseCounter);
-                                    if (!needHsm) {
-                                        encPin = userInput.getText().toString();
-                                    } else {
-                                        pinpadText.setMaxLength(16);
-                                    }
-                                    pinpadText.setText(encPin.replaceAll(" ", ""));
-                                    pinDialogCloseCounter++;
-                                } catch (IndexOutOfBoundsException e) {
-                                    Log.e("PINPAD", "Dialog closed already");
-                                }
-                                if (pinModuleCounter == 1) {
-                                    try {
-                                        if (!pinDialogCanceled) {
-                                            actionUrl(realProcess, realProcess.getTag().toString());
-                                        }
-                                    } catch (JSONException e) {
-                                        Log.e("PINPAD", "Post act failed");
-                                    }
-                                } else {
-                                    pinModuleCounter--;
-                                }
-                            }
-                            break;
-                        default:
-                            super.handleMessage(msg);
-                    }
-                }
-            };
-            final Messenger pinblockReceiver = new Messenger(handler);
-            btnOk.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.i("PINPAD", "Dialog # " + pinModuleCounter + " ok click");
-                    if (pinpadTextList.size() >= 0) {
-                        try {
-                            String encPin = pinblockHolder;
-                            pinpadText = (EditText) pinpadTextList.get(pinDialogCloseCounter);
-                            if (!needHsm) {
-                                encPin = userInput.getText().toString();
-                            } else {
-                                pinpadText.setMaxLength(16);
-                            }
-                            pinpadText.setText(encPin.replaceAll(" ", ""));
-                            pinDialogCloseCounter++;
-                        } catch (IndexOutOfBoundsException e) {
-                            Log.e("PINPAD", "Dialog closed already");
-                        }
-                        alertDialog.dismiss();
-                        if (pinModuleCounter == 1) {
-                            try {
-                                if (!pinDialogCanceled) {
-                                    actionUrl(realProcess, realProcess.getTag().toString());
-                                }
-                            } catch (JSONException e) {
-                                Log.e("PINPAD", "Post act failed");
-                            }
-                        } else {
-                            pinModuleCounter--;
-                        }
-                    } else {
-                        return;
-                    }
-
-                }
-            });
-            // show it
-            if (needHsm) {
-                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    @Override
-                    public void onShow(DialogInterface dialog) {
-                        try {
-                            Log.i("PINPAD", "send message");
-                            Message message = Message.obtain(null, CommonConfig.CAPTURE_PINBLOCK);
-                            Bundle bundle = new Bundle();
-                            bundle.putString("pan", panHolder);
-                            bundle.putString("formid", formId);
-                            message.setData(bundle);
-                            message.replyTo = pinblockReceiver;
-                            syncMessenger.send(message);
-                        } catch (Exception e) {
-                            //cannot start pinpad
-                        }
-                    }
-                });
-
-                alertDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                    @Override
-                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                        if (keyCode == KeyEvent.KEYCODE_BACK) {
-                            Log.i("PINPAD", "Back pressed");
-                            try {
-                                pinDialogCanceled = true;
-//                                t1.interrupt();
-                                Message message = Message.obtain(null, CommonConfig.CAPTURE_CANCEL);
-                                message.replyTo = pinblockReceiver;
-                                syncMessenger.send(message);
-                                btnOk.setVisibility(GONE);
-                                context.onBackPressed();
-                                alertDialog.dismiss();
-                            } catch (Exception e) {
-                                //failed to close, maybe already closed or not open yet
-                            }
-                        } else {
-
-                        }
-                        return true;
-                    }
-                });
-            }
-            alertDialog.show();
-            alertDialog.getWindow().setAttributes(lp);
-        } catch (Exception e) {
-            Log.e(TAG, "Error create pinpad dialog: " + e.getMessage());
-            context.onBackPressed();
-        }
-    }
+//    private void showSinglePinDialog(View v) {
+//        try {
+//            if (syncMessenger==null) {
+//                Log.i("PINPAD", "Refresh sync messenger");
+//                syncMessenger = parent.getSyncMessenger();
+//            }
+//            pinDialogCanceled = false;
+//            LayoutInflater li = LayoutInflater.from(context);
+//            View promptsView = li.inflate(R.layout.pinpad_dialog, null);
+//            final android.widget.TextView alertText = (android.widget.TextView) promptsView.findViewById(R.id.pinAlert);
+//            alertText.setVisibility(View.GONE);
+//            pinpadWarningText = alertText;
+//            pinDialogCounter++;
+//            if (pinModuleCounter > 1) {
+//                pinpadText = (EditText) pinpadTextList.get(pinModuleCounter - pinDialogCounter);
+//            } else {
+//                pinpadText = (EditText) pinpadTextList.get(pinDialogCloseCounter);
+//            }
+//            android.widget.TextView dialogLabel = (android.widget.TextView) promptsView.findViewById(R.id.pinPass);
+//            if (pinpadText.getHint()!=null) {
+//                if (!pinpadText.getHint().equals("PIN")) {
+//                    dialogLabel.setText(pinpadText.getHint());
+//                }
+//            }
+//            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+//            // set prompts.xml to alertdialog builder
+//            alertDialogBuilder.setView(promptsView);
+//
+//            final android.widget.EditText userInput = (android.widget.EditText) promptsView
+//                    .findViewById(R.id.editTextDialogUserInput);
+//
+//            final android.widget.Button btnOk = (android.widget.Button) promptsView
+//                    .findViewById(R.id.btnOk);
+//            Boolean doIneedHSM = pinModuleCounter==pinDialogCounter;
+////            Log.d("PINPAD", String.valueOf(pinModuleCounter) + String.valueOf(pinDialogCounter));
+//            if (!CommonConfig.getDeviceName().startsWith("WizarPOS")){
+//                doIneedHSM = false;
+//            }
+//            final Boolean needHsm = doIneedHSM;
+//            if (needHsm) {
+//                if (formId.equals("7100000")||formId.equals("7300000")) {
+//                    btnOk.setVisibility(GONE);
+//                    android.widget.TextView dialogFoot = (android.widget.TextView) promptsView
+//                            .findViewById(R.id.dialogFoot);
+//                    dialogFoot.setVisibility(VISIBLE);
+//                } else {
+//                    android.widget.TextView cardLabel = (android.widget.TextView) promptsView
+//                            .findViewById(R.id.cardLabel);
+//                    android.widget.TextView cardNumber = (android.widget.TextView) promptsView
+//                            .findViewById(R.id.cardNumber);
+//                    cardLabel.setVisibility(VISIBLE);
+//                    cardNumber.setText(panHolder);
+//                    cardNumber.setVisibility(VISIBLE);
+//                    btnOk.setVisibility(GONE);
+//                    android.widget.TextView dialogFoot = (android.widget.TextView) promptsView
+//                            .findViewById(R.id.dialogFoot);
+//                    dialogFoot.setVisibility(VISIBLE);
+//                }
+//            }
+//
+////        userInput.setKeyListener(null);
+//            // set dialog message
+//            if (CommonConfig.getDeviceName().startsWith("WizarPOS")) {
+//                userInput.setInputType(InputType.TYPE_NULL);
+//            } else {
+//                userInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+//            }
+//            userInput.setTransformationMethod(new EditText.MyPasswordTransformationMethod());
+//            alertDialogBuilder
+//                    .setCancelable(false);
+//            // create alert dialog
+//            final AlertDialog alertDialog = alertDialogBuilder.create();
+//            final WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+//            lp.copyFrom(alertDialog.getWindow().getAttributes());
+//            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+//            lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+//            final Button realProcess = (Button) v;
+//            final Handler handler = new Handler() {
+//                @Override
+//                public void handleMessage(Message msg) {
+//                    switch (msg.what) {
+//                        case CommonConfig.CALLBACK_KEYPRESSED:
+//                            Log.i(TAG, "receive callback");
+//                            byte[] data = msg.getData().getByteArray("data");
+//                            int datanol = 0;
+//                            if (data != null) {
+//                                datanol = Integer.valueOf(String.valueOf(data[0]));
+//                            } else {
+//                                if (btnOk.getVisibility() == View.GONE) {
+//                                    btnOk.callOnClick();
+//                                }
+//                            }
+//                            StringBuilder sb = new StringBuilder();
+//                            for (int i = 0; i < datanol; i++) {
+//                                sb.append("*");
+//                            }
+//                            userInput.setText(sb.toString());
+//                            break;
+//                        case CommonConfig.CALLBACK_RESULT:
+//                            Log.i(TAG, "receive result");
+//                            if (pinpadTextList.size() >= 0) {
+//                                try {
+//                                    String encPin = msg.getData().getString("data");
+//                                    pinblockHolder = encPin;
+//                                    pinpadText = (EditText) pinpadTextList.get(pinDialogCloseCounter);
+//                                    if (!needHsm) {
+//                                        encPin = userInput.getText().toString();
+//                                    } else {
+//                                        pinpadText.setMaxLength(16);
+//                                    }
+//                                    pinpadText.setText(encPin.replaceAll(" ", ""));
+//                                    pinDialogCloseCounter++;
+//                                } catch (IndexOutOfBoundsException e) {
+//                                    Log.e("PINPAD", "Dialog closed already");
+//                                }
+//                                if (pinModuleCounter == 1) {
+//                                    try {
+//                                        if (!pinDialogCanceled) {
+//                                            actionUrl(realProcess, realProcess.getTag().toString());
+//                                        }
+//                                    } catch (JSONException e) {
+//                                        Log.e("PINPAD", "Post act failed");
+//                                    }
+//                                } else {
+//                                    pinModuleCounter--;
+//                                }
+//                            }
+//                            break;
+//                        default:
+//                            super.handleMessage(msg);
+//                    }
+//                }
+//            };
+//            final Messenger pinblockReceiver = new Messenger(handler);
+//            btnOk.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Log.i("PINPAD", "Dialog # " + pinModuleCounter + " ok click");
+//                    if (pinpadTextList.size() >= 0) {
+//                        try {
+//                            String encPin = pinblockHolder;
+//                            pinpadText = (EditText) pinpadTextList.get(pinDialogCloseCounter);
+//                            if (!needHsm) {
+//                                encPin = userInput.getText().toString();
+//                            } else {
+//                                pinpadText.setMaxLength(16);
+//                            }
+//                            pinpadText.setText(encPin.replaceAll(" ", ""));
+//                            pinDialogCloseCounter++;
+//                        } catch (IndexOutOfBoundsException e) {
+//                            Log.e("PINPAD", "Dialog closed already");
+//                        }
+//                        alertDialog.dismiss();
+//                        if (pinModuleCounter == 1) {
+//                            try {
+//                                if (!pinDialogCanceled) {
+//                                    actionUrl(realProcess, realProcess.getTag().toString());
+//                                }
+//                            } catch (JSONException e) {
+//                                Log.e("PINPAD", "Post act failed");
+//                            }
+//                        } else {
+//                            pinModuleCounter--;
+//                        }
+//                    } else {
+//                        return;
+//                    }
+//
+//                }
+//            });
+//            // show it
+//            if (needHsm) {
+//                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+//                    @Override
+//                    public void onShow(DialogInterface dialog) {
+//                        try {
+//                            Log.i("PINPAD", "send message");
+//                            Message message = Message.obtain(null, CommonConfig.CAPTURE_PINBLOCK);
+//                            Bundle bundle = new Bundle();
+//                            bundle.putString("pan", panHolder);
+//                            bundle.putString("formid", formId);
+//                            message.setData(bundle);
+//                            message.replyTo = pinblockReceiver;
+//                            syncMessenger.send(message);
+//                        } catch (Exception e) {
+//                            //cannot start pinpad
+//                        }
+//                    }
+//                });
+//
+//                alertDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+//                    @Override
+//                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+//                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+//                            Log.i("PINPAD", "Back pressed");
+//                            try {
+//                                pinDialogCanceled = true;
+////                                t1.interrupt();
+//                                Message message = Message.obtain(null, CommonConfig.CAPTURE_CANCEL);
+//                                message.replyTo = pinblockReceiver;
+//                                syncMessenger.send(message);
+//                                btnOk.setVisibility(GONE);
+//                                context.onBackPressed();
+//                                alertDialog.dismiss();
+//                            } catch (Exception e) {
+//                                //failed to close, maybe already closed or not open yet
+//                            }
+//                        } else {
+//
+//                        }
+//                        return true;
+//                    }
+//                });
+//            }
+//            alertDialog.show();
+//            alertDialog.getWindow().setAttributes(lp);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Error create pinpad dialog: " + e.getMessage());
+//            context.onBackPressed();
+//        }
+//    }
 
     public void actionUrl(Button button, final String actionUrl) throws JSONException {
         final TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
