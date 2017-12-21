@@ -115,6 +115,19 @@ public class txHandler {
     //Main handler for service request (transaction API)
     public JSONObject processTransaction(Context context, String content) throws JSONException, Exception, IOException {
         //prepare return object
+        SharedPreferences cekstatus = ctx.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+        boolean deviceRegistered = false;
+        if (cekstatus.contains("registered")) {
+            deviceRegistered = cekstatus.getBoolean("registered", false);
+        }
+        boolean DEBUG_MODE = cekstatus.getBoolean("debug_mode", false);
+        if (!DEBUG_MODE) {
+            if (!deviceRegistered) {
+                return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"EDC belum terdaftar\",\n" +
+                        "\"value\":\"EDC tidak terdaftar\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+                        "\"type\":\"3\",\"title\":\"Transaksi Gagal\"}}");
+            }
+        }
         helperDb = new DataBaseHelper(context);
         EDCLog = new LogHandler(context);
         SQLiteDatabase clientDB = null;

@@ -372,6 +372,18 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         //init print header
         SharedPreferences preferences;
         preferences  = context.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+        boolean deviceRegistered = false;
+        if (preferences.contains("registered")) {
+            deviceRegistered = preferences.getBoolean("registered", false);
+        }
+        boolean noTMSMODE = preferences.getBoolean("debug_mode", false);
+        if (!noTMSMODE) {
+            if (!deviceRegistered) {
+                setMessage("EDC tidak terdaftar, tidak dapat melakukan transaksi");
+                btnOk.setVisibility(VISIBLE);
+                return;
+            }
+        }
         mdata.add(preferences.getString("merchant_name", CommonConfig.INIT_MERCHANT_NAME));
         mdata.add(preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1));
         mdata.add(preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2));

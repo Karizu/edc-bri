@@ -109,6 +109,9 @@ public class SocketService extends Service implements WebSocketClient.Listener {
         mBinder = new LocalBinder();
         SharedPreferences preferences = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         DEBUG_MODE = preferences.getBoolean("debug_mode",DEBUG_MODE);
+        if (!preferences.contains("registered")) {
+            preferences.edit().putBoolean("registered", false).apply();
+        }
 //        Log.i("SoSrv", "Starting socket service");
         if(!DEBUG_MODE){
             try {
@@ -231,9 +234,16 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                 case LOGIN:
                     if (status == MessageStatus.LOGIN_SUCCESS) {
                         isLogin = true;
+                        SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+                        preferencesSetting.edit().putBoolean("registered", true).apply();
                     } else if (status == MessageStatus.LOGIN_FAILED) {
                         isLogin = false;
                         showNotification(response);
+                        String rspmsg = response.getString("message");
+                        if (rspmsg.startsWith("EDC tidak terdaftar")) {
+                            SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+                            preferencesSetting.edit().putBoolean("registered", false).apply();
+                        }
                     }
                     break;
                 case MESSAGE:
