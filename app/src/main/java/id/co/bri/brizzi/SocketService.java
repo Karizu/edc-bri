@@ -115,15 +115,15 @@ public class SocketService extends Service implements WebSocketClient.Listener {
 //        Log.i("SoSrv", "Starting socket service");
         if(!DEBUG_MODE){
             try {
-                client = null;
-//                client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname", CommonConfig.WEBSOCKET_URL) + "/push"),
-//                        this, extraHeaders);
+//                client = null;
+                client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname", CommonConfig.WEBSOCKET_URL) + "/push"),
+                        this, extraHeaders);
                 if (Looper.myLooper() == null) {
                     Looper.prepare();
                 }
-//                if (!isConnect) {
-//                    client.connect();
-//                }
+                if (!isConnect) {
+                    client.connect();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
