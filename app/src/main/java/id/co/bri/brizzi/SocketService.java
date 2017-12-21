@@ -88,6 +88,16 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                             client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname",CommonConfig.WEBSOCKET_URL) + "/push"), SocketService.this, extraHeaders);
                             client.connect();
                         }
+                        if (!isConnect) {
+                            JSONObject jsonObject = new JSONObject();
+                            try {
+                                jsonObject.put("type", "NOTIFICATION_TOAST");
+                                jsonObject.put("message", "Tidak terkoneksi dengan jaringan BRI\nSilahkan hubungi administrator");
+                                showNotification(jsonObject);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }, 0, 180, TimeUnit.SECONDS);
 
@@ -102,13 +112,15 @@ public class SocketService extends Service implements WebSocketClient.Listener {
 //        Log.i("SoSrv", "Starting socket service");
         if(!DEBUG_MODE){
             try {
-                client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname", CommonConfig.WEBSOCKET_URL) + "/push"), this, extraHeaders);
+                client = null;
+//                client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname", CommonConfig.WEBSOCKET_URL) + "/push"),
+//                        this, extraHeaders);
                 if (Looper.myLooper() == null) {
                     Looper.prepare();
                 }
-                if (!isConnect) {
-                    client.connect();
-                }
+//                if (!isConnect) {
+//                    client.connect();
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -128,6 +140,10 @@ public class SocketService extends Service implements WebSocketClient.Listener {
         SharedPreferences preferences = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         DEBUG_MODE = preferences.getBoolean("debug_mode",DEBUG_MODE);
         if(!DEBUG_MODE) {
+            if (client==null) {
+                client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname", CommonConfig.WEBSOCKET_URL) + "/push"),
+                        this, extraHeaders);
+            }
             if (!isConnect) {
                 client.connect();
             }

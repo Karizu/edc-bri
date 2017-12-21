@@ -1535,6 +1535,19 @@ public class txHandler {
             String q = "update edc_log set rran = 'o' where log_id = '" + stanvoid + "';";
             clientDB.execSQL(q);
         }
+        //store orimessage on reversal stack as storage
+        if (serviceid.equals("A25100")||
+                serviceid.equals("A27100")||
+                serviceid.equals("A29200")||
+                serviceid.equals("A2A200")) {
+            String saveStack = "insert or replace into reversal_stack("
+                    + "elogid, orimessage, revstatus) values "
+                    + "(" + String.valueOf(elogid)
+                    + ",'" + hsToHost + "',"
+                    + "'B')";
+            clientDB.execSQL(saveStack);
+            jroot.put("elogid", elogid);
+        }
         MenuListResolver mlr = new MenuListResolver();
         String msgStatus = "";
         Log.d("MASUK KE MSG_RC", "MASUK DILUAR DILUAR IF");

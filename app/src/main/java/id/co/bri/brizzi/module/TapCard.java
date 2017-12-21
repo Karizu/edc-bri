@@ -528,8 +528,9 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 try {
                     nextTopupStep();
                 } catch (Exception e) {
-                    setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
-                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+                    setMessage("Tidak dapat melakukan transaksi\nError saat membaca kartu BRIZZI");
+//                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+                    tx.reverseLastTransaction(context);
                 }
             } else if (cData.getMsgSI().equals(SI_AKTIFASI_DEPOSIT)) {
                 if (arr.length()==1) {
@@ -550,7 +551,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 cData.setHostResponse(rnd);
                 cData.setTopupAmount(String.valueOf((int) d));
                 if (Integer.parseInt(cData.getCardBalanceInt())+(int) d>1000000) {
-                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+//                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+                    tx.reverseLastTransaction(context);
                     setMessage("Aktif deposit akan melebihi limit");
                     Log.e(TAG, "Aktif Deposit Over Limit");
                     btnOk.setVisibility(VISIBLE);
@@ -563,7 +565,13 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 time = StringLib.getStringTime();
                 cData.settTime(time);
                 cData.settDate(date);
-                nextAktifasiDeposit();
+                try {
+                    nextAktifasiDeposit();
+                } catch (Exception e) {
+                    setMessage("Tidak dapat melakukan transaksi\nError saat membaca kartu BRIZZI");
+//                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+                    tx.reverseLastTransaction(context);
+                }
             } else if (cData.getMsgSI().equals(SI_REAKTIVASI)) {
                 writeDebugLog(TAG, obj.getJSONObject("screen").toString());
                 if(result.contains("RC")){
@@ -599,7 +607,12 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 nom = nom.replace(".","").replace(",00","");
                 cData.setHostResponse(key);
                 cData.setTopupAmount(nom);
-                nextVoidSecond();
+                try {
+                    nextVoidSecond();
+                } catch (Exception e) {
+                    setMessage("Tidak dapat melakukan transaksi\nError saat membaca kartu BRIZZI");
+                    tx.reverseLastTransaction(context);
+                }
             } else if (cData.getMsgSI().equals(SI_INFO_DEPOSIT)) {
                 String saldo_deposit = arr.getJSONObject(1).getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0).getString("value").trim();
                 cData.setSaldoDeposit(saldo_deposit);
@@ -1888,7 +1901,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             formReponse.put("server_time", jamRedeem);
             formReponse.put("server_ref", cData.getServerRef());
         } catch (Exception e) {
-            sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+//            sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+            tx.reverseLastTransaction(context);
             setMessage("Terjadi Kesalahan");
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             btnOk.setVisibility(VISIBLE);
