@@ -2298,21 +2298,21 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             if (comp.has("print_text")) {
                 ptx = comp.getString("print_text");
             }
-            if (serverAppr == null && serverRef!=null) {
-                if (!serverRef.isEmpty() && !serverRef.matches("[0]+")) {
-                    serverAppr = serverRef.replaceFirst("^0+(?!$)", "");
-                }
-            }
-            if (serverAppr.equals("") && serverRef!=null) {
-                if (!serverRef.isEmpty() && !serverRef.matches("[0]+")) {
-                    serverAppr = serverRef.replaceFirst("^0+(?!$)", "");
-                }
-            }
-            if (serverAppr.matches("[0]+") && serverRef!=null) {
-                if (!serverRef.isEmpty() && !serverRef.matches("[0]+")) {
-                    serverAppr = serverRef.replaceFirst("^0+(?!$)", "");
-                }
-            }
+//            if (serverAppr == null && serverRef!=null) {
+//                if (!serverRef.isEmpty() && !serverRef.matches("[0]+")) {
+//                    serverAppr = serverRef.replaceFirst("^0+(?!$)", "");
+//                }
+//            }
+//            if (serverAppr.equals("") && serverRef!=null) {
+//                if (!serverRef.isEmpty() && !serverRef.matches("[0]+")) {
+//                    serverAppr = serverRef.replaceFirst("^0+(?!$)", "");
+//                }
+//            }
+//            if (serverAppr.matches("[0]+") && serverRef!=null) {
+//                if (!serverRef.isEmpty() && !serverRef.matches("[0]+")) {
+//                    serverAppr = serverRef.replaceFirst("^0+(?!$)", "");
+//                }
+//            }
             if (countPrintButton < 5) {
                 Thread thread = new Thread(new PrintData(data, mdata, tid, mid, stan, ptx,
                         countPrintButton, serverRef, serverDate, serverTime, nomorKartu, cardType, batchNo, serverAppr));

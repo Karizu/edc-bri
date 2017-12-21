@@ -1024,6 +1024,7 @@ public class ISO8583Parser {
         }
         if (IsoBitValue[38]!=null) {
             resultJSON.put("server_air", IsoBitValue[38]);
+            resultJSON.put("server_appr", IsoBitValue[38]);
         }
         if (!responseCode.equals("00")) {
             String qRC = "select * from responsecode "

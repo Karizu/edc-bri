@@ -493,6 +493,7 @@ public class txHandler {
                     ISO8583Parser rpParser = new ISO8583Parser(context, "6000070000", ISO8583Parser.bytesToHex(fromHost), 2);
                     String[] replyValues = rpParser.getIsoBitValue();
                     String serverRef = replyValues[37];
+                    String serverApr = replyValues[38];
                     String serverDate = replyValues[13];
                     String serverTime = replyValues[12];
                     String voidTime = sData.getString(sData.getColumnIndex("rqtime"));
@@ -511,7 +512,7 @@ public class txHandler {
                             "\"value\":\"" + stanvoid + "\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00002\",\"seq\":1}" +
                             "]},\"id\":\"2C10000\",\n" +
                             "\"type\":\"1\",\"action_url\":\"A2C100\",\"title\":\"Void BRIZZI\",\"server_date\":\"" + serverDate + "\"" +
-                            ",\"server_time\":\"" + serverTime + "\",\"server_ref\":\"" + serverRef + "\"}}");
+                            ",\"server_time\":\"" + serverTime + "\",\"server_ref\":\"" + serverRef + "\",\"server_appr\":\"" + serverApr + "\"}}");
                 }
 
                     else {
@@ -645,6 +646,7 @@ public class txHandler {
 //                    writeDebugLog("UPDATING", "HOLDER (519)");
 //                    clientDB.execSQL(uStanSeq);
                     String serverRef = replyValues[37];
+                    String serverApr = replyValues[38];
                     String serverDate = replyValues[13];
                     String serverTime = replyValues[12];
                     String voidAmount = replyValues[4];
@@ -684,8 +686,8 @@ public class txHandler {
                             "\"value\":\"" + saldo + "\"}]},\"comp_lbl\":\"Saldo       : \",\"comp_type\":\"1\",\"comp_id\":\"P00004\",\"seq\":2}" +
                             "]},\"id\":\"640000F\",\n" +
                             "\"type\":\"1\",\"title\":\"Void Tarik Tunai\",\"print\":\"2\",\"print_text\":\"WF\",\"server_date\":\"" + serverDate + "\"" +
-                            ",\"server_time\":\"" + serverTime + "\",\"server_ref\":\"" + serverRef + "\"},\"server_date\":\""+serverDate+"\"," +
-                            "\"server_time\":\""+serverTime+"\",\"server_ref\":\""+serverRef+"\"}");
+                            ",\"server_time\":\"" + serverTime + "\",\"server_ref\":\"" + serverRef +"\",\"server_appr\":\""+serverApr+ "\"},\"server_date\":\""+serverDate+"\"," +
+                            "\"server_time\":\""+serverTime+"\",\"server_ref\":\""+serverRef+"\",\"server_appr\":\""+serverApr+"\"}");
                     writeDebugLog("EDCLOG", "update (588)");
                     String q = "update edc_log set service_id = 'A64000', rran = '" + serverRef +
                             "', rqtime = '"+tmStamp+"' where log_id = '" + stanvoid + "';";
@@ -1736,6 +1738,9 @@ public class txHandler {
             }
             if (replyJSON.has("server_ref")) {
                 jroot.put("server_ref",replyJSON.get("server_ref"));
+            }
+            if (replyJSON.has("server_appr")) {
+                jroot.put("server_appr",replyJSON.get("server_appr"));
             }
             if (replyJSON.has("server_time")) {
                 jroot.put("server_time",replyJSON.get("server_time"));
