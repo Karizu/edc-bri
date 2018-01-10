@@ -126,14 +126,14 @@ public class txHandler {
         }
         boolean DEBUG_MODE = cekstatus.getBoolean("debug_mode", false);
         if (!DEBUG_MODE) {
-            if (!deviceRegistered) {
-                return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"EDC belum terdaftar\",\n" +
-                        "\"value\":\"EDC tidak terdaftar\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
-                        "\"type\":\"3\",\"title\":\"Transaksi Gagal\"}}");
-            }
             if (!lastKeyChanged) {
                 return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Tidak dapat melakukan transaksi, silahkan logon terlebih dahulu\",\n" +
                         "\"value\":\"Tidak dapat melakukan transaksi, silahkan logon terlebih dahulu\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+                        "\"type\":\"3\",\"title\":\"Transaksi Gagal\"}}");
+            }
+            if (!deviceRegistered) {
+                return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"EDC belum terdaftar\",\n" +
+                        "\"value\":\"EDC tidak terdaftar\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
                         "\"type\":\"3\",\"title\":\"Transaksi Gagal\"}}");
             }
         }
