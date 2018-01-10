@@ -117,14 +117,23 @@ public class txHandler {
         //prepare return object
         SharedPreferences cekstatus = ctx.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         boolean deviceRegistered = false;
+        boolean lastKeyChanged = false;
         if (cekstatus.contains("registered")) {
             deviceRegistered = cekstatus.getBoolean("registered", false);
+        }
+        if (cekstatus.contains("lastkeychanged")) {
+            lastKeyChanged = cekstatus.getBoolean("lastkeychanged", false);
         }
         boolean DEBUG_MODE = cekstatus.getBoolean("debug_mode", false);
         if (!DEBUG_MODE) {
             if (!deviceRegistered) {
                 return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"EDC belum terdaftar\",\n" +
                         "\"value\":\"EDC tidak terdaftar\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+                        "\"type\":\"3\",\"title\":\"Transaksi Gagal\"}}");
+            }
+            if (!lastKeyChanged) {
+                return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Tidak dapat melakukan transaksi, silahkan logon terlebih dahulu\",\n" +
+                        "\"value\":\"Tidak dapat melakukan transaksi, silahkan logon terlebih dahulu\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
                         "\"type\":\"3\",\"title\":\"Transaksi Gagal\"}}");
             }
         }
@@ -164,6 +173,9 @@ public class txHandler {
         boolean isTunaiVoidConf = txElements[2].equals("A64000C");
         serviceid = txElements[2];
         predefined_stan = false;
+        if (isLogon) {
+            cekstatus.edit().putBoolean("lastkeychanged", false).apply();
+        }
         if (rqContent.has("msg_stan")) {
             msgSequence = Integer.parseInt(rqContent.getString("msg_stan"));
             writeDebugLog("TAP2SERV", "Forced stan received : " + rqContent.getString("msg_stan"));
@@ -1724,6 +1736,7 @@ public class txHandler {
                         byte[] newKey = ISO8583Parser.hexStringToByteArray(wk);
                         int ret = PINPadInterface.updateUserKey(0,0, newKey, newKey.length);
                         writeDebugLog("LOGON", "Status : "+String.valueOf(ret));
+                        cekstatus.edit().putBoolean("lastkeychanged", true).apply();
                     } catch (Exception e) {
                         //teu bisa update
                         Log.e("LOGON", e.getMessage());
