@@ -434,7 +434,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         btnPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!printInUse) {
+                if (!printInUse && isAntiDDOSPrint) {
                     if (printcountbutton > 1) {
                         btnOk.performClick();
                     }
@@ -453,6 +453,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     printcountbutton++;
                     refreshConfirmation();
                 }
+                isAntiDDOSPrint = false;
             }
         });
     }
