@@ -2004,6 +2004,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 
     private void attachPrint() {
 //        Log.d("FORM", "set footer");
+        isAntiDDOSPrint = true;
         if (context instanceof ActivityList) {
             ((ActivityList) context).attachFooter(printBtn);
         } else {
