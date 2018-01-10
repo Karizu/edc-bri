@@ -2048,12 +2048,15 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         printBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    print();
+                if (isAntiDDOSPrint) {
+                    try {
+                        print();
 //                    countPrint++;
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
+                isAntiDDOSPrint = false;
             }
         });
         Button noBtn = (Button) li.inflate(R.layout.button, null);
@@ -2061,7 +2064,10 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         noBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                doNotPrint();
+                if (isAntiDDOSPrint) {
+                    doNotPrint();
+                }
+                isAntiDDOSPrint = false;
             }
         });
         printConfirmationView.addView(confirmationText);
@@ -2366,7 +2372,6 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             }
             context.onBackPressed();
         }
-        isAntiDDOSPrint = true;
     }
 
     public void doNotPrint() {
@@ -2783,6 +2788,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             countPrint++;
 //            Log.d("PRINT", "FINISHED");
             printInUse = false;
+            isAntiDDOSPrint = true;
         }
     }
 
