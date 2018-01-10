@@ -138,6 +138,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             "Print Duplicate Copy ?", "", "", ""
     };
     private boolean printInUse = false;
+    private boolean isAntiDDOSPrint = true;
 
     private boolean enablePrint = false;
     private JSONObject formReponse = new JSONObject();
@@ -340,6 +341,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         smc = new NeoSmartCardController(context);
         this.cData = cardData;
         tx.setContext(context);
+        isAntiDDOSPrint = true;
         btnOk = (android.widget.Button) findViewById(R.id.btnOk);
         btnOk.setOnClickListener(new OnClickListener() {
             @Override
@@ -352,7 +354,10 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         btnPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                onPrintListener(v);
+                if (isAntiDDOSPrint) {
+                    onPrintListener(v);
+                }
+                isAntiDDOSPrint = false;
             }
         });
         confirmationText = (TextView) findViewById(R.id.printConfirmText);
@@ -4966,6 +4971,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             } finally {
                 this.isRunning = false;
                 flagMe.imFinised();
+                isAntiDDOSPrint = true;
             }
         }
 
