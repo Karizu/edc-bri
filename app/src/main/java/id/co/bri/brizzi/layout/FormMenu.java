@@ -162,7 +162,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
     private int pinpadState = PINPAD_IDLE;
     private Messenger syncMessenger = null;
     private ActivityList parent;
-    private boolean isAntiDDOSPrint = false;
+    private boolean isAntiDDOSPrint = true;
 
     public FormMenu(Activity context, String id) {
         super(context);
