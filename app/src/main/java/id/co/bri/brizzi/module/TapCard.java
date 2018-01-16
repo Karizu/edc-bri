@@ -746,7 +746,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         sendToServer(randomSam24B, cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
     }
 
-    private void nextAktifasiDeposit() {
+    private void nextAktifasiDeposit() throws Exception{
         Log.i(TAG, "NEXT AKTIFASI DEPOSIT");
         String cmd = "";
         String CardResponse = "";
@@ -760,7 +760,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         if (!(keyTopup24B.length() == 48)) {
             Log.e(TAG, "Error Response from server !!" + " || response: " + keyTopup24B);
             btnOk.setVisibility(VISIBLE);
-            return;
+            throw new Exception("Error server response");
         }
         // 14. Card � Select AID 3
         CardResponse = cc.transmitCmd("5A030000");
@@ -787,7 +787,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             Log.e(TAG, "Select AID 3 error " + CardResponse);
             btnOk.setVisibility(VISIBLE);
-            return;
+            throw new Exception("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
         }
 //        writeDebugLog(TAG, "cmd: 5A030000" + " || response: " + CardResponse);
         //15. Card � Request Key Card 01
@@ -840,7 +840,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             Log.e(TAG, "Sam Authenticate Topup error " + SamResponse);
             btnOk.setVisibility(VISIBLE);
-            return;
+            throw new Exception("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
         }
 //        writeDebugLog(TAG, "cmd: Authenticate Topup || response: " + SamResponse);
         String RandomKey16B = SamResponse.substring(32, SamResponse.length() - 4);
@@ -868,7 +868,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             Log.e(TAG, "Authenticate Card error " + CardResponse);
             btnOk.setVisibility(VISIBLE);
-            return;
+            throw new Exception("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
         }
         String RandomNumber8B = CardResponse.substring(2);
 //        writeDebugLog(TAG, "cmd: AF" + RandomKey16B + " || response: " + CardResponse);
@@ -897,7 +897,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             Log.e(TAG, "Credit Balance error " + CardResponse);
             btnOk.setVisibility(VISIBLE);
-            return;
+            throw new Exception("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
         }
         String CardBalance4B = CardResponse.substring(2);
 //        writeDebugLog(TAG, "cmd: " + transmit + " || response: " + CardResponse + "| Card Balance = " + CardBalance4B);
@@ -1027,7 +1027,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             setMessage("Terjadi kesalahan.\nERROR [" + CardResponse + "]");
             Log.e(TAG, "Commit Transaction error " + CardResponse);
             btnOk.setVisibility(VISIBLE);
-            return;
+            throw new Exception("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
         }
 //        writeDebugLog(TAG, "cmd: C7 | response: " + CardResponse);
 
