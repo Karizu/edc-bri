@@ -396,7 +396,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
         SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
         preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
-        preferencesSetting.edit().putString("merchant_address2", json.getString("kanwil")).apply();
+        preferencesSetting.edit().putString("merchant_address2", json.getString("alamat_2")).apply();
         preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
         preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
         preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();

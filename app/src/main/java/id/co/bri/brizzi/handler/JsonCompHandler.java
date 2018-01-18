@@ -160,7 +160,7 @@ public class JsonCompHandler {
             if (!merchantAddr1.equals(json.getString("alamat"))) {
                 isNeedUpdate = true;
             }
-            if (!merchantAddr2.equals(json.getString("kanwil"))) {
+            if (!merchantAddr2.equals(json.getString("alamat_2"))) {
                 isNeedUpdate = true;
             }
             if (!passSettlement.equals(json.getString("pass_settlement"))) {
@@ -202,7 +202,7 @@ public class JsonCompHandler {
                     Log.i("SSS", "Do update setting");
                     preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
                     preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
-                    preferencesSetting.edit().putString("merchant_address2", json.getString("kanwil")).apply();
+                    preferencesSetting.edit().putString("merchant_address2", json.getString("alamat_2")).apply();
                     preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
                     preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
                     preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();
