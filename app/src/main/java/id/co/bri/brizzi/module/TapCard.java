@@ -354,10 +354,14 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         btnPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("TF KLIK", "Print Clicked");
                 if (isAntiDDOSPrint) {
+                    Log.d("KLIK", "Processed");
+                    isAntiDDOSPrint = false;
                     onPrintListener(v);
+                } else {
+                    Log.d("KLIK", "Ignored");
                 }
-                isAntiDDOSPrint = false;
             }
         });
         confirmationText = (TextView) findViewById(R.id.printConfirmText);
@@ -365,6 +369,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         btnNoPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("TF KLIK", "No Print Clicked");
                 btnOk.performClick();
             }
         });
@@ -417,6 +422,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         btnNoPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("TF OKLIK", "No Print Clicked");
                 if (cData.getWhatToDo().equals(INFO_SALDO)) {
                     btnOk.performClick();
                 }
@@ -434,7 +440,10 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         btnPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("TF OKLIK", "Print Clicked");
                 if (!printInUse && isAntiDDOSPrint) {
+                    Log.d("TF OKLIK", "Processed");
+                    isAntiDDOSPrint = false;
                     if (printcountbutton > 1) {
                         btnOk.performClick();
                     }
@@ -452,14 +461,17 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     }
                     printcountbutton++;
                     refreshConfirmation();
+                } else {
+                    Log.d("TF OKLIK", "Ignored");
                 }
-                isAntiDDOSPrint = false;
             }
         });
     }
 
     private void onPrintListener(View v) {
+        Log.d("PrintListener", "Print Request");
         if (!printInUse) {
+            Log.d("PrintListener", "Processed");
             if (printcountbutton > 1) {
                 printPanelVisibility(GONE);
             }
@@ -473,6 +485,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             }
             new Thread(new PrintData(printSizes, mdata, tid, mid, stan, nomorKartu, TapCard.this)).start();
             printcountbutton++;
+        } else {
+            Log.d("PrintListener", "Ignored");
         }
     }
 

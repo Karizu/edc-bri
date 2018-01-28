@@ -2065,10 +2065,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         noBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isAntiDDOSPrint) {
-                    doNotPrint();
-                }
-                isAntiDDOSPrint = false;
+                doNotPrint();
             }
         });
         printConfirmationView.addView(confirmationText);
@@ -2376,6 +2373,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
     }
 
     public void doNotPrint() {
+        Log.d("FF KLIK", "Do Not Print");
         String ptx = "";
         if (comp.has("print_text")) {
             try {
