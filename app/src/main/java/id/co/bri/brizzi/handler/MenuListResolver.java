@@ -905,7 +905,10 @@ public class MenuListResolver {
             try {
                 helperDb.openDataBase();
                 clientDB = helperDb.getActiveDatabase();
-                String Select = "select count(*) as num from edc_log where service_id like 'A2%' and (settled is null or settled <> 't');";
+                //has brizzi unsettled data
+                String Select = "select count(*) as num from edc_log where service_id like 'A24%' " +
+                        "and (lower(settled) <> 't' or settled is null) and rc = '00' " +
+                        "and (lower(reversed) <> 't' or reversed is null)";
                 t = clientDB.rawQuery(Select, null);
                 if (t.moveToFirst()) {
                     int unsettledTxCount = t.getInt(t.getColumnIndex("num"));
