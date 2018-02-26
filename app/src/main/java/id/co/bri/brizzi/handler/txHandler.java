@@ -1494,7 +1494,11 @@ public class txHandler {
             reversable = true;
         }*/
 
-        if (serviceid.equals("A27100") || serviceid.equals("A92001") || serviceid.equals("A93001") || serviceid.equals("A94001")){
+        if (serviceid.equals("A27100") ||
+                serviceid.equals("A25100") ||
+                serviceid.equals("A92001") ||
+                serviceid.equals("A93001") ||
+                serviceid.equals("A94001")){
             reversable = true;
         }
 
@@ -1597,23 +1601,23 @@ public class txHandler {
 //                        "A54C54", "A52100", "A52210", "A52220", "A52300", "A54950", "A54710", "A54720",
 //                        "A54800", "A59000", "A54331", "A71001", "A72000", "A72001", "A73000", "A61000",
 //                        "A62000", "A63000", "A2A100","A29100","A23100", "A22000","A23000","A22100","A2B000","A2B100"};
-                String array[] = {"L00001",
-                        "A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
+                String array[] = {"A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
                         "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321",
                         "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
                         "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
                         "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
-                        "A54C53", "A54C54", "A52100", "A52210", "A52220", "A52300", "A54950", "A54710",
+                        "A54C53", "A54C54", "A52220", "A52300", "A54950", "A54710",
                         "A54720", "A54800", "A59000", "A54331",
 
                         "A71001", "A72000", "A72001", "A73000",
 
                         "A61000", "A62000", "A63000",
 
-
-                        "A21100", "A22000", "A22100", "A23000", "A23100",
+                        "A21100", "A22000", "A22100", "A23000",
                         "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                         "A91000", "A92000", "A93000", "A94000"};
+
+//                "A23100", "A52100", "A52210",
 
 //                boolean matched_array = false;
                 for(int i=0; i < array.length; i++){
@@ -1738,16 +1742,29 @@ public class txHandler {
                         int ret = PINPadInterface.updateUserKey(0,0, newKey, newKey.length);
                         writeDebugLog("LOGON", "Status : "+String.valueOf(ret));
                         cekstatus.edit().putBoolean("lastkeychanged", true).apply();
+                        String trace = generateStan();
+                        String uStanSeq = "update holder set "+"seq= "+trace;
+                        writeDebugLog("UPDATING", "HOLDER(1473)");
+                        clientDB.execSQL(uStanSeq);
+                        clientDB.close();
+                        helperDb.close();
                     } catch (Exception e) {
                         //teu bisa update
                         Log.e("LOGON", e.getMessage());
                     } finally {
                         PINPadInterface.close();
                     }
+
                     return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Logon Succesfull\",\n" +
                             "\"value\":\"Logon Succesfull\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"F0003\",\"seq\":0}]},\"id\":\"F000002\",\n" +
                             "\"type\":\"2\",\"title\":\"Sukses\"}}");
                 }
+// Nambah stan info depo & saldo 
+                if(screenResponse.equals("521000F") || screenResponse.equals("231000F")){
+                    String updInv = "update holder set seq = case when seq = 999999 then 0 else seq + 1 end ";
+                    clientDB.execSQL(updInv);
+                }
+
                 jroot = mlr.loadMenu(context, screenResponse, replyJSON);
             }
             if (replyJSON.has("server_ref")) {

@@ -567,6 +567,9 @@ public class ISO8583Parser {
                                 case "currTime":
                                     valueFromDB = getCurrTime();
                                     break;
+                                case "invoiceNum":
+                                    valueFromDB = getInvoiceNumber();
+                                    break;
                                 case "currDate":
                                     valueFromDB = getCurrDate();
                                     break;
@@ -585,6 +588,9 @@ public class ISO8583Parser {
                             switch (valueFromDB) {
                                 case "currTime":
                                     valueFromDB = getCurrTime();
+                                    break;
+                                case "invoiceNum":
+                                    valueFromDB = getInvoiceNumber();
                                     break;
                                 case "currDate":
                                     valueFromDB = getCurrDate();
@@ -849,6 +855,9 @@ public class ISO8583Parser {
                                 case "currTime":
                                     valueFromDB = getCurrTime();
                                     break;
+                                case "invoiceNum":
+                                    valueFromDB = getInvoiceNumber();
+                                    break;
                                 case "currDate":
                                     valueFromDB = getCurrDate();
                                     break;
@@ -867,6 +876,9 @@ public class ISO8583Parser {
                             switch (valueFromDB) {
                                 case "currTime":
                                     valueFromDB = getCurrTime();
+                                    break;
+                                case "invoiceNum":
+                                    valueFromDB = getInvoiceNumber();
                                     break;
                                 case "currDate":
                                     valueFromDB = getCurrDate();
@@ -1214,6 +1226,30 @@ public class ISO8583Parser {
         SimpleDateFormat timef = new SimpleDateFormat("HHmmss");
         Date date = new Date();
         return timef.format(date);
+    }
+
+    private String getInvoiceNumber(){
+        SQLiteDatabase clientDB = null;
+        helperDb.openDataBase();
+        try {
+            clientDB = helperDb.getActiveDatabase();
+        } catch (Exception e) {
+
+        }
+        Cursor c = clientDB.rawQuery("select invnum from holder", null);
+
+        int invNo = 0;
+        if (c != null) { c.moveToFirst();
+            invNo = c.getInt(0);
+        }
+        c.close();
+
+        if (clientDB.isOpen()) {
+
+            clientDB.close();
+        }
+
+        return String.format("%06d", invNo);
     }
 
     private String getCurrDate() {

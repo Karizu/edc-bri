@@ -270,6 +270,11 @@ public class LogHandler {
                 + ",'" + oriMsg + "',"
                 + "'" + revStatus + "')";
         clientDB.execSQL(saveStack);
+
+        if(rc.equals("00")){
+            String updlnv = "update holder set invnum = case when invnum = 999999 then 0 else invnum + 1 end ";
+            clientDB.execSQL(updlnv);
+        }
         clientDB.close();
     }
 

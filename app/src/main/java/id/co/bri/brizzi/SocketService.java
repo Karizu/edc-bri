@@ -25,6 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -235,14 +236,25 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                     if (status == MessageStatus.LOGIN_SUCCESS) {
                         isLogin = true;
                         SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+//                        boolean regstate = preferencesSetting.getBoolean("registered", true);
                         preferencesSetting.edit().putBoolean("registered", true).apply();
+//                        if (!regstate){
+//                                reloadApp();
+////                                deleteCache(this);
+//                            }
                     } else if (status == MessageStatus.LOGIN_FAILED) {
                         isLogin = false;
                         showNotification(response);
                         String rspmsg = response.getString("message");
+                        SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+                        boolean regstate = preferencesSetting.getBoolean("registered", false);
                         if (rspmsg.startsWith("EDC tidak terdaftar")) {
-                            SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
                             preferencesSetting.edit().putBoolean("registered", false).apply();
+                            if (!regstate){
+                                reloadApp();
+//                                Log.d(TAG, "Reload Success");
+//                                deleteCache(this);
+                            }
                         }
                     }
                     break;
@@ -375,12 +387,51 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                     preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
                     preferencesSetting.edit().putString("port", json.getString("port")).apply();
                     settingSuccess();
+                    reloadApp();
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public static void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            deleteDir(dir);
+            Log.i("Clear Cache", context.toString());
+        } catch (Exception e) {}
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
+        }
+    }
+
+    public void reloadApp() {
+
+        System.exit(1);
+    }
+
+//        Intent i = getBaseContext().getPackageManager()
+//                .getLaunchIntentForPackage(getBaseContext().getPackageName());
+//        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        startActivity(i);
+
+//        startActivity(new Intent(this, SplashScreen.class));
+
 
     public void settingSuccess() throws IOException, JSONException {
         SharedPreferences preferences = this.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);

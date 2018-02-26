@@ -503,7 +503,6 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         setMessage(message);
     }
 
-    @Override
     public void onReqCompleted(String result) {
         writeDebugLog(TAG, "HOST RESPONSE " + result);
         if (result.equals("ReversalRQ")) {
@@ -627,6 +626,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 cData.setSaldoDeposit(saldoDeposit);
                 obj.put("server_date", svrDt);
                 obj.put("server_time", svrTm);
+
                 formListener.onSuccesListener(obj);
             } else if (cData.getMsgSI().equals(SI_VOID_REFUND)) {
                 if (resp.equalsIgnoreCase("time out") || resp.length() < 48) {
@@ -1161,6 +1161,10 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             formReponse.put("server_date", svrDt);
             formReponse.put("server_time", svrTm);
             writeMessageLog();
+
+//            String updInv = "update holder set seq = case when seq = 999999 then 0 else seq + 1 end ";
+//            clientDB.execSQL(updInv);
+
             formListener.onSuccesListener(formReponse);
         } catch (Exception e) {
             setMessage(e.getMessage());
@@ -4741,22 +4745,25 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 String.valueOf(elogId) + ",'" + serviceId + "', '" +
                 stan + "', '" + cData.getCardNumber() + "', " + amount + ", '00', '808000', '" + batchNumber + "', '" +
                 cData.getHash4B() + "', '" + cData.getHashVoid() + "', '" + tmStamp + "');";
-        String array[] = {"L00001",
+        String array[] = {
                 "A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
                 "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321",
                 "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
                 "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
                 "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
-                "A54C53", "A54C54", "A52100", "A52210", "A52220", "A52300", "A54950", "A54710",
+                "A54C53", "A54C54", "A52220", "A52300", "A54950", "A54710",
                 "A54720", "A54800", "A59000", "A54331",
 
                 "A71001", "A72000", "A72001", "A73000",
 
                 "A61000", "A62000", "A63000",
 
-                "A2C000", "A2C100", "A2C200", "A21100", "A22000", "A22100", "A23000", "A23100",
+                "A2C000", "A2C100", "A2C200", "A21100", "A22000", "A22100", "A23000",
                 "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                 "A91000", "A92000", "A93000", "A94000"};
+
+//        "L00001", "A23100", "A52100", "A52210",
+
         boolean matched_array = false;
         for(int i=0; i < array.length; i++){
             if(serviceId.equals(array[i])){
