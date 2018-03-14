@@ -711,6 +711,10 @@ public class MenuListResolver {
                             component.put("comp_values", compValues);
                         }
                     }
+                    // 14032018 #3
+                    if (nama.startsWith("[")) {
+                        nama = nama.substring(3);
+                    }
                     if (nama.contains("___")) {
                         component.put("comp_lbl", nama.replaceAll("___", valuePrint));
                         compValues = new JSONObject();

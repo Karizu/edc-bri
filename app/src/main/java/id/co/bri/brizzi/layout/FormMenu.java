@@ -2181,7 +2181,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 
                 "610000", "620000", "630000",
 
-                "211000", "220000", "221000", "230000", "231000",
+                "211000", "220000", "221000",
+                // 14032018 #2
+//                "230000", "231000",
                 "291000", "2A1000", "2B0000", "2B1000", "2D1000", "2A2000",
                 "910000", "920000", "930000", "940000"};
         Log.d("PRINT ARRAY", "DILUAR FOR");
@@ -2203,7 +2205,8 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         }
 
         data.add(new PrintSize(FontSize.EMPTY, "\n"));
-        if (magneticSwipe != null && (!formId.equals("640000F"))) {
+        // 14032018 #5
+        if (magneticSwipe != null) { // && (!formId.equals("640000F"))) {
             String track2Data = magneticSwipe.getText().toString();
             if (!track2Data.equals("")) {
                 track2Data = track2Data.split("=")[0];
@@ -2216,9 +2219,10 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 nomorKartu = track2Data;
             }
         }
-        if (formId.equals("640000F")) {
-            nomorKartu = "";
-        }
+        // 14032018 #5
+//        if (formId.equals("640000F")) {
+//            nomorKartu = "";
+//        }
         data.add(new PrintSize(FontSize.TITLE, comp.getString("title") + "\n"));
         data.add(new PrintSize(FontSize.EMPTY, "\n"));
         JSONArray array = comp.getJSONObject("comps").getJSONArray("comp");
@@ -2777,6 +2781,11 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                     String cardType = "DEBIT (SWIPE)";
                     if (!jenisKartu.equals("")) {
                         cardType = jenisKartu;
+                    }
+                    // 14032018 #7
+                    if (formId.equals("71000FF") || formId.equals("721000F")){
+                        cardType = "";
+                        nomorKartu = "9999999999999999";
                     }
                     ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, countPrint,
                             svrRef, svrDate, svrTime, cardType, nomorKartu, formId, batchNumber, svrAppr);
