@@ -370,24 +370,49 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                     n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
                     mNotificationManager.notify(1181, n);
                 } else {
-                    preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
-                    preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
-                    preferencesSetting.edit().putString("merchant_address2", json.getString("alamat_2")).apply();
-                    preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
-                    preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
-                    preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();
-                    preferencesSetting.edit().putString("primary_phone", json.getString("primaryphone")).apply();
-                    preferencesSetting.edit().putString("secondary_phone", json.getString("secondaryphone")).apply();
-                    preferencesSetting.edit().putString("master", json.getString("master")).apply();
-                    preferencesSetting.edit().putString("ip", json.getString("ip")).apply();
-                    preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
-                    preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
-                    preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
-                    preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
-                    preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
-                    preferencesSetting.edit().putString("port", json.getString("port")).apply();
-                    settingSuccess();
-                    reloadApp();
+
+                    // 15/03/2018
+//                    preferencesSetting.edit().putString("merchant_name", json.getString("merchantname")).apply();
+//                    preferencesSetting.edit().putString("merchant_address1", json.getString("alamat")).apply();
+//                    preferencesSetting.edit().putString("merchant_address2", json.getString("alamat_2")).apply();
+//                    preferencesSetting.edit().putString("terminal_id", json.getString("terminalid")).apply();
+//                    preferencesSetting.edit().putString("merchant_id", json.getString("merchantid")).apply();
+//                    preferencesSetting.edit().putString("init_phone", json.getString("phoneno")).apply();
+//                    preferencesSetting.edit().putString("primary_phone", json.getString("primaryphone")).apply();
+//                    preferencesSetting.edit().putString("secondary_phone", json.getString("secondaryphone")).apply();
+//                    preferencesSetting.edit().putString("master", json.getString("master")).apply();
+//                    preferencesSetting.edit().putString("ip", json.getString("ip")).apply();
+//                    preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
+//                    preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
+//                    preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
+//                    preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
+//                    preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
+//                    preferencesSetting.edit().putString("port", json.getString("port")).apply();
+//                    settingSuccess();
+//                    //reloadApp();
+
+                    if (mNotificationManager == null) {
+                        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    }
+                    Intent intent = new Intent(this, UpdateAppActivity.class);
+                    intent.putExtra("method", 9876);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification.Builder builder = new Notification.Builder(this)
+                            .setContentTitle("Informasi")
+                            .setContentIntent(pendingIntent)
+                            .setContentText("Update setting EDC")
+                            .setSmallIcon(R.drawable.logo_bri_002)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.if_email));
+                    Notification n;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        n = builder.build();
+                    } else {
+                        n = builder.getNotification();
+                    }
+                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+                    mNotificationManager.notify(9876, n);
                 }
             }
         } catch (Exception e) {
@@ -574,6 +599,10 @@ public class SocketService extends Service implements WebSocketClient.Listener {
         } else if (method == MessageMethod.UPDATE_SOFTWARE) {
             what = 1234;
             title = "Update Software";
+        }
+        else if (method == MessageMethod.UPDATE_SETTINGS) {
+            what = 9876;
+            title = "Update Settings";
         }
         intent.putExtra("method", what);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,

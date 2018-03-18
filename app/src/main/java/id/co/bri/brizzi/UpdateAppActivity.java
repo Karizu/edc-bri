@@ -87,7 +87,7 @@ public class UpdateAppActivity extends AppCompatActivity {
                                     String version = pInfo.versionName;
                                     Log.i("ANDROID_VER", version);
 //                                    Log.i("JSON_CHECK", json.toString());
-                                    if (/**!json.getString("software").equals(version)**/true) {
+                                    if (/*!json.getString("software").equals(version)*/true) {
                                         final ProgressDialog mProgressDialog;
                                         mProgressDialog = new ProgressDialog(UpdateAppActivity.this);
                                         mProgressDialog.setMessage("Synchronizing data.\nDon't turn off your device");
@@ -144,7 +144,7 @@ public class UpdateAppActivity extends AppCompatActivity {
                                     String version = pInfo.versionName;
                                     Log.i("ANDROID_VER", version);
                                     Log.i("JSON_CHECK", json.toString());
-                                    if (/**!json.getString("software").equals(version)**/true) {
+                                    if (/*!json.getString("software").equals(version)*/true) {
                                         if (new File(DownloadSoftware.FILE_NAME).exists()) {
                                             String hash = StringLib.fileToMD5(DownloadSoftware.FILE_NAME);
                                             Log.i("FILE_HASH", hash);
@@ -214,12 +214,53 @@ public class UpdateAppActivity extends AppCompatActivity {
                 };
                 builder.setTitle("Konfirmasi update setting");
                 break;
+            case 9876://Update Setting
+                click = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                try {
+                                    Context ctx = UpdateAppActivity.this;
+                                    if (JsonCompHandler.hasUnsettleData(ctx)) {
+                                        AlertDialog.Builder warn = new AlertDialog.Builder(ctx);
+                                        warn.setTitle("Gagal");
+                                        warn.setMessage("Tidak dapat melakukan update, masih terdapat data transaksi yang belum dilakukan settelement");
+                                        warn.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        }).show();
+                                    } else {
+                                        JsonCompHandler.loadConf(ctx);
+                                        String ns = Context.NOTIFICATION_SERVICE;
+                                        NotificationManager nMgr = (NotificationManager) UpdateAppActivity.this.getSystemService(ns);
+                                        nMgr.cancel(method);
+                                        Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                } catch (Exception e) {
+                                    Log.i("UPDS", "Error " + e.getMessage());
+                                }
+                                break;
+                        }
+                    }
+                };
+                builder.setTitle("Konfirmasi update setting");
+                break;
         }
         builder.setMessage("Lakukan update sekarang?");
         if (method==1181) {
             builder.setMessage("Lakukan update sekarang?\n\nPastikan settlement telah dilakukan. Update tidak dapat dilakukan apabila terdapat transaksi yang belum settlement.");
         }
-        builder.setPositiveButton("Sekarang", click).setNegativeButton("Tidak Sekarang", click).show();
+        if (method==9876) {
+            builder.setPositiveButton("Sekarang", click).show();
+        }
+        else{
+            builder.setPositiveButton("Sekarang", click).setNegativeButton("Tidak Sekarang", click).show();
+        }
     }
 
     private void downloadNewUpdate() {

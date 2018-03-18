@@ -292,7 +292,7 @@ public class ESCPOSApi {
         printCommandsSmall("\n");
         if (!cardNumber.equals("")) {
             printCommandsSmall(cardType + "\n");
-            if (!cardType.contains("FLY")) {
+            if (!cardType.contains("AAA")) {
                 printBoldCommands(" "+cardNumber + "\n");
             }
             printCommandsSmall("\n");

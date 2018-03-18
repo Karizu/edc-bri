@@ -150,6 +150,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
     private String serverDate = null;
     private String serverTime = null;
     private String serverAppr = null;
+    private String serverStan = null;
     private boolean printInUse = false;
     private android.widget.TextView pinpadWarningText;
     private boolean focusHasSets = false;
@@ -1285,6 +1286,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                             if (obj.has("nomor_kartu")) {
                                 nomorKartu = obj.getString("nomor_kartu");
                             }
+                            if (obj.has("stan")) {
+                                serverStan = obj.getString("stan");
+                            }
                             FormMenu.this.init();
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -1603,6 +1607,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         if (obj.has("nomor_kartu")) {
                             nomorKartu = obj.getString("nomor_kartu");
                         }
+                        if (obj.has("stan")) {
+                            serverStan = obj.getString("stan");
+                        }
                         FormMenu.this.init();
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -1905,6 +1912,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                     if (comp.has("server_time")) {
                         serverTime = comp.getString("server_time");
                     }
+                    if (comp.has("stan")) {
+                        serverStan = comp.getString("server_stan");
+                    }
                 }
             }
         }
@@ -2196,7 +2206,10 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 i = array_sID.length;
             }
         }
-        if (!matched_array) {
+        if(this.serverStan != null){
+            stan = serverStan;
+        }
+        else if (!matched_array) {
             Log.d("PRINT ARRAY", "Dalam if");
             stan = StringLib.fillZero(String.valueOf(msgStan), 6);
         } else {
@@ -2785,7 +2798,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                     // 14032018 #7
                     if (formId.equals("71000FF") || formId.equals("721000F")){
                         cardType = "";
-                        nomorKartu = "9999999999999999";
+                        nomorKartu = "99999******99999";
                     }
                     ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, countPrint,
                             svrRef, svrDate, svrTime, cardType, nomorKartu, formId, batchNumber, svrAppr);

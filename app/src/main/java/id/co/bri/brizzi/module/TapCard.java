@@ -658,6 +658,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     formReponse.put("server_time", svrTm);
                     // 14032018 #2
                     formReponse.put("card_type", "BRIZZI CARD");
+                    formReponse.put("stan", stan);
                     formReponse.put("nomor_kartu", cardNumber());
                     formListener.onSuccesListener(formReponse);
                 } catch (Exception e) {
