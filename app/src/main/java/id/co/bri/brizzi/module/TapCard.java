@@ -106,7 +106,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
     public static final String SI_REDEEM_NEXT = "A29200";
     public static final String SI_PRINTLOG = "A2D000";
     public static final String[] FINANCIALTX = {
-            SI_PEMBAYARAN, SI_DISKON, SI_TOPUP_ONLINE, SI_AKTIFASI_DEPOSIT, SI_VOID
+            SI_PEMBAYARAN, SI_DISKON, SI_AKTIFASI_DEPOSIT, SI_VOID, SI_TOPUP_ONLINE
     };
     public final String TAG = "BRIZZI";
     private final SimpleDateFormat DATE = new SimpleDateFormat("ddMMyy");
@@ -657,7 +657,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     formReponse.put("server_date", svrDt);
                     formReponse.put("server_time", svrTm);
                     // 14032018 #2
-                    formReponse.put("card_type", "BRIZZI CARD");
+                    formReponse.put("card_type", "BRIZZI CARD (FLY)");
                     formReponse.put("stan", stan);
                     formReponse.put("nomor_kartu", cardNumber());
                     formListener.onSuccesListener(formReponse);
@@ -1092,7 +1092,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             compValues.put("comp_value", compValue);
             component.put("comp_values", compValues);
             comp.put(component);
-            String mTitle = "Aktivasi Deposit";
+            String mTitle = "Aktivasi Deposit BRIZZI";
             component = new JSONObject();
             component.put("visible", "true");
             component.put("comp_type", "1");
@@ -1162,6 +1162,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             }
             formReponse.put("server_date", svrDt);
             formReponse.put("server_time", svrTm);
+            formReponse.put("nomor_kartu", cardNumber());
             writeMessageLog();
 
 //            String updInv = "update holder set seq = case when seq = 999999 then 0 else seq + 1 end ";
@@ -2373,6 +2374,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             formReponse.put("server_date", svrDt);
             formReponse.put("server_time", svrTm);
             formReponse.put("server_ref", cData.getServerRef());
+            formReponse.put("nomor_kartu", cardNumber());
             updateVoidLog();
             formListener.onSuccesListener(formReponse);
         } catch (Exception e) {
@@ -2762,6 +2764,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             }
             formReponse.put("server_date", svrDt);
             formReponse.put("server_time", svrTm);
+//            formReponse.put("nomor_kartu", cardNumber());
             writeMessageLog();
             formListener.onSuccesListener(formReponse);
         } catch (Exception e) {
@@ -4586,7 +4589,11 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         }
         stanSeq.close();
         writeDebugLog("EDCLOG", "update (4396)");
-        String elog = "update edc_log set rqtime = '" + tmStamp + "', track2 = '' " +
+//        String elog = "update edc_log set rqtime = '" + tmStamp + "', track2 = '' " +
+//                "where log_id = " + elogId;
+
+        //add nomorKartu
+        String elog = "update edc_log set rqtime = '" + tmStamp + "', track2 = '" + cardNumber().replaceAll("\\s+","") + "' " +
                 "where log_id = " + elogId;
         clientDB.execSQL(elog);
         clientDB.close();
@@ -4655,7 +4662,10 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             }
             stanSeq.close();
             writeDebugLog("EDCLOG", "read (4497)");
-            String elog = "update edc_log set rqtime = '" + tmStamp + "' " +
+//            String elog = "update edc_log set rqtime = '" + tmStamp + "' " +
+//                    "where log_id = " + elogId;
+            String elog = "update edc_log set rqtime = '" + tmStamp + "', track2 = '" + cardNumber().replaceAll("\\s+","")
+                    + "' " +
                     "where log_id = " + elogId;
             clientDB.execSQL(elog);
             clientDB.close();

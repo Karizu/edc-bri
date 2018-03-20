@@ -2232,6 +2232,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 nomorKartu = track2Data;
             }
         }
+
         // 14032018 #5
 //        if (formId.equals("640000F")) {
 //            nomorKartu = "";
@@ -2525,8 +2526,11 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 }
                 if (scret.has("nomor_kartu")) {
                     nomorKartu = scret.getString("nomor_kartu");
-                    nomorKartu = nomorKartu.split("=")[0];
-                    nomorKartu = nomorKartu.substring(0,6)+"******"+nomorKartu.substring(12);
+                    //Kondisi jika BRIZZI CARD (FLY), nomor kartu tanpa bintang
+                    if (cardType.equals("DEBIT (SWIPE)")) {
+                        nomorKartu = nomorKartu.split("=")[0];
+                        nomorKartu = nomorKartu.substring(0, 6) + "******" + nomorKartu.substring(12);
+                    }
                 }
 //                if(isReprint && cardType.equals("SMART CARD (FLY)")){
 //                    nomorKartu = "";
@@ -2799,6 +2803,12 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                     if (formId.equals("71000FF") || formId.equals("721000F")){
                         cardType = "";
                         nomorKartu = "99999******99999";
+                    }
+                    if (formId.equals("270000F") || formId.equals("2C1000F")){
+                        cardType = "BRIZZI CARD (FLY)";
+                    }
+                    if (formId.equals("250000F")){
+                        cardType = "DEBIT (SWIPE)";
                     }
                     ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, countPrint,
                             svrRef, svrDate, svrTime, cardType, nomorKartu, formId, batchNumber, svrAppr);

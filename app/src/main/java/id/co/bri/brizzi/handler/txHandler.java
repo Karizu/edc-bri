@@ -1150,16 +1150,31 @@ public class txHandler {
                         cTx = cTx.substring(10);
                     }
                     String cCard = cList.getString(cList.getColumnIndex("cno"));
-                    String cExp = cList.getString(cList.getColumnIndex("cexp"));
-                    if (cExp!=null) {
-                        if (!cExp.equals("0000") && !cExp.equals("")) {
-                            cExp = cExp.substring(0,2) + "/" + cExp.substring(2,4);
+//                    String cExp = cList.getString(cList.getColumnIndex("cexp"));
+//                    if (cExp!=null) {
+//                        if (!cExp.equals("0000") && !cExp.equals("")) {
+//                            cExp = cExp.substring(0,2) + "/" + cExp.substring(2,4);
+//                        } else {
+//                            cExp = "";
+//                        }
+//                    } else {
+//                        cExp = "";
+//                    }
+
+                    String cExp = "";
+                    if (cCard.length() != 16 && cCard.length() != 19){
+                        cExp = cList.getString(cList.getColumnIndex("cexp"));
+                        if (cExp!=null) {
+                            if (!cExp.equals("0000") && !cExp.equals("")) {
+                                cExp = cExp.substring(0,2) + "/" + cExp.substring(2,4);
+                            } else {
+                                cExp = "";
+                            }
                         } else {
                             cExp = "";
                         }
-                    } else {
-                        cExp = "";
                     }
+
                     String cStan = cList.getString(cList.getColumnIndex("stan"));
                     String cRc = cList.getString(cList.getColumnIndex("rc"));
                     String cAmo = String.valueOf(cList.getInt(cList.getColumnIndex("amount")));
