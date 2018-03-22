@@ -2527,7 +2527,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 if (scret.has("nomor_kartu")) {
                     nomorKartu = scret.getString("nomor_kartu");
                     //Kondisi jika BRIZZI CARD (FLY), nomor kartu tanpa bintang
-                    if (cardType.equals("DEBIT (SWIPE)")) {
+                    if (!cardType.equals("BRIZZI CARD (FLY)")) {
                         nomorKartu = nomorKartu.split("=")[0];
                         nomorKartu = nomorKartu.substring(0, 6) + "******" + nomorKartu.substring(12);
                     }
@@ -2786,7 +2786,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 stan = reprintTrace;
             }
             if (isStl) {
-                ESCPOSApi.printSettlement(bitmap, data, mdata, tid, mid, stan, svrDate, svrTime);
+                ESCPOSApi.printSettlement(bitmap, data, mdata, tid, mid, stan, svrDate, svrTime, batchNumber);
             } else if(isReport) {
                 ESCPOSApi.printReport(bitmap, data, mdata, tid, mid, reportDate);
             } else if (isDetail) {
@@ -2800,14 +2800,17 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         cardType = jenisKartu;
                     }
                     // 14032018 #7
-                    if (formId.equals("71000FF") || formId.equals("721000F")){
+                    if (formId.equals("71000FF") || formId.equals("721000F") || formId.equals("731000F")){
                         cardType = "";
                         nomorKartu = "99999******99999";
                     }
                     if (formId.equals("270000F") || formId.equals("2C1000F")){
                         cardType = "BRIZZI CARD (FLY)";
                     }
-                    if (formId.equals("250000F")){
+                    if(isReprint && formId.equals("250000F")){
+                        cardType = "DEBIT (SWIPE)";
+                    }
+                    if (formId.equals("640000F")){
                         cardType = "DEBIT (SWIPE)";
                     }
                     ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, countPrint,

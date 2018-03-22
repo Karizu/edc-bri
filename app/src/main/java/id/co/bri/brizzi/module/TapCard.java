@@ -4664,9 +4664,15 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             writeDebugLog("EDCLOG", "read (4497)");
 //            String elog = "update edc_log set rqtime = '" + tmStamp + "' " +
 //                    "where log_id = " + elogId;
-            String elog = "update edc_log set rqtime = '" + tmStamp + "', track2 = '" + cardNumber().replaceAll("\\s+","")
-                    + "' " +
-                    "where log_id = " + elogId;
+            String elog = "";
+            if (!cData.getMsgSI().equals("A25100")){
+                elog = "update edc_log set rqtime = '" + tmStamp + "', track2 = '" + cardNumber().replaceAll("\\s+","") + "' " +
+                        "where log_id = " + elogId;
+            }
+            else{
+                elog = "update edc_log set rqtime = '" + tmStamp + "' " +
+                        "where log_id = " + elogId;
+            }
             clientDB.execSQL(elog);
             clientDB.close();
             helperDb.close();
@@ -4770,7 +4776,9 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
 
                 "A61000", "A62000", "A63000",
 
-                "A2C000", "A2C100", "A2C200", "A21100", "A22000", "A22100", "A23000",
+                "A2C000", "A2C100", "A2C200",
+
+                "A21100", "A22000", "A22100", "A23000",
                 "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                 "A91000", "A92000", "A93000", "A94000"};
 

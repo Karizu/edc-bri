@@ -381,7 +381,7 @@ public class ESCPOSApi {
     }
 
     public static void printSettlement(Bitmap image,List<PrintSize>data,List<String> mdata,
-                                       String tid, String mid, String stan, String svrDate, String svrTime) {
+                                       String tid, String mid, String stan, String svrDate, String svrTime, String batchNumber) {
         BitSet imageBits = getBitsImageData(image);
 
         byte widthLSB = (byte) (image.getWidth() & 0xFF);
@@ -450,6 +450,7 @@ public class ESCPOSApi {
             strTime = grabTime(d, svrTime);
         }
         printCommandsSmall("DATE/TIME    : " + strDate + " " + strTime + "\n");
+        printCommandsSmall("BATCH        : " + batchNumber);
         printCommands("\n");
         for(PrintSize pz : data){
             Log.d("zzzz",pz.getMessage());

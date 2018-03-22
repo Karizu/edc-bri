@@ -468,8 +468,10 @@ public class txHandler {
 
                 //String trace_no = String.format("%06d", msgSequence);
                 String trace_no = generateStan();
-                String uStanSeq = "update holder set " + "seq = " + trace_no;
-                clientDB.execSQL(uStanSeq);
+                if (!serviceid.equals("A2C100") && !serviceid.equals("A2C200") && !serviceid.equals("A2C000") && !serviceid.equals("A2C100C")) {
+                    String uStanSeq = "update holder set " + "seq = " + trace_no;
+                    clientDB.execSQL(uStanSeq);
+                }
                 String toParse = jmsg.get("msg_id") + "|" + txElements[3] + "|" + txElements[4];
 
                 String stringTs = StringLib.strToCurr(String.valueOf(amt / 100), "Rp");
