@@ -249,14 +249,14 @@ public class SplashScreen extends Activity {
         } else {
 //        }
 //            PackageInfo pInfo = null;
-            try {
-//                pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                JsonCompHandler.loadConf(this);
-//            } catch (PackageManager.NameNotFoundException e) {
+//            try {
+////                pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+//                //JsonCompHandler.loadConf(this);
+////            } catch (PackageManager.NameNotFoundException e) {
+////                e.printStackTrace();
+//            } catch (IOException e) {
 //                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            }
             Intent intent = new Intent(SplashScreen.this, MainActivity.class);
             startActivity(intent);
         }

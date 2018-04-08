@@ -279,11 +279,11 @@ public class MenuListResolver {
                                     if (menuId.equals("543120F") && tidyFieldname.equals("nominal")) {
                                         d = d*100;
                                     }
-                                    if (menuId.equals("920000F") && tidyFieldname.equals("nominal_trx")) {
-                                        d = d/100;
+                                    if (menuId.equals("920000F") && tidyFieldname.equals("nominal")) {
+                                        d = d*100;
                                     }
-                                    if (menuId.equals("921000F") && tidyFieldname.equals("nominal_trx")) {
-                                        d = d/100;
+                                    if (menuId.equals("921000F") && tidyFieldname.equals("nominal")) {
+                                        d = d*100;
                                     }
                                     if (menuId.equals("543210F") && tidyFieldname.equals("nominal")) {
                                         d = d*100;
@@ -430,12 +430,20 @@ public class MenuListResolver {
                                     valuePrint = "";
 
                                     int i = 0;
+                                    int restlength = rest.length();
                                     i = i + 3;
-                                    while (i < rest.length() - 18){
+                                    while (i < restlength - 18){
                                         valuePrint += rest.substring(i, i+4) + " ";
                                         i = i + 4;
-                                        valuePrint += rest.substring(i, i+20) + "\n";
-                                        i = i + 20;
+                                        if ((i+20)>restlength){
+                                            valuePrint += rest.substring(i, i+(restlength-i)) + "\n";
+                                            i = i + (restlength-i);
+                                        }
+                                        else{
+                                            valuePrint += rest.substring(i, i+20) + "\n";
+                                            i = i + 20;
+
+                                        }
                                     }
 
                                 }
@@ -599,6 +607,24 @@ public class MenuListResolver {
 //
 //                                    screen.put("title", titleHeader);
 
+                                    if (menuId.equals("931000F") || menuId.equals("921000F") || menuId.equals("941000F")){
+                                        String titleHeader = "";
+
+                                        spli = header.split("[H]\\d{6}");
+                                        for (int i = 0; i < spli.length; i++) {
+                                            String tmp = spli[i].replace("[H]\\d{6}","");
+                                            if (!tmp.trim().equals("")){
+//                                            valuePrint += spli[i] + "\n";
+                                                titleHeader += spli[i];
+                                                if (i < spli.length - 1){
+                                                    titleHeader += "\n";
+                                                }
+                                            }
+                                        }
+
+                                        screen.put("title", titleHeader);
+                                    }
+
                                     content = content.replaceAll("([T]\\d{6})", "TAGMARK$1");
 
                                     spli = content.split("TAGMARK");
@@ -665,8 +691,7 @@ public class MenuListResolver {
                         if (!screen.isNull("action_url")){
                             action_url = screen.get("action_url").toString();
                         }
-                        if ( (!action_url.trim().equals("") && (action_url.startsWith("A9")))
-                            && menuId.equals("000000F") && jValue!= null && jValue.getString("msg_rc_48") != null){
+                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_rc_48") != null){
                             valuePrint = jValue.getString("msg_rc_48");
                             valuePrint = valuePrint.replace("RC03","");
 

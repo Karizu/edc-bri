@@ -455,8 +455,8 @@ public class txHandler {
                     String getStanSeq = "select seq msgSequence from holder";
                     //STAN DAN WAKTU SESUAI DENGAN YANG DI VOID
                     //HOLDER GA NAMBAh\
-                    //String getStanSeq = "select cast(max(stan) as number) as msgSequence " +
-                            //"from edc_log where date(rqtime) = date('now') and rc = '00' ";
+//                    String getStanSeq = "select cast(max(stan) as number) as msgSequence " +
+//                            "from edc_log where date(rqtime) = date('now') and rc = '00' ";
                     Cursor stanSeq = clientDB.rawQuery(getStanSeq, null);
                     if (stanSeq != null) {
                         stanSeq.moveToFirst();
@@ -591,7 +591,14 @@ public class txHandler {
                         + ttAir + "')";
                 clientDB.execSQL(iServiceData);
                 String ttTrack2 = sData.getString(sData.getColumnIndex("track2"));
-                String cardNo = ttTrack2.substring(0, ttTrack2.indexOf("=")-1);
+                stringBuilder.append(ttTrack2);
+                String cardNo = ttTrack2.substring(0, ttTrack2.indexOf("="));
+                stringBuilder.append(cardNo);
+//                iServiceData = "insert or replace into service_data (message_id, name, value) "
+//                        + "values ('" + jmsg.get("msg_id") + "', 'nomor_kartu', '"
+//                        + cardNo + "')";
+//                clientDB.execSQL(iServiceData);
+
 //                if (msgSequence == 0&&!predefined_stan) {
                     String getStanSeq = "select seq msgSequence from holder";
 //                    String getStanSeq = "select cast(max(stan) as number) as msgSequence " +
@@ -692,7 +699,7 @@ public class txHandler {
                     }
                     d = Double.parseDouble(fee);
                     fee = StringLib.strToCurr(String.valueOf((int) d),"Rp");
-                    JSONObject returnScreen = new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[" +
+                    JSONObject returnScreen = new JSONObject("{\"nomor_kartu\":\""+ cardNo +"\",\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[" +
                             "{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"" + voidAmount + "\",\n" +
                             "\"value\":\"" + voidAmount + "\"}]},\"comp_lbl\":\"Jumlah Void : \",\"comp_type\":\"1\",\"comp_id\":\"P00002\",\"seq\":0}," +
                             "{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"" + fee + "\",\n" +
@@ -703,6 +710,17 @@ public class txHandler {
                             "\"type\":\"1\",\"title\":\"Void Tarik Tunai\",\"print\":\"2\",\"print_text\":\"WF\",\"server_date\":\"" + serverDate + "\"" +
                             ",\"server_time\":\"" + serverTime + "\",\"server_ref\":\"" + serverRef +"\",\"server_appr\":\""+serverApr+ "\"},\"server_date\":\""+serverDate+"\"," +
                             "\"server_time\":\""+serverTime+"\",\"server_ref\":\""+serverRef+"\",\"server_appr\":\""+serverApr+"\"}");
+//                    JSONObject returnScreen = new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[" +
+//                            "{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"" + voidAmount + "\",\n" +
+//                            "\"value\":\"" + voidAmount + "\"}]},\"comp_lbl\":\"Jumlah Void : \",\"comp_type\":\"1\",\"comp_id\":\"P00002\",\"seq\":0}," +
+//                            "{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"" + fee + "\",\n" +
+//                            "\"value\":\"" + fee + "\"}]},\"comp_lbl\":\"Fee         : \",\"comp_type\":\"1\",\"comp_id\":\"P00003\",\"seq\":1}," +
+//                            "{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"" + saldo + "\",\n" +
+//                            "\"value\":\"" + saldo + "\"}]},\"comp_lbl\":\"Saldo       : \",\"comp_type\":\"1\",\"comp_id\":\"P00004\",\"seq\":2}" +
+//                            "]},\"id\":\"640000F\",\n" +
+//                            "\"type\":\"1\",\"title\":\"Void Tarik Tunai\",\"print\":\"2\",\"print_text\":\"WF\",\"server_date\":\"" + serverDate + "\"" +
+//                            ",\"server_time\":\"" + serverTime + "\",\"server_ref\":\"" + serverRef +"\",\"server_appr\":\""+serverApr+ "\"},\"server_date\":\""+serverDate+"\"," +
+//                            "\"server_time\":\""+serverTime+"\",\"server_ref\":\""+serverRef+"\",\"server_appr\":\""+serverApr+"\"}");
                     writeDebugLog("EDCLOG", "update (588)");
                     String q = "update edc_log set service_id = 'A64000', rran = '" + serverRef +
                             "', rqtime = '"+tmStamp+"' where log_id = '" + stanvoid + "';";
@@ -749,7 +767,7 @@ public class txHandler {
                     + "and a.print > 0 "
                     + "and (lower(b.settled) <> 't' or b.settled is null) "
                     + "and a.service_id not in ('A2A100','A29100','A23100',"
-                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000') "
+                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000', 'A91000', 'A95000') "
                     + "order by a.log_id desc";
             Cursor cLog = clientDB.rawQuery(qLog, null);
             if (cLog.moveToFirst()) {
@@ -807,7 +825,7 @@ public class txHandler {
                     + "and a.print > 0 "
                     + "and (lower(b.settled) <> 't' or b.settled is null) "
                     + "and a.service_id not in ('A2A100','A29100','A23100',"
-                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000') "
+                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000', 'A91000', 'A95000') "
                     + "order by a.log_id desc";
             Cursor cLog = clientDB.rawQuery(qLog, null);
             if (cLog.moveToFirst()) {
@@ -905,7 +923,7 @@ public class txHandler {
                         "'A54800', 'A59000', 'A54331') \n";
             }
             if (txElements[2].startsWith("A9")) {
-                excludeList = "and a.service_id not in ('A91000', 'A92000', 'A93000', 'A94000')\n";
+                excludeList = "and a.service_id not in ('A91000', 'A92000', 'A93000', 'A94000', 'A95000')\n";
             }
             String siLimit = txElements[2].substring(0,2);
             String nGrand = "0";
@@ -1095,7 +1113,7 @@ public class txHandler {
                         "'A54800', 'A59000', 'A54331') \n";
             }
             if (txElements[2].startsWith("A9")) {
-                excludeList = "and a.service_id not in ('A91000', 'A92000', 'A93000', 'A94000')\n";
+                excludeList = "and a.service_id not in ('A91000', 'A92000', 'A93000', 'A94000', 'A95000')\n";
             }
             String siLimit = txElements[2].substring(0,2);
             writeDebugLog("MSGLOG", "read (923)");

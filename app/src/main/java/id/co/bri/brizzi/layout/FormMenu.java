@@ -2193,9 +2193,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 
                 "211000", "220000", "221000",
                 // 14032018 #2
-//                "230000", "231000",
+//                "230000", "231000", "910000",
                 "291000", "2A1000", "2B0000", "2B1000", "2D1000", "2A2000",
-                "910000", "920000", "930000", "940000"};
+                "920000", "930000", "940000"};
         Log.d("PRINT ARRAY", "DILUAR FOR");
         boolean matched_array = false;
         for (int i = 0; i < array_sID.length; i++) {
@@ -2233,7 +2233,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             }
         }
 
-        // 14032018 #5
+//         14032018 #5
 //        if (formId.equals("640000F")) {
 //            nomorKartu = "";
 //        }
@@ -2676,6 +2676,14 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                     this.reportDate = wf.substring(3);
                 }
                 data = addReportFooter(data);
+            } else if (wf.startsWith("")) {
+                if (formId.equals("546110F") || formId.equals("547110F")
+                        || formId.equals("547210F") || formId.equals("546210F")
+                        || formId.equals("560000F") || formId.equals("561000F")) {
+                    data = addFooter(data);
+                } else if (formId.equals("950000F")) {
+                    data = addReportFooter(data);
+                }
             }
             this.data = data;
             this.mdata = mdata;
@@ -2706,6 +2714,11 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             } else {
                 this.svrAppr = "00000000";
             }
+//            if (stan!=null) {
+//                this.stan = stan;
+//            } else {
+//                this.stan = "000000";
+//            }
             this.batchNumber = StringLib.fillZero(String.valueOf(batch),6);
         }
 
@@ -2754,6 +2767,12 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 //            data.add(new PrintSize(FontSize.NORMAL, "CONTACT BRI di 14017, 021-500017,\n"));
 //            data.add(new PrintSize(FontSize.NORMAL, "atau 021-57987400\n"));
             data.add(new PrintSize(FontSize.EMPTY, "\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "***Terima Kasih***\n"));
+            return data;
+        }
+
+        public List<PrintSize> addFooter(List<PrintSize> data) {
+            data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
             data.add(new PrintSize(FontSize.NORMAL, "***Terima Kasih***\n"));
             return data;
         }

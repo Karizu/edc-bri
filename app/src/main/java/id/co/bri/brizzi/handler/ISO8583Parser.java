@@ -626,11 +626,14 @@ public class ISO8583Parser {
                     if (elementValue.length()<12) {
                         elementValue = padRight(elementValue, 12, '0');
 //                        elementValue = elementValue.substring(2) + "00";
-                        if (!(serviceId.equals("A54312"))) {
+                        if (!serviceId.equals("A54312") && !serviceId.equals("A92001") && !serviceId.equals("A93001")
+                                && !serviceId.equals("A92000") && !serviceId.equals("A93000")) {
                             elementValue = elementValue.substring(2) + "00";
                         }
                     }
                 }
+
+//
                 //log.info(elementValue);
                 // -- Uncomment for serverside encrypt pinblock --
 //                if (bitId == 52) {
@@ -684,7 +687,9 @@ public class ISO8583Parser {
 
                 "A21100", "A22000", "A22100", "A23000", "A23100",
                 "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
-                "A91000", "A92000", "A93000", "A94000"};
+                "A92000", "A93000", "A94000"};
+
+//                "A91000", };
         boolean matched_array = false;
         for(int i=0; i < array.length; i++){
             if(serviceId.equals(array[i])){
@@ -997,6 +1002,9 @@ public class ISO8583Parser {
                 updAmount = ", amount = " + String.valueOf(longAmount * 100);
             }
             if (serviceId.equals("A92000")||serviceId.equals("A92001")) {
+                updAmount = ", amount = " + String.valueOf(longAmount / 100);
+            }
+            if (serviceId.equals("A93000")||serviceId.equals("A93001")) {
                 updAmount = ", amount = " + String.valueOf(longAmount / 100);
             }
         }

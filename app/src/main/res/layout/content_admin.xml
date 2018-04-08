@@ -168,9 +168,8 @@
             android:id="@+id/txtIp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="false"
             android:layout_gravity="center_horizontal"/>
-
+        <!--android:enabled="false"-->
 
         <TextView
             android:layout_width="wrap_content"
@@ -183,9 +182,8 @@
             android:id="@+id/txtPort"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="false"
             android:inputType="number"/>
-
+        <!--android:enabled="false"-->
 
         <TextView
             android:layout_width="wrap_content"
@@ -198,9 +196,8 @@
             android:id="@+id/txtHostname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="false"
             android:layout_gravity="center_horizontal" />
-
+        <!--android:enabled="false"-->
 
 
         <TextView

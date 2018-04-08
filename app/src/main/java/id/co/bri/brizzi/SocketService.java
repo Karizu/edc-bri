@@ -399,11 +399,11 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                     PendingIntent pendingIntent = PendingIntent.getActivity(this,
                             (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
                     Notification.Builder builder = new Notification.Builder(this)
-                            .setContentTitle("Informasi")
+                            .setContentTitle("Update Setting")
                             .setContentIntent(pendingIntent)
-                            .setContentText("Update setting EDC")
-                            .setSmallIcon(R.drawable.logo_bri_002)
-                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.if_email));
+                            .setContentText("Setting EDC telah tersedia")
+                            .setSmallIcon(R.drawable.ic_autorenew_white_24dp)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_autorenew_white_24dp));
                     Notification n;
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
