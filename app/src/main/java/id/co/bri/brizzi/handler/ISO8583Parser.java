@@ -626,14 +626,21 @@ public class ISO8583Parser {
                     if (elementValue.length()<12) {
                         elementValue = padRight(elementValue, 12, '0');
 //                        elementValue = elementValue.substring(2) + "00";
-                        if (!serviceId.equals("A54312") && !serviceId.equals("A92001") && !serviceId.equals("A93001")
-                                && !serviceId.equals("A92000") && !serviceId.equals("A93000")) {
+                        if (!serviceId.equals("A54312") ) {
                             elementValue = elementValue.substring(2) + "00";
                         }
                     }
+                    // Fixed Nominal Bansos
+                    if (serviceId.equals("A92001")) {
+                        elementValue = "00" + elementValue.substring(0,10);
+                    }
+                    if (serviceId.equals("A93001")) {
+                        elementValue = "00" + elementValue.substring(0,10);
+                    }
                 }
 
-//
+//               && !serviceId.equals("A92001") && !serviceId.equals("A93001")
+//                                && !serviceId.equals("A92000") && !serviceId.equals("A93000")
                 //log.info(elementValue);
                 // -- Uncomment for serverside encrypt pinblock --
 //                if (bitId == 52) {
@@ -1001,12 +1008,12 @@ public class ISO8583Parser {
                 Log.d("TEST", "MASUK");
                 updAmount = ", amount = " + String.valueOf(longAmount * 100);
             }
-            if (serviceId.equals("A92000")||serviceId.equals("A92001")) {
-                updAmount = ", amount = " + String.valueOf(longAmount / 100);
-            }
-            if (serviceId.equals("A93000")||serviceId.equals("A93001")) {
-                updAmount = ", amount = " + String.valueOf(longAmount / 100);
-            }
+//            if (serviceId.equals("A92001")) {
+//                updAmount = ", amount = " + String.valueOf(longAmount/10000);
+//            }
+//            if (serviceId.equals("A93000")) {
+//                updAmount = ", amount = " + String.valueOf(longAmount*100);
+//            }
         }
         if(!responseCode.equals("00") && elogId != 0){
             String deleteelog = "delete from edc_log where log_id = "+String.valueOf(elogId);
@@ -1391,9 +1398,10 @@ public class ISO8583Parser {
         }
         String bitFormat = cMT.getString(cMT.getColumnIndex("meta_alias"));
         cMT.close();
+        // Fixed Bni
         if (bitFormat.equals("z")) {
             padTo = "L";
-            padder = "F";
+            padder = "0";
         }
         switch (bitLength) {
             case LLVAR:
@@ -1427,6 +1435,22 @@ public class ISO8583Parser {
                     currentLength = valLength2;
                 }
                 break;
+//            case 37:
+//                bitLength = bitValue.length();
+//                if ((bitLength % 2) > 0) {
+//                    bitLength += 1;
+//                    bitValue = padLeft(bitValue, bitLength, "F".charAt(0));
+//                }
+//                byte[] lllBitValue = new byte[bitLength / 2];
+//                for (int i = 0; i < bitLength; i += 2) {
+//                    lllBitValue[i / 2] = (byte) ((Character.digit(bitValue.charAt(i), 16) << 4) + Character.digit(bitValue.charAt(i + 1), 16));
+//                }
+//                String valLength2 = String.format("%04d", bitLength);
+//                elementValue = new byte[(bitLength / 2) + 2];
+//                System.arraycopy(hexStringToByteArray(valLength2), 0, elementValue, 0, 2);
+//                System.arraycopy(lllBitValue, 0, elementValue, 2, bitLength / 2);
+//                currentLength = valLength2;
+//                break;
             default:
                 if (padTo.equals("L")) {
                     bitValue = padLeft(bitValue, bitLength, padder.charAt(0));
@@ -1445,16 +1469,16 @@ public class ISO8583Parser {
                 } else if (bitFormat.equals("n")) {
                     if ((bitLength % 2) > 0) {
                         bitLength += 1;
-                        bitValue = padRight(bitValue, bitLength, "0".charAt(0));
+                        bitValue = padRight(bitValue, bitLength, "F".charAt(0));
                     }
                     elementValue = new byte[bitLength / 2];
                     for (int i = 0; i < bitLength; i += 2) {
                         elementValue[i / 2] = (byte) ((Character.digit(bitValue.charAt(i), 16) << 4) + Character.digit(bitValue.charAt(i + 1), 16));
                     }
-                } else if (bitFormat.equals("z")) {
+                } else if (bitFormat.equals("z")) { //Fixed Bni
                     if ((bitLength % 2) > 0) {
                         bitLength += 1;
-                        bitValue = padLeft(bitValue, bitLength, "F".charAt(0));
+                        bitValue = padLeft(bitValue, bitLength, "0".charAt(0));
                     }
                     elementValue = new byte[(bitLength / 2) + 1];
                     elementValue[0] = (byte) ((Character.digit("3".charAt(0), 16) << 4) + (Character.digit("7".charAt(0), 16)));

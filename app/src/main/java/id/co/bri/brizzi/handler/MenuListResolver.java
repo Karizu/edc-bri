@@ -279,11 +279,17 @@ public class MenuListResolver {
                                     if (menuId.equals("543120F") && tidyFieldname.equals("nominal")) {
                                         d = d*100;
                                     }
-                                    if (menuId.equals("920000F") && tidyFieldname.equals("nominal")) {
-                                        d = d*100;
+                                    if (menuId.equals("920000F") && tidyFieldname.equals("nominal_trx")) {
+                                        d = d/100;
                                     }
-                                    if (menuId.equals("921000F") && tidyFieldname.equals("nominal")) {
-                                        d = d*100;
+                                    if (menuId.equals("921000F") && tidyFieldname.equals("nominal_trx")) {
+                                        d = d/100;
+                                    }
+                                    if (menuId.equals("930000F") && tidyFieldname.equals("nominal_trx")) {
+                                        d = d/100;
+                                    }
+                                    if (menuId.equals("931000F") && tidyFieldname.equals("nominal_trx")) {
+                                        d = d/100;
                                     }
                                     if (menuId.equals("543210F") && tidyFieldname.equals("nominal")) {
                                         d = d*100;
