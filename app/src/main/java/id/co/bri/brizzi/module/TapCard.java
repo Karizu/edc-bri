@@ -3831,8 +3831,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             ContentValues contentValues = new ContentValues();
             contentValues.put("id_aid_log", cData.getBrizziIdLog());
             contentValues.put("device", 0);
-            contentValues.put("cmd", "90BD000007BD0000000017000000");
-//            contentValues.put("cmd", "00A4040C09A00000000000000011");
+//            contentValues.put("cmd", "90BD000007BD0000000017000000");
+            contentValues.put("cmd", "00A4040C09A00000000000000011");
             contentValues.put("rc", aid);
             contentValues.put("timestamp", new Date().getTime());
             tx.insertIntoCmdLog(contentValues);
