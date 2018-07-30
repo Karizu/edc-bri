@@ -45,6 +45,7 @@ import com.wizarpos.apidemo.util.StringUtility;
 import com.wizarpos.jni.PINPadInterface;
 import com.wizarpos.jni.PinPadCallbackHandler;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,6 +63,7 @@ import java.util.Date;
 import java.util.List;
 
 import id.co.bri.brizzi.ActivityList;
+import id.co.bri.brizzi.BuildConfig;
 import id.co.bri.brizzi.InputPinService;
 import id.co.bri.brizzi.MainActivity;
 import id.co.bri.brizzi.R;
@@ -85,6 +87,10 @@ import id.co.bri.brizzi.module.TextView;
 import id.co.bri.brizzi.module.listener.GPSLocation;
 import id.co.bri.brizzi.module.listener.SwipeListener;
 import me.grantland.widget.AutofitTextView;
+
+
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 
 /**
@@ -1340,6 +1346,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                                     ComboBox comboBox = (ComboBox) v;
                                     String cdata = comboBox.getSelectedItem().toString();
 //                                    Log.d("EDIT READ", cdata);
+                                    if (actionUrl.equals("A54322")) {
+                                        cdata = StringUtils.leftPad((comboBox.getSelectedItemPosition()+1)+"", 2, '0');
+                                    }
                                     if (actionUrl.equals("A54321")) {
                                         cdata = cdata.replace("Rp ","").replace(".","").replace(",00","");
                                     }
@@ -1660,7 +1669,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 //                Log.d("ITERASI2", ""+j);
                 int type = data.getInt("comp_type");
                 String value = "";
-                value = data.getString("comp_lbl");
+                value = "" + data.getString("comp_lbl");
                 Object[] compOpts = null;
                 int maxLength = 0;
                 switch (type) {
@@ -2184,8 +2193,8 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 "544100", "544310", "544330", "544410", "544430", "544510", "544530", "544610",
                 "545100", "545200", "545300", "545400", "545500", "545600", "570000", "572000",
                 "574000", "580000", "544210", "544230", "54C100", "54C200", "54C510", "54C520",
-                "54C530", "54C540", "521000", "522100", "522200", "523000", "549500", "547100",
-                "547200", "548000", "590000", "543310",
+                "54C530", "54C540", "522100", "522200", "549500", "547100",
+                "547200", "548000", //"543310",
 
                 "710010", "720000", "720010", "730000",
 
@@ -2193,7 +2202,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 
                 "211000", "220000", "221000",
                 // 14032018 #2
-//                "230000", "231000", "910000",
+//                "230000", "231000", "910000","521000","523000","590000",
                 "291000", "2A1000", "2B0000", "2B1000", "2D1000", "2A2000",
                 "920000", "930000", "940000"};
         Log.d("PRINT ARRAY", "DILUAR FOR");
@@ -2250,65 +2259,103 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                     FontSize size = FontSize.NORMAL;
                     String lbl = dataArr.getString("comp_lbl");
                     String value = val.getString("print");
-                    if (lbl.startsWith("[")) {
-                        String tag = lbl.substring(1, lbl.indexOf("]"));
-                        if (tag.matches(".*\\d+.*")) {
 
-                            if (tag.startsWith("B")) {
-                                tag = tag.substring(1);
-                                tag = "BOLD_" + tag;
 
-                            } else {
-                                tag = "NORMAL_" + tag;
+                    if (formId.equals("54311FF")||formId.equals("54321FF")||
+                            formId.equals("543310F")||formId.equals("54380FF")||
+                            formId.equals("000000F")||formId.equals("5C200FF")||formId.equals("5C210FF")) {
+                        lbl = lbl.replace("[START_LINE_PARSE]", "");
+                        String[] spli = lbl.split("\\n");
+                        for (int idx = 0; idx < spli.length; idx++) {
+                            String line = spli[idx];
+                            if (line.contains("[C][B]")) {
+                                line = line.replace("[C][B]", "");
+                                data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
+                                data.add(new PrintSize(FontSize.BOLD_2, line + "\n"));
+                                data.add(new PrintSize(FontSize.NORMAL, "STOP_FOOTER"));
                             }
-                        } else {
-
-                            if (tag.startsWith("B")) {
-                                tag = "BOLD_2";
-
-                            } else {
-                                tag = "NORMAL";
+                            else if (line.contains("[C]")) {
+                                line = line.replace("[C]", "");
+                                data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
+                                data.add(new PrintSize(size, line + "\n"));
+                                data.add(new PrintSize(FontSize.NORMAL, "STOP_FOOTER"));
                             }
-                        }
-                        Log.i("zzzz", tag);
-                        size = FontSize.valueOf(tag);
-                        lbl = lbl.substring(lbl.indexOf("]") + 1);
-                    }
-
-                    if (lbl.equals("TRANSAKSI BERHASIL") && formId.equals("721000F")) {
-                        data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
-                        data.add(new PrintSize(size, lbl));
-                        data.add(new PrintSize(size, " "));
-                    } else {
-                        data.add(new PrintSize(size, lbl));
-                        data.add(new PrintSize(size, " "));
-                    }
-
-                    if (value.startsWith("[")) {
-                        String tag = value.substring(1, value.indexOf("]"));
-                        if (tag.matches(".*\\d+.*")) {
-
-                            if (tag.startsWith("B")) {
-                                tag = tag.substring(1);
-                                tag = "BOLD_" + tag;
-
-                            } else {
-                                tag = "NORMAL_" + tag;
+                            else if (line.contains("[B]")) {
+                                line = line.replace("[B]", "");
+                                data.add(new PrintSize(FontSize.BOLD_3, line + "\n"));
                             }
-                        } else {
-
-                            if (tag.startsWith("B")) {
-                                tag = "BOLD_2";
-
-                            } else {
-                                tag = "NORMAL";
+                            else if (line.contains("[T]")) {
+                                line = line.replace("[T]", "");
+                                data.add(new PrintSize(FontSize.TITLE, line + "\n"));
+                            }
+                            else{
+                                data.add(new PrintSize(FontSize.NORMAL, line + "\n"));
                             }
                         }
-                        Log.i("zzzz", tag);
-                        size = FontSize.valueOf(tag);
-                        value = value.substring(value.indexOf("]") + 1);
                     }
-                    data.add(new PrintSize(size, value + "\n"));
+                    else{
+                        if (lbl.startsWith("[") && !lbl.startsWith("[START_LINE_PARSE]")) {
+                            String tag = lbl.substring(1, lbl.indexOf("]"));
+                            if (tag.matches(".*\\d+.*")) {
+
+                                if (tag.startsWith("B")) {
+                                    tag = tag.substring(1);
+                                    tag = "BOLD_" + tag;
+
+                                } else {
+                                    tag = "NORMAL_" + tag;
+                                }
+                            } else {
+
+                                if (tag.startsWith("B")) {
+                                    tag = "BOLD_2";
+
+                                } else {
+                                    tag = "NORMAL";
+                                }
+                            }
+                            Log.i("zzzz", tag);
+                            size = FontSize.valueOf(tag);
+                            lbl = lbl.substring(lbl.indexOf("]") + 1);
+                        }
+
+                        if (lbl.equals("TRANSAKSI BERHASIL") && formId.equals("721000F")) {
+                            data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
+                            data.add(new PrintSize(size, lbl));
+                            data.add(new PrintSize(size, " "));
+                        } else if (lbl.equals("TRANSAKSI BERHASIL") && formId.equals("532120F") && value.length()>25) {
+                            data.add(new PrintSize(size, lbl + "\n"));
+                        } else {
+                            data.add(new PrintSize(size, lbl));
+                        }
+
+                        if (value.startsWith("[")) {
+                            String tag = value.substring(1, value.indexOf("]"));
+                            if (tag.matches(".*\\d+.*")) {
+
+                                if (tag.startsWith("B")) {
+                                    tag = tag.substring(1);
+                                    tag = "BOLD_" + tag;
+
+                                } else {
+                                    tag = "NORMAL_" + tag;
+                                }
+                            } else {
+
+                                if (tag.startsWith("B")) {
+                                    tag = "BOLD_2";
+
+                                } else {
+                                    tag = "NORMAL";
+                                }
+                            }
+                            Log.i("zzzz", tag);
+                            size = FontSize.valueOf(tag);
+                            value = value.substring(value.indexOf("]") + 1);
+                        }
+
+                        data.add(new PrintSize(size, value + "\n"));
+                    }
 //                    data.add(new PrintSize(FontSize.EMPTY, "\n"));
                 }
             }
@@ -2619,6 +2666,10 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 
     }
 
+//    MyClassConstructor(Context context){
+//        String packageName = context.getPackageName();
+//    }
+
     private class PrintData implements Runnable {
         private List<PrintSize> data;
         private List<String> mdata;
@@ -2637,6 +2688,8 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         private String nomorKartu;
         private String jenisKartu;
         private String batchNumber;
+        private String serialNumber;
+        private String versionNumber;
 
         public PrintData(List<PrintSize> data, List<String> mdata, String tid, String mid,
                          String stan, String wf, int countPrint, String svrRef, String svrDate,
@@ -2649,7 +2702,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             this.reportDate = "";
             if (wf.equals("WF")) {
                 ///
-                if (formId.equals("71000FF") || formId.equals("721000F")){
+                if (formId.equals("71000FF") || formId.equals("721000F")) {
                     data = addTbankFooter(data);
                 }
                 else{
@@ -2682,8 +2735,13 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         || formId.equals("560000F") || formId.equals("561000F")) {
                     data = addFooter(data);
                 } else if (formId.equals("950000F")) {
-                    data = addReportFooter(data);
+                    data = addBansosFooter(data);
+                } else if (formId.equals("5C200FF") || formId.equals("5C210FF")){
+                    data = addMultipaymentFooter(data);
                 }
+//                else if (formId.equals("54321FF") || formId.equals("54311FF") || formId.equals("543310F") || formId.equals("54380FF")){
+//                    data = addPLNFooter(data);
+//                }
             }
             this.data = data;
             this.mdata = mdata;
@@ -2694,6 +2752,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             this.nomorKartu = nomorKartu;
 //            Log.d("PRINT INIT", "card number : " + nomorKartu);
             this.jenisKartu = cardType;
+
             if (svrRef!=null) {
                 this.svrRef = svrRef;
             } else {
@@ -2714,12 +2773,10 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             } else {
                 this.svrAppr = "00000000";
             }
-//            if (stan!=null) {
-//                this.stan = stan;
-//            } else {
-//                this.stan = "000000";
-//            }
             this.batchNumber = StringLib.fillZero(String.valueOf(batch),6);
+
+            this.serialNumber = Build.SERIAL;
+            this.versionNumber = BuildConfig.VERSION_NAME;
         }
 
         public List<PrintSize> addTbankFooter(List<PrintSize> data) {
@@ -2730,6 +2787,16 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 //            data.add(new PrintSize(FontSize.NORMAL, "CONTACT BRI di 14017, 021-500017,\n"));
 //            data.add(new PrintSize(FontSize.NORMAL, "atau 021-57987400\n"));
             data.add(new PrintSize(FontSize.NORMAL, "***Terima Kasih***\n"));
+            return data;
+        }
+
+        public List<PrintSize> addMultipaymentFooter(List<PrintSize> data) {
+            data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
+            data.add(new PrintSize(FontSize.NORMAL, "PEMBAYARAN BERHASIL\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "Informasi Lebih Lanjut. Silahkan Hubungi\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "Call BRI di 14017. 021-500017\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "Atau 021-57987400\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "*** Terima Kasih ***\n"));
             return data;
         }
 
@@ -2767,7 +2834,21 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 //            data.add(new PrintSize(FontSize.NORMAL, "CONTACT BRI di 14017, 021-500017,\n"));
 //            data.add(new PrintSize(FontSize.NORMAL, "atau 021-57987400\n"));
             data.add(new PrintSize(FontSize.EMPTY, "\n"));
+            data.add(new PrintSize(FontSize.EMPTY, "\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "***Terima Kasih***\n \n"));
+//            data.add(new PrintSize(FontSize.NORMAL, "  " + versionNumber + "                " + serialNumber));
+
+            return data;
+        }
+
+        public List<PrintSize> addBansosFooter(List<PrintSize> data) {
+            data.add(new PrintSize(FontSize.NORMAL, "START_FOOTER"));
+            data.add(new PrintSize(FontSize.EMPTY, "\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "Informasi lebih lanjut, silahkan hubungi\n"));
+            data.add(new PrintSize(FontSize.NORMAL, "CONTACT BRI di 14017 atau 1500017,\n"));
+            data.add(new PrintSize(FontSize.EMPTY, "\n"));
             data.add(new PrintSize(FontSize.NORMAL, "***Terima Kasih***\n"));
+
             return data;
         }
 
@@ -2805,11 +2886,11 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                 stan = reprintTrace;
             }
             if (isStl) {
-                ESCPOSApi.printSettlement(bitmap, data, mdata, tid, mid, stan, svrDate, svrTime, batchNumber);
+                ESCPOSApi.printSettlement(bitmap, data, mdata, tid, mid, stan, svrDate, svrTime, batchNumber, serialNumber, versionNumber);
             } else if(isReport) {
-                ESCPOSApi.printReport(bitmap, data, mdata, tid, mid, reportDate);
+                ESCPOSApi.printReport(bitmap, data, mdata, tid, mid, reportDate, serialNumber, versionNumber);
             } else if (isDetail) {
-                ESCPOSApi.printDetailReport(bitmap, data, mdata, tid, mid, reportDate);
+                ESCPOSApi.printDetailReport(bitmap, data, mdata, tid, mid, reportDate, serialNumber, versionNumber);
             } else {
                 if (tid != null) {
 //                    Log.d(TAG, "Count Print : " + String.valueOf(countPrint));
@@ -2819,9 +2900,13 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         cardType = jenisKartu;
                     }
                     // 14032018 #7
-                    if (formId.equals("71000FF") || formId.equals("721000F") || formId.equals("731000F")){
+                    if (formId.equals("71000FF") || formId.equals("731000F")){
                         cardType = "";
                         nomorKartu = "99999******99999";
+                    }
+                    if (formId.equals("721000F")){
+                        cardType = "DEBIT (SWIPE)";
+//                        nomorKartu = "99999******99999";;
                     }
                     if (formId.equals("270000F") || formId.equals("2C1000F")){
                         cardType = "BRIZZI CARD (FLY)";
@@ -2833,7 +2918,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         cardType = "DEBIT (SWIPE)";
                     }
                     ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, countPrint,
-                            svrRef, svrDate, svrTime, cardType, nomorKartu, formId, batchNumber, svrAppr);
+                            svrRef, svrDate, svrTime, cardType, nomorKartu, formId, batchNumber, svrAppr, serialNumber, versionNumber);
                 } else {
                     ESCPOSApi.printStruk(bitmap, data);
                 }

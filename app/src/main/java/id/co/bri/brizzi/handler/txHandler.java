@@ -160,6 +160,7 @@ public class txHandler {
         boolean isLogon = txElements[2].equals("L00001");
         boolean isInitBrizzi = txElements[2].equals("A21100");
         boolean isNoInput = txElements[2].equals("A95000");
+        boolean isNoInput2 = txElements[2].equals("A5C110");
         boolean isBrizziSettlement = txElements[2].equals("A28100");
         boolean isBrizziVoid = txElements[2].equals("A2C100");
         boolean isTunaiVoid = txElements[2].equals("A64000");
@@ -767,7 +768,7 @@ public class txHandler {
                     + "and a.print > 0 "
                     + "and (lower(b.settled) <> 't' or b.settled is null) "
                     + "and a.service_id not in ('A2A100','A29100','A23100',"
-                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000', 'A91000', 'A95000') "
+                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000', 'A91000', 'A95000', 'A5C110', 'A54331') "
                     + "order by a.log_id desc";
             Cursor cLog = clientDB.rawQuery(qLog, null);
             if (cLog.moveToFirst()) {
@@ -825,7 +826,7 @@ public class txHandler {
                     + "and a.print > 0 "
                     + "and (lower(b.settled) <> 't' or b.settled is null) "
                     + "and a.service_id not in ('A2A100','A29100','A23100',"
-                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000', 'A91000', 'A95000') "
+                    + "'A22000','A23000','A22100','A2B000','A2B100', 'A52100', 'A52210', 'A52220', 'A52300', 'A59000', 'A91000', 'A95000', 'A5C110', 'A54331') "
                     + "order by a.log_id desc";
             Cursor cLog = clientDB.rawQuery(qLog, null);
             if (cLog.moveToFirst()) {
@@ -833,10 +834,10 @@ public class txHandler {
                 String screen_trace = cLog.getString(cLog.getColumnIndex("message_id"));
                 String cardUsed = cLog.getString(cLog.getColumnIndex("track2"));
                 String cardType = "DEBIT (SWIPE)";
-                if (!cardUsed.contains("=")) {
+                if (cardUsed!= null && !cardUsed.contains("=")) {
                     cardType = "BRIZZI CARD (FLY)";
                 }
-                if (cardType.equals("")) {
+                if (cardType == null || cardType.equals("")) {
                     cardType = "";
                 }
                 if (cLog!=null) {
@@ -859,7 +860,7 @@ public class txHandler {
 //                    }
                     if(!cardUsed.equals("") && cardType.equals("DEBIT (SWIPE)")){
                         rps.put("nomor_kartu", cardUsed);
-                    }
+                }
                 }
                 rps.put("card_type", cardType);
                 return rps;
@@ -915,12 +916,12 @@ public class txHandler {
             if (txElements[2].startsWith("A5")) {
                 Log.d("INI MAH YG DI ATAS", "MASUK IF A5");
                 excludeList = "and a.service_id not in ('A54911', 'A51410', 'A53100', 'A53211', 'A53221', 'A54921', 'A54931', 'A54941', \n" +
-                        "'A54B11', 'A54A10', 'A54110', 'A54211', 'A54221', 'A54311', 'A54321', 'A54410', \n" +
+                        "'A54B11', 'A54A10', 'A54110', 'A54211', 'A54221', 'A54311', 'A54321', 'A54331', 'A54341', 'A54410', 'A5C210', 'A5C110', \n" +
                         "'A54431', 'A54433', 'A54441', 'A54443', 'A54451', 'A54453', 'A54461', 'A54510', \n" +
                         "'A54520', 'A54530', 'A54540', 'A54550', 'A54560', 'A57000', 'A57200', 'A57400', \n" +
                         "'A58000', 'A54421', 'A54423', 'A54C10', 'A54C20', 'A54C51', 'A54C52', 'A54C53', \n" +
                         "'A54C54', 'A52100', 'A52210', 'A52220', 'A52300', 'A54950', 'A54710', 'A54720', " +
-                        "'A54800', 'A59000', 'A54331') \n";
+                        "'A54800', 'A59000') \n";
             }
             if (txElements[2].startsWith("A9")) {
                 excludeList = "and a.service_id not in ('A91000', 'A92000', 'A93000', 'A94000', 'A95000')\n";
@@ -930,7 +931,7 @@ public class txHandler {
             String jGrand = "0";
             writeDebugLog("EDCLOG", "read grand (744)");
             String qGrand = ""
-                    + "select sum(a.amount) tot, count(*) jml from " + modBase + " a left outer join service b\n" +
+                    + "select sum(a.amount) tot, count(*) jml, service_name from " + modBase + " a left outer join service b\n" +
                     "on (a.service_id = b.service_id)\n" +
                     "where a.rc= '00'\n" +
                     dateFilter +
@@ -944,11 +945,17 @@ public class txHandler {
             if (cGrand.moveToFirst()) {
                 nGrand = String.valueOf(cGrand.getInt(cGrand.getColumnIndex("tot")));
                 jGrand = String.valueOf(cGrand.getInt(cGrand.getColumnIndex("jml")));
+                String cTx = cGrand.getString(cGrand.getColumnIndex("service_name"));
                 if (nGrand.matches("-?\\d+(\\.\\d+)?")) {
                     double d = Double.parseDouble(nGrand);
                     DecimalFormatSymbols idrFormat = new DecimalFormatSymbols(Locale.getDefault());
                     idrFormat.setDecimalSeparator(',');
                     DecimalFormat formatter = new DecimalFormat("###,###,##0", idrFormat);
+//                    if (cTx!=null){
+//                        if (!cTx.startsWith("Pembayaran PLN") && !cTx.startsWith("Pembayaran Non-")) {
+//                            d = d/100;
+//                        }
+//                    }
                     d = d/100;
                     nGrand = formatter.format(d);
                 }
@@ -1006,16 +1013,23 @@ public class txHandler {
                         cmp += ",";
                     }
                     String cval = String.valueOf(cLog.getInt(cLog.getColumnIndex("tot")));
+                    String clab = cLog.getString(cLog.getColumnIndex("service_name"));
                     if (cval.matches("-?\\d+(\\.\\d+)?")) {
                         double d = Double.parseDouble(cval);
                         DecimalFormatSymbols idrFormat = new DecimalFormatSymbols(Locale.getDefault());
                         idrFormat.setDecimalSeparator(',');
                         DecimalFormat formatter = new DecimalFormat("###,###,##0", idrFormat);
+//                        if (!clab.startsWith("Pembayaran PLN") && !clab.startsWith("Pembayaran Non-Taglis")) {
+//                            d = d/100;
+//                        }
                         d = d/100;
+//                        if (clab.startsWith("Pembayaran PLN Pascabayar")) {
+//                            d = d / 100;
+//                        }
                         cval = formatter.format(d);
                         cval = StringLib.strToCurr(String.valueOf(d), "Rp");
                     }
-                    String clab = cLog.getString(cLog.getColumnIndex("service_name"));
+
                     if (clab.startsWith("Transaksi ")) {
                         clab = clab.substring(10);
                     }
@@ -1105,12 +1119,12 @@ public class txHandler {
             }
             if (txElements[2].startsWith("A5")) {
                 excludeList = "and a.service_id not in ('A54911', 'A51410', 'A53100', 'A53211', 'A53221', 'A54921', 'A54931', 'A54941', \n" +
-                        "'A54B11', 'A54A10', 'A54110', 'A54211', 'A54221', 'A54311', 'A54321', 'A54410', \n" +
+                        "'A54B11', 'A54A10', 'A54110', 'A54211', 'A54221', 'A54311', 'A54321', 'A54331', 'A54341', 'A54410', 'A5C210', 'A5C110', \n" +
                         "'A54431', 'A54433', 'A54441', 'A54443', 'A54451', 'A54453', 'A54461', 'A54510', \n" +
                         "'A54520', 'A54530', 'A54540', 'A54550', 'A54560', 'A57000', 'A57200', 'A57400', \n" +
                         "'A58000', 'A54421', 'A54423', 'A54C10', 'A54C20', 'A54C51', 'A54C52', 'A54C53', \n" +
                         "'A54C54', 'A52100', 'A52210', 'A52220', 'A52300', 'A54950', 'A54710', 'A54720', " +
-                        "'A54800', 'A59000', 'A54331') \n";
+                        "'A54800', 'A59000') \n";
             }
             if (txElements[2].startsWith("A9")) {
                 excludeList = "and a.service_id not in ('A91000', 'A92000', 'A93000', 'A94000', 'A95000')\n";
@@ -1217,7 +1231,15 @@ public class txHandler {
                         DecimalFormatSymbols idrFormat = new DecimalFormatSymbols(Locale.getDefault());
                         idrFormat.setDecimalSeparator(',');
                         DecimalFormat formatter = new DecimalFormat("###,###,##0", idrFormat);
+//                        if (cTx!=null) {
+//                            if (!cTx.startsWith("Pembayaran PLN") && !cTx.startsWith("Pembayaran Non-")) {
+//                                d = d / 100;
+//                            }
+//                        }
                         d = d/100;
+//                        if (cTx.startsWith("Pembayaran PLN Pascabayar")) {
+//                            d = d / 100;
+//                        }
 //                        if (!cTx.startsWith("Pembayaran PLN")) {
 //                            d = d/100;
 //                        }
@@ -1230,7 +1252,7 @@ public class txHandler {
                     data.add(new PrintSize(FontSize.NORMAL,":|"+cAmo+"\n"));
                     data.add(new PrintSize(FontSize.NORMAL, cCard + "|:"));
                     data.add(new PrintSize(FontSize.NORMAL,":|"+cExp+"\n"));
-                    data.add(new PrintSize(FontSize.NORMAL, "STAN : "+cStan));
+                    data.add(new PrintSize(FontSize.NORMAL, " TRACE NO : "+cStan));
                     data.add(new PrintSize(FontSize.NORMAL, "\n"));
                     data.add(new PrintSize(FontSize.NORMAL, "TGL  : "+cTgl+"|:"));
                     data.add(new PrintSize(FontSize.NORMAL, ":|JAM  : "+cJam+"\n"));
@@ -1387,7 +1409,7 @@ public class txHandler {
 
         //get request data
         String reqData = getData(rqContent);
-        if (reqData.equals("") && !isLogon && !isNoInput) {
+        if (reqData.equals("") && !isLogon && !isNoInput && !isNoInput2) {
             return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Data transaksi tidak lengkap\",\n" +
                     "\"value\":\"Data transaksi tidak lengkap\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
                     "\"type\":\"3\",\"title\":\"Gagal\"}}");
@@ -1400,6 +1422,7 @@ public class txHandler {
         Cursor cMeta = clientDB.rawQuery(qMeta, null);
         //get query result
         int metaCount = cMeta.getCount();
+
         //handler for empty meta
         if (metaCount < 1) {
             Log.e("TX", "Service Meta request not found.");
@@ -1533,7 +1556,9 @@ public class txHandler {
                 serviceid.equals("A25100") ||
                 serviceid.equals("A92001") ||
                 serviceid.equals("A93001") ||
-                serviceid.equals("A94001")){
+                serviceid.equals("A94001") ||
+                serviceid.equals("A5C220") ||
+                serviceid.equals("A5C230")){
             reversable = true;
         }
 
@@ -1637,16 +1662,16 @@ public class txHandler {
 //                        "A54800", "A59000", "A54331", "A71001", "A72000", "A72001", "A73000", "A61000",
 //                        "A62000", "A63000", "A2A100","A29100","A23100", "A22000","A23000","A22100","A2B000","A2B100"};
                 String array[] = {"A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
-                        "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321",
+                        "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321", "A54331", "A54341",
                         "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
                         "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
                         "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
                         "A54C53", "A54C54", "A52220", "A52300", "A54950", "A54710",
-                        "A54720", "A54800", "A59000", "A54331",
+                        "A54720", "A54800", "A59000",
 
                         "A71001", "A72000", "A72001", "A73000",
 
-                        "A61000", "A62000", "A63000",
+                        "A61000", "A62000", "A63000", "A52100", "A5C210",
 
                         "A21100", "A22000", "A22100", "A23000",
                         "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
@@ -1707,19 +1732,20 @@ public class txHandler {
             }
             cRD.close();
             writeDebugLog("RESP_DATA", replyJSON.toString());
-            if (serviceid.equals("A54312")) {
-                String tunggakan = ((String) replyJSON.get("tunggakan")).trim();
-                if (tunggakan.matches("-?\\d+(\\.\\d+)?")) {
-                    int tgk = Integer.parseInt(tunggakan);
-                    if (tgk<1) {
-                        jroot = mlr.loadMenu(context, "543120E", replyJSON);
-                    } else {
-                        jroot = mlr.loadMenu(context, screenResponse, replyJSON);
-                    }
-                } else {
-                    jroot = mlr.loadMenu(context, screenResponse, replyJSON);
-                }
-            } else if (serviceid.equals("A54322")) {
+//            if (serviceid.equals("A54312")) {
+//                String tunggakan = ((String) replyJSON.get("tunggakan")).trim();
+//                if (tunggakan.matches("-?\\d+(\\.\\d+)?")) {
+//                    int tgk = Integer.parseInt(tunggakan);
+//                    if (tgk<1) {
+//                        jroot = mlr.loadMenu(context, "543120E", replyJSON);
+//                    } else {
+//                        jroot = mlr.loadMenu(context, screenResponse, replyJSON);
+//                    }
+//                } else {
+//                    jroot = mlr.loadMenu(context, screenResponse, replyJSON);
+//                }
+//            } else
+            if (serviceid.equals("A54322")) {
                 String txrc = "00";
                 if (replyJSON.has("msg_rc")) {
                     txrc = (String) replyJSON.get("msg_rc");
@@ -1761,6 +1787,14 @@ public class txHandler {
 //                String pTahun = periode.substring(2);
 //                periode = pBulan + "/" + pTahun.substring(2);
 //                replyJSON.put("periode", periode);
+//            } else if (serviceid.equals("A5C210")) {
+//
+//                String pay_mode = (String) replyJSON.get("pay_stat");
+//                if (pay_mode.equals("Y")) {
+//                    jroot = mlr.loadMenu(context, "5C2100F", replyJSON);
+//                } else {
+//                    jroot = mlr.loadMenu(context, screenResponse, replyJSON);
+//                }
             } else {
                 if (isLogon) {
                     //save key here
@@ -1795,12 +1829,16 @@ public class txHandler {
                             "\"type\":\"2\",\"title\":\"Sukses\"}}");
                 }
 // Nambah stan info depo & saldo 
-                if(screenResponse.equals("521000F") || screenResponse.equals("231000F")){
+                if(screenResponse.equals("231000F")){
                     String updInv = "update holder set seq = case when seq = 999999 then 0 else seq + 1 end ";
                     clientDB.execSQL(updInv);
                 }
 
                 jroot = mlr.loadMenu(context, screenResponse, replyJSON);
+
+                if (jroot.has("to_be_id") && jroot.get("to_be_id").equals("5C2100F")){
+                    jroot = mlr.loadMenu(context, "5C2100F", replyJSON);
+                }
             }
             if (replyJSON.has("server_ref")) {
                 jroot.put("server_ref",replyJSON.get("server_ref"));

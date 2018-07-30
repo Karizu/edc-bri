@@ -45,6 +45,7 @@ public class MenuListResolver {
         helperDb = new DataBaseHelper(context);
         SQLiteDatabase clientDB = null;
         String menuTitle="";
+        String comboboxValues = "";
         jroot = new JSONObject();
         try {
             helperDb.openDataBase();
@@ -77,7 +78,9 @@ public class MenuListResolver {
             c = clientDB.rawQuery(Select, null);
             JSONArray comp = new JSONArray();
             JSONObject comps = new JSONObject();
+            JSONObject replyJSON = null;
             JSONObject component = new JSONObject();
+            String componentId = "";
             boolean skipComponent = false;
             if (c.moveToFirst()) {
                 do {
@@ -86,8 +89,10 @@ public class MenuListResolver {
                     component.put("visible", String.valueOf(!(c.getString(c.getColumnIndex("visible")).equals("f"))));
                     String compType = c.getString(c.getColumnIndex("component_type_id"));
                     component.put("comp_type", compType);
-                    component.put("comp_id", c.getString(c.getColumnIndex("comp_id")));
+                    componentId = c.getString(c.getColumnIndex("comp_id"));
+                    component.put("comp_id", componentId);
                     String nama = c.getString(c.getColumnIndex("comp_lbl"));
+                    ArrayList<String> valuePrints = null;
                     String valuePrint = "";
                     JSONObject compValues = new JSONObject();
                     JSONArray compValue = new JSONArray();
@@ -124,6 +129,12 @@ public class MenuListResolver {
                             component.put("comp_opt", isMandator.concat(isDisable).concat(inputTyp).concat(minLengt).concat(maxLengt));
                             break;
                     }
+
+                    if ((componentId != null && componentId.equals("54333")) && menuId.equals("543210F") && comboboxValues!= null && !comboboxValues.equals("")){
+                        component.put("comp_act", comboboxValues);
+                        comboboxValues = null;
+                    }
+
                     component.put("seq", String.valueOf(c.getInt(c.getColumnIndex("sequence"))));
                     String[] compTypeFilter = {"1","2","3","4","5","6"};
                     if (data.has("messageId")&&(Arrays.asList(compTypeFilter).contains(compType))) {
@@ -267,6 +278,10 @@ public class MenuListResolver {
                                             &&(!menuId.endsWith("0"))) {
                                         d = d/100;
                                     }
+                                    if (tidyFieldname.startsWith("nominal")
+                                            &&(menuId.startsWith("543120F"))) {
+                                        d = d*100;
+                                    }
                                     if (menuId.equals("2A1000F") && tidyFieldname.startsWith("nom")) {
                                         d = d/100;
                                     }
@@ -291,15 +306,15 @@ public class MenuListResolver {
                                     if (menuId.equals("931000F") && tidyFieldname.equals("nominal_trx")) {
                                         d = d/100;
                                     }
-                                    if (menuId.equals("543210F") && tidyFieldname.equals("nominal")) {
-                                        d = d*100;
-                                    }
-                                    if (menuId.equals("543220F") && tidyFieldname.equals("nominal")) {
-                                        d = d*100;
-                                    }
-                                    if (menuId.equals("543310F") && tidyFieldname.equals("nominal")) {
-                                        d = d*100;
-                                    }
+//                                    if (menuId.equals("543210F") && tidyFieldname.equals("nominal")) {
+//                                        d = d*100;
+//                                    }
+//                                    if (menuId.equals("543220F") && tidyFieldname.equals("nominal")) {
+//                                        d = d*100;
+//                                    }
+//                                    if (menuId.equals("543310F") && tidyFieldname.equals("nominal")) {
+//                                        d = d*100;
+//                                    }
                                     /* if (menuId.equals("543220F") && tidyFieldname.equals("nom_rptok")) {
                                         d = d*100;
                                     }
@@ -356,6 +371,13 @@ public class MenuListResolver {
                                         valuePrint = "AKTIF";
                                     } else {
                                         valuePrint = "NON AKTIF";
+                                    }
+                                }
+
+
+                                if (tidyFieldname.equals("norek_asal")) {
+                                    if (valuePrint.equals("")) {
+                                        valuePrint = "-";
                                     }
                                 }
 
@@ -454,6 +476,469 @@ public class MenuListResolver {
 
                                 }
 
+                                if (tidyFieldname.equals("list_kodeperusahaan")&&menuId.equals("5C1000F")){
+                                    String rest = valuePrint;
+                                    valuePrint = "";
+
+                                    int i = 0;
+                                    int restlength = rest.length();
+                                    i = i + 3;
+                                    while (i < restlength - 18){
+                                        valuePrint += rest.substring(i, i+5) + "     ";
+                                        i = i + 5;
+                                        if ((i+25)>restlength){
+                                            valuePrint += rest.substring(i, i+(restlength-i)) + "\n";
+                                            i = i + (restlength-i);
+                                        }
+                                        else{
+                                            valuePrint += rest.substring(i, i+25) + "\n";
+                                            i = i + 25;
+
+                                        }
+                                    }
+
+                                }
+
+
+
+                                if (tidyFieldname.equals("pembayaran_multipayment")&&menuId.equals("5C2100F")) {
+//                                    String parsedValues = parseBansosData(valuePrint);
+//                                    Log.d("FPRS", parsedValues);
+//                                    System.out.println("BANSOS TEST");
+
+                                    String rest = valuePrint;
+                                    String header = "";
+                                    String content = "";
+                                    String footer = "";
+                                    String modepay = "";
+
+                                    int contentIdx = 0;
+
+                                    String patternStr = "";
+                                    Pattern pattern = null;
+                                    Matcher matcher = null;
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(rest);
+
+                                    if(matcher.find()) {
+                                        contentIdx = matcher.start();
+                                    }
+
+                                    int length = rest.length();
+
+//                                    header = "PEMBELIAN\nRASTRA";
+                                    content = rest.substring(contentIdx, length);
+                                    modepay = rest.substring(0, 4);
+//                                    boolean splitModepay = modepay.substring(3, 4).equals("1");
+//                                    if (splitModepay) {
+//                                        screen.put("id", "5C2100F");
+//                                        menuId = "5C2100F";
+//
+//                                    } else {
+//                                        screen.put("id", "5C2000F");
+//                                        menuId = "5C2000F";
+//                                    }
+
+                                    valuePrint = "";
+
+                                    String[] spli;
+                                    ArrayList<Integer> rSpli = new ArrayList<Integer>();
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(content);
+
+                                    int iSpli = 0;
+                                    while (matcher.find()) {
+                                        iSpli++;
+                                        String tmpSpli = matcher.group(0);
+                                        if (tmpSpli.substring(3,4).equals("0")){
+                                            rSpli.add(Integer.valueOf(iSpli));
+                                        }
+                                    }
+
+                                    spli = content.split("[T]\\d{6}");
+
+                                    for (int i = 0; i < spli.length; i++) {
+//                                        System.out.println(spli[i]);
+                                        boolean skip = false;
+                                        for (Integer intSpli : rSpli) {
+                                            if (intSpli.intValue() == i){
+                                                skip = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (skip) continue;
+
+                                        String[] cSpli = spli[i].split("[D]\\d{6}");
+                                        if (cSpli.length == 2){
+                                            if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")){
+                                                valuePrint += String.format("%1$-" + 20 + "s", cSpli[0]) + ": " + cSpli[1] + "\n";
+                                            }
+                                            else{
+                                                valuePrint += "\n";
+                                            }
+
+                                        }
+//                                        else{
+//                                            valuePrint += spli[i] + "\n";
+//                                        }
+                                    }
+
+                                }
+
+                                if (tidyFieldname.equals("pembayaran_multipayment")&&menuId.equals("5C2000F")) {
+//                                    String parsedValues = parseBansosData(valuePrint);
+//                                    Log.d("FPRS", parsedValues);
+//                                    System.out.println("BANSOS TEST");
+
+                                    String rest = valuePrint;
+                                    String header = "";
+                                    String content = "";
+                                    String footer = "";
+                                    String modepay = "";
+
+                                    int contentIdx = 0;
+
+                                    String patternStr = "";
+                                    Pattern pattern = null;
+                                    Matcher matcher = null;
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(rest);
+
+                                    if(matcher.find()) {
+                                        contentIdx = matcher.start();
+                                    }
+
+                                    int length = rest.length();
+
+//                                    header = "PEMBELIAN\nRASTRA";
+                                    content = rest.substring(contentIdx, length);
+                                    modepay = rest.substring(0, 4);
+                                    boolean splitModepay = modepay.substring(3, 4).equals("1");
+                                    if (splitModepay) {
+                                        screen.put("id", "5C2100F");
+                                        menuId = "5C2100F";
+                                        screen.put("action_url", "A5C230");
+                                        jroot.put("to_be_id", "5C2100F");
+
+                                    } else {
+                                        screen.put("id", "5C2000F");
+                                        menuId = "5C2000F";
+                                    }
+
+                                    valuePrint = "";
+
+                                    String[] spli;
+                                    ArrayList<Integer> rSpli = new ArrayList<Integer>();
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(content);
+
+                                    int iSpli = 0;
+                                    while (matcher.find()) {
+                                        iSpli++;
+                                        String tmpSpli = matcher.group(0);
+                                        if (tmpSpli.substring(3,4).equals("0")){
+                                            rSpli.add(Integer.valueOf(iSpli));
+                                        }
+                                    }
+
+                                    spli = content.split("[T]\\d{6}");
+
+                                    for (int i = 0; i < spli.length; i++) {
+//                                        System.out.println(spli[i]);
+                                        boolean skip = false;
+                                        for (Integer intSpli : rSpli) {
+                                            if (intSpli.intValue() == i){
+                                                skip = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (skip) continue;
+
+                                        String[] cSpli = spli[i].split("[D]\\d{6}");
+                                        if (cSpli.length == 2){
+                                            if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")){
+                                                valuePrint += String.format("%1$-" + 20 + "s", cSpli[0]) + ": " + cSpli[1] + "\n";
+                                            }
+                                            else{
+                                                valuePrint += "\n";
+                                            }
+
+                                        }
+//                                        else{
+//                                            valuePrint += spli[i] + "\n";
+//                                        }
+                                    }
+
+                                }
+
+                                if (tidyFieldname.equals("pln_pascabayar")&&menuId.equals("543110F") ) {
+//                                    String parsedValues = parseBansosData(valuePrint);
+//                                    Log.d("FPRS", parsedValues);
+//                                    System.out.println("BANSOS TEST");
+
+                                    String rest = valuePrint;
+                                    String header = "";
+                                    String content = "";
+                                    String footer = "";
+
+                                    int contentIdx = 0;
+
+                                    String patternStr = "";
+                                    Pattern pattern = null;
+                                    Matcher matcher = null;
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(rest);
+
+                                    if(matcher.find()) {
+                                        contentIdx = matcher.start();
+                                    }
+
+                                    int length = rest.length();
+
+//                                    header = "PEMBELIAN\nRASTRA";
+                                    content = rest.substring(contentIdx, length);
+
+                                    valuePrint = "";
+
+                                    String[] spli;
+                                    ArrayList<Integer> rSpli = new ArrayList<Integer>();
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(content);
+
+                                    int iSpli = 0;
+                                    while (matcher.find()) {
+                                        iSpli++;
+                                        String tmpSpli = matcher.group(0);
+                                        if (tmpSpli.substring(3,4).equals("0")){
+                                            rSpli.add(Integer.valueOf(iSpli));
+                                        }
+                                    }
+
+                                    spli = content.split("[T]\\d{6}");
+
+                                    for (int i = 0; i < spli.length; i++) {
+//                                        System.out.println(spli[i]);
+                                        boolean skip = false;
+                                        for (Integer intSpli : rSpli) {
+                                            if (intSpli.intValue() == i){
+                                                skip = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (skip) continue;
+
+                                        String[] cSpli = spli[i].split("[D]\\d{6}");
+                                        if (cSpli.length == 2){
+                                            if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")){
+                                                valuePrint += String.format("%1$-" + 20 + "s", cSpli[0]) + ": " + cSpli[1] + "\n";
+                                            }
+                                            else{
+                                                valuePrint += "\n";
+                                            }
+
+                                        }
+//                                        else{
+//                                            valuePrint += spli[i] + "\n";
+//                                        }
+                                    }
+
+                                }
+
+                                if (tidyFieldname.equals("pln_prabayar")&&menuId.equals("543210F") ) {
+//                                    String parsedValues = parseBansosData(valuePrint);
+//                                    Log.d("FPRS", parsedValues);
+//                                    System.out.println("BANSOS TEST");
+
+                                    String rest = valuePrint;
+                                    String header = "";
+                                    String content = "";
+                                    String footer = "";
+                                    String comboValue = "";
+
+                                    int contentIdx = 0;
+
+                                    String patternStr = "";
+                                    Pattern pattern = null;
+                                    Matcher matcher = null;
+                                    String[] spli;
+                                    ArrayList<Integer> rSpli = new ArrayList<Integer>();
+                                    int length = 0;
+
+                                    length = rest.length();
+
+                                    patternStr = "[M]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(rest);
+
+                                    if(matcher.find()) {
+                                        contentIdx = matcher.start();
+                                    }
+
+                                    comboValue = rest.substring(contentIdx, length);
+
+                                    spli = comboValue.split("[M]\\d{6}");
+
+                                    comboboxValues = "";
+                                    for (int i = 0; i < spli.length; i++) {
+                                        if(spli[i] == null || spli[i].equals("")) continue;
+                                        comboboxValues += spli[i];
+                                        if (i < spli.length-1){
+                                            comboboxValues += "|";
+                                        }
+                                    }
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(rest);
+
+                                    if(matcher.find()) {
+                                        contentIdx = matcher.start();
+                                    }
+
+                                    length = rest.length();
+
+//                                    header = "PEMBELIAN\nRASTRA";
+                                    content = rest.substring(contentIdx, length);
+
+                                    valuePrint = "";
+
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(content);
+
+                                    int iSpli = 0;
+                                    while (matcher.find()) {
+                                        iSpli++;
+                                        String tmpSpli = matcher.group(0);
+                                        if (tmpSpli.substring(3,4).equals("0")){
+                                            rSpli.add(Integer.valueOf(iSpli));
+                                        }
+                                    }
+
+                                    spli = content.split("[T]\\d{6}");
+
+                                    for (int i = 0; i < spli.length; i++) {
+//                                        System.out.println(spli[i]);
+                                        boolean skip = false;
+                                        for (Integer intSpli : rSpli) {
+                                            if (intSpli.intValue() == i){
+                                                skip = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (skip) continue;
+
+                                        String[] cSpli = spli[i].split("[D]\\d{6}");
+                                        if (cSpli.length == 2){
+                                            if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")){
+                                                valuePrint += String.format("%1$-" + 20 + "s", cSpli[0]) + ": " + cSpli[1] + "\n";
+                                            }
+                                            else{
+                                                valuePrint += "\n";
+                                            }
+
+                                        }
+//                                        else{
+//                                            valuePrint += spli[i] + "\n";
+//                                        }
+                                    }
+
+                                }
+
+                                if (tidyFieldname.equals("pln_nontaglis")&&menuId.equals("543800F") ) {
+//                                    String parsedValues = parseBansosData(valuePrint);
+//                                    Log.d("FPRS", parsedValues);
+//                                    System.out.println("BANSOS TEST");
+
+                                    String rest = valuePrint;
+                                    String header = "";
+                                    String content = "";
+                                    String footer = "";
+
+                                    int contentIdx = 0;
+
+                                    String patternStr = "";
+                                    Pattern pattern = null;
+                                    Matcher matcher = null;
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(rest);
+
+                                    if(matcher.find()) {
+                                        contentIdx = matcher.start();
+                                    }
+
+                                    int length = rest.length();
+
+//                                    header = "PEMBELIAN\nRASTRA";
+                                    content = rest.substring(contentIdx, length);
+
+                                    valuePrint = "";
+
+                                    String[] spli;
+                                    ArrayList<Integer> rSpli = new ArrayList<Integer>();
+
+                                    patternStr = "[T]\\d{6}";
+                                    pattern = Pattern.compile(patternStr);
+                                    matcher = pattern.matcher(content);
+
+                                    int iSpli = 0;
+                                    while (matcher.find()) {
+                                        iSpli++;
+                                        String tmpSpli = matcher.group(0);
+                                        if (tmpSpli.substring(3,4).equals("0")){
+                                            rSpli.add(Integer.valueOf(iSpli));
+                                        }
+                                    }
+
+                                    spli = content.split("[T]\\d{6}");
+
+                                    for (int i = 0; i < spli.length; i++) {
+//                                        System.out.println(spli[i]);
+                                        boolean skip = false;
+                                        for (Integer intSpli : rSpli) {
+                                            if (intSpli.intValue() == i){
+                                                skip = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (skip) continue;
+
+                                        String[] cSpli = spli[i].split("[D]\\d{6}");
+                                        if (cSpli.length == 2){
+                                            if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")){
+                                                valuePrint += String.format("%1$-" + 20 + "s", cSpli[0]) + ": " + cSpli[1] + "\n";
+                                            }
+                                            else{
+                                                valuePrint += "\n";
+                                            }
+
+                                        }
+//                                        else{
+//                                            valuePrint += spli[i] + "\n";
+//                                        }
+                                    }
+
+                                }
 
                                 if (tidyFieldname.equals("pembelian_bansos")&&menuId.equals("920000F") ) {
 //                                    String parsedValues = parseBansosData(valuePrint);
@@ -532,7 +1017,14 @@ public class MenuListResolver {
                                     }
 
                                 }
-                                if (tidyFieldname.equals("info_bansos") || tidyFieldname.equals("data_trx_bansos") || (tidyFieldname.equals("pembelian_bansos")&&menuId.equals("921000F"))) {
+                                if (tidyFieldname.equals("info_bansos") || tidyFieldname.equals("data_trx_bansos")
+                                        || (tidyFieldname.equals("pembelian_bansos")&&menuId.equals("921000F"))
+                                        || (tidyFieldname.equals("pln_pascabayar")&&menuId.equals("54311FF"))
+                                        || (tidyFieldname.equals("pln_prabayar")&&menuId.equals("54321FF"))
+                                        || (tidyFieldname.equals("pln_cetaktoken")&&menuId.equals("543310F"))
+                                        || (tidyFieldname.equals("pln_nontaglis")&&menuId.equals("54380FF"))
+                                        || (tidyFieldname.equals("pembayaran_multipayment")&&menuId.equals("5C200FF"))
+                                        || (tidyFieldname.equals("pembayaran_multipayment")&&menuId.equals("5C210FF"))) {
 //                                    String parsedValues = parseBansosData(valuePrint);
 //                                    Log.d("FPRS", parsedValues);
 //                                    System.out.println("BANSOS TEST");
@@ -541,6 +1033,7 @@ public class MenuListResolver {
                                     String header = "";
                                     String content = "";
                                     String footer = "";
+                                    String nominal = "";
 
                                     int headerIdx = 0;
                                     int contentIdx = 0;
@@ -560,12 +1053,19 @@ public class MenuListResolver {
                                     Log.d("FTRIDX", ""+footerIdx);
 
                                     boolean hasFooter=true;
+                                    boolean skipFooter = false;
 
                                     if (footerIdx<1) {
                                         footerIdx = rest.length();
                                         hasFooter=false;
                                     }
 
+                                    if (menuId.equals("5C200FF")||menuId.equals("5C210FF")){
+                                        skipFooter = true;
+                                    }
+//                                    if (menuId.equals("54311FF")||menuId.equals("54321FF")||menuId.equals("543310F")||menuId.equals("54380FF")){
+//                                        skipFooter = true;
+//                                    }
 
                                     patternStr = "[T]\\d{6}";
                                     pattern = Pattern.compile(patternStr);
@@ -593,8 +1093,9 @@ public class MenuListResolver {
                                         content = rest.substring(contentIdx, length);
                                     }
 
+                                    valuePrints = new ArrayList();
+//                                    valuePrint = "[START_LINE_PARSE]";
                                     valuePrint = "";
-
                                     String[] spli;
 //ignore header from host
 //                                    String titleHeader = "";
@@ -613,7 +1114,16 @@ public class MenuListResolver {
 //
 //                                    screen.put("title", titleHeader);
 
-                                    if (menuId.equals("931000F") || menuId.equals("921000F") || menuId.equals("941000F")){
+                                    if (menuId.equals("54380FF")
+                                            || menuId.equals("5C1000F")
+                                            || menuId.equals("543310F")
+                                            || menuId.equals("54321FF")
+                                            || menuId.equals("54311FF")
+                                            || menuId.equals("5C200FF")
+                                            || menuId.equals("5C210FF")
+                                            || menuId.equals("931000F")
+                                            || menuId.equals("921000F")
+                                            || menuId.equals("941000F")){
                                         String titleHeader = "";
 
                                         spli = header.split("[H]\\d{6}");
@@ -654,15 +1164,69 @@ public class MenuListResolver {
                                             String splitted = spli[i];
                                             String splittag = splitted.substring(0, 7);
                                             String splitval = splitted.substring(7);
-                                            boolean splitVisible = splittag.substring(3, 4).equals("1");
-                                            if (splitVisible) {
+
+                                            String valuetag = splitval.startsWith("D") ? splitval.substring(0, 7) : "";
+                                            String visibleTTag = splittag.substring(3, 4);
+                                            String visibleDTag = !valuetag.equals("") ? valuetag.substring(3, 4) : "0";
+
+                                            int indexTag = splitval.lastIndexOf("D", 17);
+                                            int indexTagD = indexTag + 7;
+                                            String valueTagD = splitval.substring(indexTag, indexTagD);
+                                            String TagD = valueTagD.substring(3,4);
+
+                                            boolean notVisibleTag = (visibleTTag.equals("0") && visibleDTag.equals("0"));
+                                            if (!notVisibleTag) {
                                                 String[] cSpli = splitval.split("[D]\\d{6}");
                                                 if (cSpli.length == 2) {
                                                     if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")) {
-                                                        valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + cSpli[1] + "\n";
-                                                    } else {
+
+                                                        if (TagD.equals("2")){
+                                                            valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
+                                                            valuePrint +=  "[C]" +cSpli[1] + "\n";
+                                                        }
+                                                        else if (TagD.equals("3")) {
+                                                            valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
+                                                            valuePrint +=  "[B]" + cSpli[1] + "\n";
+                                                        }
+
+                                                        else if (TagD.equals("4")) {
+                                                            valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
+                                                            valuePrint +=  "[C][B]" + cSpli[1] + "\n";
+                                                        }
+//                                                        if (cSpli[0].equals("STROOM/TOKEN")){
+//                                                            valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
+//                                                            valuePrint += "[B]" + cSpli[1] + "\n";
+//                                                        }
+//                                                        else {
+//                                                            valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "Rp " + d +"\n";
+//                                                        }
+                                                        else{
+                                                            valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + cSpli[1] + "\n";
+                                                        }
+                                                    }
+                                                    else if (!visibleDTag.equals("") && (menuId.equals("54311FF")||menuId.equals("54321FF")
+                                                            ||menuId.equals("543310F")||menuId.equals("54380FF"))){
+                                                        String dTag = valuetag.substring(3,4);
+                                                        if (dTag.equals("2")){
+                                                            valuePrint +=  "[C]" +cSpli[1] + "\n";
+                                                        }
+                                                        else if (dTag.equals("3")) {
+                                                            valuePrint +=  "[B]" + cSpli[1] + "\n";
+                                                        }
+
+                                                        else if (dTag.equals("4")) {
+                                                            valuePrint +=  "[C][B]" + cSpli[1] + "\n";
+                                                        }
+                                                        else{
+                                                            valuePrint += cSpli[1] + "\n";
+                                                        }
+                                                    }
+                                                    else {
                                                         valuePrint += "\n";
                                                     }
+                                                }
+                                                else {
+                                                    valuePrint += "\n";
                                                 }
                                             }
                                         }
@@ -672,17 +1236,50 @@ public class MenuListResolver {
                                     }
                                     Log.d("VP", valuePrint);
 
-                                    if (hasFooter) {
+                                    if (hasFooter && !skipFooter) {
 
-                                        spli = footer.split("[F]\\d{6}");
+                                        spli = footer.split("[F]\\d{2}");
                                         for (int i = 0; i < spli.length; i++) {
-                                            String tmp = spli[i].replace("[F]\\d{6}", "");
-                                            if (!tmp.equals("")) {
-                                                valuePrint += spli[i] + "\n";
+                                            if (!spli[i].equals("")){
+                                                String sTag = spli[i].substring(0,1);
+                                                String lTag = spli[i].substring(1,3);
+                                                String tmp = spli[i].substring(4);
+                                                int flength = 0;
+                                                try {
+                                                    flength = Integer.parseInt(lTag);
+                                                }
+                                                catch (Exception e){
+                                                    flength = 0;
+                                                }
+
+                                                if (flength>0) {
+                                                    if (sTag != null){
+                                                        if (sTag.equals("2")){
+                                                            valuePrint +=  "[C]" +tmp + "\n";
+                                                        }
+                                                        else if (sTag.equals("3")) {
+                                                            valuePrint +=  "[B]" + tmp + "\n";
+                                                        }
+
+                                                        else if (sTag.equals("4")) {
+                                                            valuePrint +=  "[C][B]" + tmp + "\n";
+                                                        }
+                                                        else{
+                                                            valuePrint +=  tmp + "\n";
+                                                        }
+                                                    }
+                                                    else{
+                                                        valuePrint += "\n";
+                                                    }
+                                                }
+                                                else {
+                                                    valuePrint += "\n";
+                                                }
                                             }
                                         }
                                     }
 
+                                    valuePrints.add(valuePrint);
                                 }
                             } else {
                                 if (tidyFieldname.equals("late")) {
@@ -697,25 +1294,61 @@ public class MenuListResolver {
                         if (!screen.isNull("action_url")){
                             action_url = screen.get("action_url").toString();
                         }
-                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_rc_48") != null){
-                            valuePrint = jValue.getString("msg_rc_48");
-                            valuePrint = valuePrint.replace("RC03","");
+//                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_rc_48") != null){
+//                            valuePrint = jValue.getString("msg_rc_48");
+//                            valuePrint = valuePrint.replace("RC03","");
+//
+//                            String res = valuePrint;
+//                            valuePrint = "";
+//                            String[] spli = res.split("[L]\\d{4}");
+//                            for (int i = 0 ; i < spli.length ; i ++) {
+//                                valuePrint += spli[i] + "\n";
+//                            }
+//                        }
 
+                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_rc_48") != null){
+                            if (!jValue.getString("msg_rc_48").startsWith("RC") && !jValue.getString("msg_rc_48").startsWith("L")){
+                                valuePrint = jValue.getString("msg_resp");
+                                valuePrint = valuePrint.replace("RC03","");
+                            } else {
+                                valuePrint = jValue.getString("msg_rc_48");
+                                valuePrint = valuePrint.replace("RC03","");
+                            }
                             String res = valuePrint;
                             valuePrint = "";
                             String[] spli = res.split("[L]\\d{4}");
                             for (int i = 0 ; i < spli.length ; i ++) {
-                                valuePrint += spli[i] + "\n";
+                                if (!spli[i].startsWith("RC02")) {
+                                    valuePrint += spli[i] + "\n";
+                                } else {
+                                    valuePrint += "\n";
+                                }
                             }
                         }
 
-                        if (!valuePrint.startsWith("\n")) {
-                            valuePrint = valuePrint.trim();
-                        }
-                        valuePrint = fieldPrefix+valuePrint;
-                        cmVal.put("value", valuePrint);
-                        cmVal.put("print", valuePrint);
-                        compValue.put(cmVal);
+//                        if (valuePrints != null){
+//                            for (String vp : valuePrints) {
+//                                if (!vp.startsWith("\n")) {
+//                                    vp = vp.trim();
+//                                }
+//                                vp = fieldPrefix+vp;
+//
+//                                JSONObject itrCmVal = new JSONObject();
+//
+//                                itrCmVal.put("value", vp);
+//                                itrCmVal.put("print", vp);
+//                                compValue.put(itrCmVal);
+//                            }
+//                        }
+//                        else{
+                            if (!valuePrint.startsWith("\n")) {
+                                valuePrint = valuePrint.trim();
+                            }
+                            valuePrint = fieldPrefix+valuePrint;
+                            cmVal.put("value", valuePrint);
+                            cmVal.put("print", valuePrint);
+                            compValue.put(cmVal);
+//                        }
                         compValues.put("comp_value", compValue);
                         component.put("comp_values", compValues);
                     } else if (data.has("msg_rc")&&(Arrays.asList(compTypeFilter).contains(compType))) {

@@ -221,7 +221,7 @@ public class ESCPOSApi {
     public static void printStruk(Bitmap image,List<PrintSize>data,List<String> mdata,
                                   String tid, String mid, String stan, int pcopy, String svrRef,
                                   String svrDate, String svrTime, String cardType, String cardNumber,
-                                  String screenLoader, String batchNumber, String svrAppr) {
+                                  String screenLoader, String batchNumber, String svrAppr, String serialNumber, String versionNumber) {
         BitSet imageBits = getBitsImageData(image);
 
         byte widthLSB = (byte) (image.getWidth() & 0xFF);
@@ -311,11 +311,11 @@ public class ESCPOSApi {
             strTime = svrTime;
         }
         printCommandsSmall(strDate + ", " +strTime + "\n");
-        sameLine = addSpaceBetween("BATCH  : " + batchNumber,"TRACE NO : " + stan + "  ",false);
+        sameLine = addSpaceBetween("BATCH  : " + batchNumber,"  " + "TRACE NO : " + stan,false);
         printCommandsSmall(sameLine + "\n");
         if (true) {
 //            if (!svrRef.equals("000000000000")) {
-            sameLine = addSpaceBetween("REF NO : " + svrRef, "APPR : " + svrAppr, false);
+            sameLine = addSpaceBetween("REF NO : " + svrRef, "APPR   : " + svrAppr, false);
             printCommandsSmall(sameLine + "\n");
         }
         for(PrintSize pz : data){
@@ -356,19 +356,19 @@ public class ESCPOSApi {
         printCommands(CENTER_ALIGN);
         String copyTypeText = "--DUPLICATE COPY--\n";
         if (pcopy==0) {
-            copyTypeText = "--CUSTOMER COPY--\n";
+            copyTypeText = "--CUSTOMER COPY--\n \n  " + versionNumber + "                " + serialNumber;
             if (screenLoader.equals("71000FF")||screenLoader.equals("721000F")||screenLoader.equals("731000F")) {
-                copyTypeText = "--AGENT COPY--\n";
+                copyTypeText = "--AGENT COPY--\n \n  " + versionNumber + "                " + serialNumber;
             }
         } else if (pcopy==1) {
-            copyTypeText = "--BANK COPY--\n";
+            copyTypeText = "--BANK COPY--\n \n  " + versionNumber + "                " + serialNumber;
         } else if (pcopy==2) {
-            copyTypeText = "--MERCHANT COPY--\n";
+            copyTypeText = "--MERCHANT COPY--\n \n  " + versionNumber + "                " + serialNumber;
             if (screenLoader.equals("71000FF")||screenLoader.equals("721000F")||screenLoader.equals("731000F")) {
-                copyTypeText = "--CUSTOMER COPY--\n";
+                copyTypeText = "--CUSTOMER COPY--\n \n  " + versionNumber + "                " + serialNumber;
             }
         } else {
-            copyTypeText = "--DUPLICATE COPY--\n";
+            copyTypeText = "--DUPLICATE COPY--\n \n  " + versionNumber + "                " + serialNumber;
         }
         printCommandsSmall(copyTypeText);
         printCommands("\n");
@@ -381,7 +381,8 @@ public class ESCPOSApi {
     }
 
     public static void printSettlement(Bitmap image,List<PrintSize>data,List<String> mdata,
-                                       String tid, String mid, String stan, String svrDate, String svrTime, String batchNumber) {
+                                       String tid, String mid, String stan, String svrDate,
+                                       String svrTime, String batchNumber, String serialNumber, String versionNumber) {
         BitSet imageBits = getBitsImageData(image);
 
         byte widthLSB = (byte) (image.getWidth() & 0xFF);
@@ -470,7 +471,7 @@ public class ESCPOSApi {
                 printCommands(pz);
             }
         }
-        printCommands("\n");
+        printCommandsSmall("  " + versionNumber + "               " + serialNumber);
         printCommands("\n");
         printCommands("\n");
         printCommands("\n");
@@ -479,7 +480,7 @@ public class ESCPOSApi {
         PrinterInterface.PrinterClose();
     }
 
-    public static void printReport(Bitmap image,List<PrintSize>data,List<String> mdata, String tid, String mid, String stan) {
+    public static void printReport(Bitmap image,List<PrintSize>data,List<String> mdata, String tid, String mid, String stan, String serialNumber, String versionNumber) {
         BitSet imageBits = getBitsImageData(image);
 
         byte widthLSB = (byte) (image.getWidth() & 0xFF);
@@ -562,7 +563,7 @@ public class ESCPOSApi {
                 printCommands(pz);
             }
         }
-        printCommands("\n");
+        printCommandsSmall("  " + versionNumber + "               " + serialNumber);
         printCommands("\n");
         printCommands("\n");
         printCommands("\n");
@@ -572,7 +573,7 @@ public class ESCPOSApi {
         PrinterInterface.PrinterClose();
     }
 
-    public static void printDetailReport(Bitmap image,List<PrintSize>data,List<String> mdata, String tid, String mid, String stan) {
+    public static void printDetailReport(Bitmap image,List<PrintSize>data,List<String> mdata, String tid, String mid, String stan, String serialNumber, String versionNumber) {
         BitSet imageBits = getBitsImageData(image);
 
         byte widthLSB = (byte) (image.getWidth() & 0xFF);
@@ -654,7 +655,7 @@ public class ESCPOSApi {
                 printCommands(pz);
             }
         }
-        printCommands("\n");
+        printCommandsSmall("  " + versionNumber + "               " + serialNumber);
         printCommands("\n");
         printCommands("\n");
         printCommands("\n");

@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -468,9 +469,11 @@ public class ISO8583Parser {
                 String valueFromDB;
                 int bitId = bitDefCursor.getInt(bitDefCursor.getColumnIndex("iso_bit_uid"));
                 Log.i("ISO_DUMP", "BIT " + String.valueOf(bitId));
+
                 if (bitId == 41 || bitId == 42) {
                     //pass
-                } else {
+                }
+                else {
                     switch (valMode) {
                         case ValueFromParam:
                             //dynamic value
@@ -496,11 +499,20 @@ public class ISO8583Parser {
                                 }
                                 metaList.close();
 //                                Log.d("MSG", msg.toString());
-                                elementValue = (String) msg.get(lookupId);
-                                if (lookupId.equals("no_va")) {
-                                    elementValue += "    ";
+                                if (serviceId.equals("A54331") && String.valueOf(bitId).equals("35")){
+                                    elementValue = mpart[0];// mpart[0];
                                 }
-//                                Log.d("PICK", elementValue);
+//                                else if (serviceId.equals("A54331") && String.valueOf(bitId).equals("52")){
+//                                    elementValue = "E8A3B62B50A29D5A";
+//                                }
+                                else{
+                                    elementValue = (String) msg.get(lookupId);
+                                    if (lookupId.equals("no_va")) {
+                                        elementValue += "    ";
+                                    }
+                                }
+
+                                  Log.d("PICK", elementValue);
                             } else {
                                 addList.moveToFirst();
                                 do {
@@ -576,6 +588,9 @@ public class ISO8583Parser {
                                 case "stan":
                                     valueFromDB = stan;
                                     break;
+                                case "currDateTime":
+                                    valueFromDB = getCurrDateTime();
+                                    break;
                             }
                             elementValue = valueFromDB;
                             break;
@@ -598,11 +613,36 @@ public class ISO8583Parser {
                                 case "stan":
                                     valueFromDB = stan;
                                     break;
+                                case "currDateTime":
+                                    valueFromDB = getCurrDateTime();
+                                    break;
                             }
                             cIso.close();
                             elementValue = valueFromDB;
                             break;
                     }
+                }
+                if (bitId == 48 && serviceId.equals("A54311")) {
+                    elementValue = StringUtils.rightPad(elementValue, 60);
+                }
+                if (bitId == 48 && serviceId.equals("A54321")) {
+                    elementValue = StringUtils.rightPad(elementValue, 60);
+                }
+                if (bitId == 48 && serviceId.equals("A54322")) {
+                    elementValue = elementValue+"C010002"+msg.get("nominal");
+                }
+                if (bitId == 48 && serviceId.equals("A54331")) {
+                    elementValue = elementValue + " " + msg.get("tx_ref");
+                }
+                if (bitId == 48 && serviceId.equals("A5C210")) {
+                    elementValue = elementValue + msg.get("kd_billing");
+//                    elementValue = StringUtils.rightPad(elementValue + msg.get("kd_billing"), 25);
+                }
+                if (bitId == 48 && serviceId.equals("A54341")) {
+                    elementValue = StringUtils.rightPad(elementValue, 60);
+                }
+                if (bitId == 48 && serviceId.equals("A53211")) {
+                    elementValue = StringUtils.rightPad(elementValue, 60);
                 }
                 //log.info(elementValue);
                 if (bitId == 35) {
@@ -618,11 +658,14 @@ public class ISO8583Parser {
                     if (elementValue.matches("-?\\d+(\\.\\d+)?")) {
                         e4log = Long.valueOf(elementValue);
                     }
-                    if (serviceId.equals("A54322")||serviceId.equals("A54331")) {
+                    if (serviceId.equals("A54322")||serviceId.equals("A54331")||serviceId.equals("A5C220")||serviceId.equals("A5C230")) {
 //                        e4log = (e4log - 2500) * 100;
                         e4log = (e4log) * 100;
                     }
                     elog = elog.replace("bit4", String.valueOf(e4log));
+//                    if (serviceId.equals("A54312")) {
+//                        elementValue = elementValue.substring(2) + "00";
+//                    }
                     if (elementValue.length()<12) {
                         elementValue = padRight(elementValue, 12, '0');
 //                        elementValue = elementValue.substring(2) + "00";
@@ -680,13 +723,13 @@ public class ISO8583Parser {
 //                "A62000", "A63000", "A2A100","A29100","A23100", "A22000","A23000","A22100","A2B000","A2B100"};
 
         String array[] = {"L00001",
-                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321",
-                "A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
+                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311" , "A54321", "A54341", "A5C210",
+                "A54911", "A51410", "A53100", "A53221", "A54921", "A54931",
                 "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
                 "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
                 "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
-                "A54C53", "A54C54", "A52100", "A52210", "A52220", "A52300", "A54950", "A54710",
-                "A54720", "A54800", "A59000", "A54331",
+                "A54C53", "A54C54", "A52210", "A52220", "A54950", "A54710",
+                "A54720", "A54800",
 
                 "A71001", "A72000", "A72001", "A73000",
 
@@ -696,7 +739,7 @@ public class ISO8583Parser {
                 "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                 "A92000", "A93000", "A94000"};
 
-//                "A91000", };
+//                "A91000", "A52100","A52300","A59000", "A53211",};
         boolean matched_array = false;
         for(int i=0; i < array.length; i++){
             if(serviceId.equals(array[i])){
@@ -876,6 +919,9 @@ public class ISO8583Parser {
                                 case "stan":
                                     valueFromDB = stan;
                                     break;
+                                case "currDateTime":
+                                    valueFromDB = getCurrDateTime();
+                                    break;
                             }
                             elementValue = valueFromDB;
                             break;
@@ -897,6 +943,9 @@ public class ISO8583Parser {
                                     break;
                                 case "stan":
                                     valueFromDB = stan;
+                                    break;
+                                case "currDateTime":
+                                    valueFromDB = getCurrDateTime();
                                     break;
                             }
                             cIso.close();
@@ -996,15 +1045,15 @@ public class ISO8583Parser {
             if (longAmount>0) {
                 updAmount = ", amount = " + String.valueOf(longAmount);
             }
-            if (Arrays.asList(plnSvc).contains(serviceId)) {
-                plnAmt = (longAmount) * 100;
-                updAmount = ", amount = " + String.valueOf(plnAmt);
-                if (IsoBitValue[48]!=null) {
-                    plnAmt = (Long.parseLong(IsoBitValue[48].substring(88,97))) * 100;
-                    updAmount = ", amount = " + String.valueOf(plnAmt);
-                }
-            }
-            if (serviceId.equals("A54312")||serviceId.equals("A54311")) {
+//            if (Arrays.asList(plnSvc).contains(serviceId)) {
+//                plnAmt = (longAmount) * 100;
+//                updAmount = ", amount = " + String.valueOf(plnAmt);
+//                if (IsoBitValue[48]!=null) {
+//                    plnAmt = (Long.parseLong(IsoBitValue[48].substring(88,97))) * 100;
+//                    updAmount = ", amount = " + String.valueOf(plnAmt);
+//                }
+//            }
+             if (serviceId.equals("A54312") || serviceId.equals("A54322") || serviceId.equals("A54342")) {
                 Log.d("TEST", "MASUK");
                 updAmount = ", amount = " + String.valueOf(longAmount * 100);
             }
@@ -1203,9 +1252,11 @@ public class ISO8583Parser {
                             if (sbValue.startsWith("02")) {
                                 sbValue = "PRIMA";
                             } else if (sbValue.startsWith("03")) {
-                                sbValue = "ATM BERSAMA";
-                            }else if (sbValue.startsWith("01")) {
-                                sbValue = "LINK/HIMBARA";
+                                sbValue = "BERSAMA";
+                            } else if (sbValue.startsWith("01")) {
+                                sbValue = "LINK";
+                            } else if (sbValue.startsWith("00")) {
+                                sbValue = "BRI";
                             }
                         }
                         break;
@@ -1269,6 +1320,12 @@ public class ISO8583Parser {
 
     private String getCurrDate() {
         SimpleDateFormat datef = new SimpleDateFormat("MMdd");
+        Date date = new Date();
+        return datef.format(date);
+    }
+
+    private String getCurrDateTime() {
+        SimpleDateFormat datef = new SimpleDateFormat("MMddHHmmss");
         Date date = new Date();
         return datef.format(date);
     }

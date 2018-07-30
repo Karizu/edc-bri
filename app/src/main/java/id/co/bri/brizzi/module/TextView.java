@@ -43,6 +43,10 @@ public class TextView extends LinearLayout {
             String tag = "";
             String value = "";
             value = comp.getString("comp_lbl");
+            value = value.replace("[T]", "");
+            value = value.replace("[C]", "");
+            value = value.replace("[B]", "");
+            value = value.replace("[START_LINE_PARSE]", "");
 //            value = value.replace("\\[pad_40\\]","");
             String lbl = value;
 

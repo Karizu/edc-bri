@@ -316,6 +316,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             setMessage("Terjadi kesalahan.\n ERROR [05]");
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             Log.e(TAG, "ERROR WHEN OPENING DEVICES");
+            cc.searchEnd();
+            smc.closedevice();
         }
     }
 
@@ -1429,6 +1431,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 writeDebugLog(TAG, "cmd: " + cmd + " || " + Keycard);
                 // 7. Card � Get UID
                 writeDebugLog(TAG, "UID || " + cData.getUid());
+//                cmd = "90BD000007" + CardNumber + cData.getUid() + "BD0000000017000000" + Keycard;
                 cmd = "80B0000020" + CardNumber + cData.getUid() + "FF0000030080000000" + Keycard;
                 SamResponse = smc.sendCmd(StringLib.hexStringToByteArray(cmd));
                 contentValues = new ContentValues();
@@ -3116,6 +3119,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
 //            writeDebugLog(TAG, "cmd: 0A00 || " + Keycard);
             // 7. Card � Get UID
 //            writeDebugLog(TAG, "UID || " + cData.getUid());
+//            String cmd = "90BD000007" + cData.getCardNumber() + cData.getUid() + "BD0000000017000000" + Keycard;
             String cmd = "80B0000020" + cData.getCardNumber() + cData.getUid() + "FF0000010080000000" + Keycard;
 //            writeDebugLog(TAG, cmd);
             SamResponse = smc.sendCmd(StringLib.hexStringToByteArray(cmd));
@@ -3822,11 +3826,13 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             String cmd = "";
             StringBuilder result = new StringBuilder();
             //2. Card � Select AID 1
+//            String aid = smc.sendCmd(StringLib.hexStringToByteArray("90BD000007BD0000000017000000"));
             String aid = smc.sendCmd(StringLib.hexStringToByteArray("00A4040C09A00000000000000011"));
             ContentValues contentValues = new ContentValues();
             contentValues.put("id_aid_log", cData.getBrizziIdLog());
             contentValues.put("device", 0);
-            contentValues.put("cmd", "00A4040C09A00000000000000011");
+            contentValues.put("cmd", "90BD000007BD0000000017000000");
+//            contentValues.put("cmd", "00A4040C09A00000000000000011");
             contentValues.put("rc", aid);
             contentValues.put("timestamp", new Date().getTime());
             tx.insertIntoCmdLog(contentValues);
@@ -3963,6 +3969,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
 //                    writeDebugLog(TAG, "cmd: 0A00 || " + Keycard);
                     // 7. Card � Get UID
 //                    writeDebugLog(TAG, "UID || " + cData.getUid());
+//                    cmd = "90BD000007" + CardNumber + cData.getUid() + "BD0000000017000000" + Keycard;
                     cmd = "80B0000020" + CardNumber + cData.getUid() + "FF0000030080000000" + Keycard;
                     SamResponse = smc.sendCmd(StringLib.hexStringToByteArray(cmd));
                     contentValues = new ContentValues();
@@ -4468,6 +4475,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     writeDebugLog(TAG, "cmd: 0A00 || " + Keycard);
                     // 7. Card � Get UID
                     writeDebugLog(TAG, "UID || " + cData.getUid());
+//                    cmd = "90BD000007" + cData.getCardNumber() + cData.getUid() + "BD0000000017000000" + Keycard;
                     cmd = "80B0000020" + cData.getCardNumber() + cData.getUid() + "FF0000010080000000" + Keycard;
 //                Log.i(TAG, cmd);
                     SamResponse = smc.sendCmd(StringLib.hexStringToByteArray(cmd));
@@ -4765,7 +4773,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 cData.getHash4B() + "', '" + cData.getHashVoid() + "', '" + tmStamp + "');";
         String array[] = {
                 "A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
-                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321",
+                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321", "A54341",
                 "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
                 "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
                 "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
@@ -4939,6 +4947,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         private String mid;
         private String stan;
         private String nomorKartu;
+        private String serialNumber;
+        private String versionNumber;
         private boolean isRunning;
         private FinishedPrint flagMe;
 
@@ -5002,7 +5012,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                         }
                     }
                     ESCPOSApi.printStruk(bitmap, data, mdata, tid, mid, stan, printcount, txRefNum,
-                            svrDate, svrTime, cardType, nomorKartu, "TAPDIALOG", "000000", svrAppr);
+                            svrDate, svrTime, cardType, nomorKartu, "TAPDIALOG", "000000", svrAppr, serialNumber, versionNumber);
                 } else {
                     ESCPOSApi.printStruk(bitmap, data);
                 }
