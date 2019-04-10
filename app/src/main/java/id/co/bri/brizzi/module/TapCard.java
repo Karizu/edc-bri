@@ -725,12 +725,12 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         Calendar endCalendar = Calendar.getInstance();
         int diffYear = endCalendar.get(Calendar.YEAR) - startCalendar.get(Calendar.YEAR);
         int diffMonth = diffYear * 12 + endCalendar.get(Calendar.MONTH) - startCalendar.get(Calendar.MONTH);
-        if (diffMonth > 12&&!cData.getLastTransDate().equals("000000")) {
-            setMessage("Transaksi tidak bisa dilakukan, kartu ditolak");
-            Log.e(TAG, "CARD REJECTED CAUSE LAST TRANS DATE > 12 months");
-            btnOk.setVisibility(VISIBLE);
-            return;
-        }
+//        if (diffMonth > 12&&!cData.getLastTransDate().equals("000000")) {
+//            setMessage("Transaksi tidak bisa dilakukan, kartu ditolak");
+//            Log.e(TAG, "CARD REJECTED CAUSE LAST TRANS DATE > 12 months");
+//            btnOk.setVisibility(VISIBLE);
+//            return;
+//        }
 
         cmd = "80B3000013" + cData.getCardNumber() + cData.getUid() + "00000000";
         String SamResponse = smc.sendCmd(StringLib.hexStringToByteArray(cmd));
@@ -1061,11 +1061,11 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         printSizes.add(new PrintSize(FontSize.NORMAL, "No Kartu         : " + cardNumber() + "\n"));
         printSizes.add(new PrintSize(FontSize.NORMAL, "Saldo Awal       : " +
                 StringLib.strToCurr(String.valueOf(balanceBeforeint), "Rp") + "\n"));
-        printSizes.add(new PrintSize(FontSize.NORMAL, "Aktivasi Deposit : " +
+        printSizes.add(new PrintSize(FontSize.NORMAL, "Update Saldo     : " +
                 StringLib.strToCurr(cData.getTopupAmount(), "Rp") + "\n"));
         printSizes.add(new PrintSize(FontSize.NORMAL, "Saldo Akhir      : " +
                 StringLib.strToCurr(String.valueOf(bAfter), "Rp") + "\n"));
-        printSizes.add(new PrintSize(FontSize.NORMAL, "Sisa Deposit     : " +
+        printSizes.add(new PrintSize(FontSize.NORMAL, "Sisa Saldo       : " +
                 StringLib.strToCurr(cData.getSaldoDeposit(), "Rp") + "\n"));
         printPanelVisibility(VISIBLE);
         btnOk.setVisibility(VISIBLE);
@@ -1094,7 +1094,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             compValues.put("comp_value", compValue);
             component.put("comp_values", compValues);
             comp.put(component);
-            String mTitle = "Aktivasi Deposit BRIZZI";
+            String mTitle = "Update Saldo BRIZZI";
             component = new JSONObject();
             component.put("visible", "true");
             component.put("comp_type", "1");
@@ -1114,7 +1114,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             component.put("visible", "true");
             component.put("comp_type", "1");
             component.put("comp_id", "24303");
-            component.put("comp_lbl", "Aktivasi Deposit    : ");
+            component.put("comp_lbl", "Update Saldo        : ");
             component.put("seq", "1");
             compValues = new JSONObject();
             compValue = new JSONArray();
@@ -1144,7 +1144,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             component.put("visible", "true");
             component.put("comp_type", "1");
             component.put("comp_id", "24305");
-            component.put("comp_lbl", "Sisa Deposit        : ");
+            component.put("comp_lbl", "Sisa Saldo          : ");
             component.put("seq", "1");
             compValues = new JSONObject();
             compValue = new JSONArray();
@@ -1534,35 +1534,35 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     Calendar endCalendar = Calendar.getInstance();
                     long daysFromLastTx = ISO8583Parser.getDateDiff(startCalendar, endCalendar);
 //                    writeDebugLog(TAG, "Unused for " + String.valueOf(daysFromLastTx) + " days");
-                    if (Arrays.asList(FINANCIALTX).contains(cData.getMsgSI())&&!cData.getLastTransDate().equals("000000")) {
-                        if (daysFromLastTx>365) {
-                            String chRes = "00";
-//                            String chRes = changeStatus("cl");
-//                            String chRes = "XX";//Test No Stat Change
-                            if (chRes.equals("00")) {
-                                setMessage("Kartu anda tidak dapat digunakan.\n" +
-                                        "Silahkan lakukan reaktivasi kartu\n" +
-                                        "Kartu anda terakhir digunakan" +
-                                        String.valueOf(daysFromLastTx)
-                                        + " hari\n" +
-                                        "yang lalu");
-                                btnOk.setVisibility(VISIBLE);
-                                cData.setValidationStatus("06");
-                                return null;
-                            } else {
-                                setMessage("Kartu anda tidak dapat digunakan.\n" +
-                                        "Silahkan lakukan reaktivasi kartu\n" +
-                                        "Kartu anda terakhir digunakan" +
-                                        String.valueOf(daysFromLastTx)
-                                        + " hari\n" +
-                                        "yang lalu");
-                                Log.e(TAG, "Penutupan Kartu Gagal : " + chRes);
-                                btnOk.setVisibility(VISIBLE);
-                                cData.setValidationStatus("06");
-                                return null;
-                            }
-                        }
-                    }
+//                    if (Arrays.asList(FINANCIALTX).contains(cData.getMsgSI())&&!cData.getLastTransDate().equals("000000")) {
+//                        if (daysFromLastTx>365) {
+//                            String chRes = "00";
+////                            String chRes = changeStatus("cl");
+////                            String chRes = "XX";//Test No Stat Change
+//                            if (chRes.equals("00")) {
+//                                setMessage("Kartu anda tidak dapat digunakan.\n" +
+//                                        "Silahkan lakukan reaktivasi kartu\n" +
+//                                        "Kartu anda terakhir digunakan" +
+//                                        String.valueOf(daysFromLastTx)
+//                                        + " hari\n" +
+//                                        "yang lalu");
+//                                btnOk.setVisibility(VISIBLE);
+//                                cData.setValidationStatus("06");
+//                                return null;
+//                            } else {
+//                                setMessage("Kartu anda tidak dapat digunakan.\n" +
+//                                        "Silahkan lakukan reaktivasi kartu\n" +
+//                                        "Kartu anda terakhir digunakan" +
+//                                        String.valueOf(daysFromLastTx)
+//                                        + " hari\n" +
+//                                        "yang lalu");
+//                                Log.e(TAG, "Penutupan Kartu Gagal : " + chRes);
+//                                btnOk.setVisibility(VISIBLE);
+//                                cData.setValidationStatus("06");
+//                                return null;
+//                            }
+//                        }
+//                    }
                     boolean akumTime = startCalendar.get(Calendar.MONTH)==endCalendar.get(Calendar.MONTH);
                     if (akumTime) {
                         akumTime = startCalendar.get(Calendar.YEAR)==endCalendar.get(Calendar.YEAR);
@@ -1644,12 +1644,12 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         }
         Calendar endCalendar = Calendar.getInstance();
         long daysFromLastTx = ISO8583Parser.getDateDiff(startCalendar, endCalendar);
-        if (daysFromLastTx > 365&&!cData.getLastTransDate().equals("000000")) {
-            setMessage("Transaksi tidak bisa dilakukan, kartu ditolak");
-            Log.e(TAG, "CARD REJECTED CAUSE LAST TRANS DATE > 365 days");
-            btnOk.setVisibility(VISIBLE);
-            return;
-        }
+//        if (daysFromLastTx > 365&&!cData.getLastTransDate().equals("000000")) {
+//            setMessage("Transaksi tidak bisa dilakukan, kartu ditolak");
+//            Log.e(TAG, "CARD REJECTED CAUSE LAST TRANS DATE > 365 days");
+//            btnOk.setVisibility(VISIBLE);
+//            return;
+//        }
 
 //        writeDebugLog("KIRIM", "MSG_SI " + cData.getMsgSI());
         sendToServer("", cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
@@ -3447,7 +3447,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             cData.setNewBalance(Integer.toString(balanceAfter));
             cData.settDate(DATE.format(new Date()));
             String balanceAfter3B = StringLib.ItoH(Integer.toString(balanceAfter));
-            String jamDeduct = svrTm.replaceAll(":","");
+            String jamDeduct = cData.gettTime().replaceAll(":","");
             if (jamDeduct!=null) {
                 if (jamDeduct.equals("")) {
                     jamDeduct = cData.gettTime();
@@ -3674,12 +3674,12 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             comps.put("comp", comp);
             screen.put("comps", comps);
             screen.put("server_date", svrDt);
-            screen.put("server_time", svrTm);
+            screen.put("server_time", cData.gettTime());
             formReponse.put("screen", screen);
             btnOk.setVisibility(VISIBLE);
             printPanelVisibility(VISIBLE);
             formReponse.put("server_date", svrDt);
-            formReponse.put("server_time", svrTm);
+            formReponse.put("server_time", cData.gettTime());
             formReponse.put("server_appr", cData.getHash4B());
             formReponse.put("card_type", cardType);
             formReponse.put("nomor_kartu", cardNumber());
@@ -3878,12 +3878,16 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     return;
                 }
                 String CardNumber = CardResponse.substring(8, 8 + 16);
+                String PersoDate3B = CardResponse.substring(24, 30);
+                String PersoDate = DATE_TOCOMP.format(DATE.parse(PersoDate3B));
+//                String PersoDate = DATE_TOCOMP.format(DATE_TOCARD.parse(PersoDate3B));
 
                 contentValues = new ContentValues();
                 contentValues.put("card_number", CardNumber);
                 tx.updateAidById(contentValues, cData.getBrizziIdLog());
                 cData.setCardNumber(CardNumber);
                 writeDebugLog(TAG, "cmd:" + cmd + " || " + CardResponse + " CardNumber:" + CardNumber);
+
                 // 4. Card � Get Card Status
                 CardResponse = cc.transmitCmd("BD01000000200000");
                 JSONObject ciStatus = parseCiStatus(CardResponse);
@@ -4035,6 +4039,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 resp.append("No Kartu         : " + cardNumber(ciHeader.getString(BrizziCiHeader.CardNumber.name())) + "\n");
                 printSizes.add(new PrintSize(FontSize.NORMAL, "No Kartu            : " +
                         cardNumber(ciHeader.getString(BrizziCiHeader.CardNumber.name())) + "\n"));
+                objResp.put("perso_date", PersoDate);
+                resp.append("Issue Date : " + PersoDate + "\n");
                 String tgl = DATE_TOCOMP.format(DATE.parse(ciStatus.getString(BrizziCiStatus.ActivationCode.name())));
                 objResp.put("tgl_aktivasi", tgl);
                 resp.append("Tanggal Aktifasi : " + tgl + "\n");
@@ -4045,9 +4051,9 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 resp.append("Aktif s/d        : " + tgl + "\n");
                 printSizes.add(new PrintSize(FontSize.NORMAL, "Aktif s/d           : " + tgl + "\n"));
                 String status = ciStatus.getString(BrizziCiStatus.Status.name()).equals("6161") ? "Aktif" : "Close";
-                if (isPasive&&status.equals("Aktif")) {
-                    status = "Pasif";
-                }
+//                if (isPasive&&status.equals("Aktif")) {
+//                    status = "Pasif";
+//                }
                 resp.append(status + "\n");
                 printSizes.add(new PrintSize(FontSize.NORMAL, "Status Aktif        : " + status + "\n"));
                 printSizes.add(new PrintSize(FontSize.EMPTY, "\n"));
@@ -4773,7 +4779,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 cData.getHash4B() + "', '" + cData.getHashVoid() + "', '" + tmStamp + "');";
         String array[] = {
                 "A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
-                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321", "A54341",
+                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311", "A54321", "A54341", "A5C210",
                 "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
                 "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
                 "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
@@ -4784,20 +4790,18 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
 
                 "A61000", "A62000", "A63000",
 
-                "A2C000", "A2C100", "A2C200",
-
-                "A21100", "A22000", "A22100", "A23000",
+                "A21100", "A22000", "A22100", "A23000", "A23100",
                 "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                 "A91000", "A92000", "A93000", "A94000"};
 
-//        "L00001", "A23100", "A52100", "A52210",
+//        "L00001",  "A52100", "A52210",
 
         boolean matched_array = false;
         for(int i=0; i < array.length; i++){
             if(serviceId.equals(array[i])){
                 matched_array = true;
                 i = array.length;
-//                Log.d("ARRAY", "LIAT ARRAY : " + array[array.length - 1]);
+                Log.d("ARRAY", "LIAT ARRAY : " + array[array.length - 1]);
             }
         }
         if (!matched_array){
@@ -4855,6 +4859,12 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             while (alldata.length() > 63) {
                 String data = alldata.substring(0, 64);
                 writeDebugLog(TAG, "Row : " + data);
+                if (!data.startsWith("3")){
+                    String dt = data.substring(0, 2);
+                    String dataRow = alldata.substring(2, 64);
+                    data = dataRow + dt;
+                }
+                writeDebugLog(TAG, "Row Check : " + data);
                 alldata = alldata.substring(64);
                 try {
                     tlmid = data.substring(0, 16);
@@ -4863,13 +4873,28 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                     tltid = StringLib.hexStringToAscii(tltid).replaceAll("[^\\d.]", " ");
                     tldate = data.substring(32, 38);
                     tldate = tldate.substring(0,2) + "/" + tldate.substring(2,4) + "/" + tldate.substring(4);
+//                    if (tltcode.startsWith("Pembayaran")){
+//                        tltime = data.substring(38, 44);
+//                        int ss = Integer.parseInt(tltime.substring(4));
+//                        int ssTime = ss + 1;
+//                        String SecTime = String.valueOf(ssTime);
+//                         if (SecTime.length()==1){
+//                             tltime = tltime.substring(0,2) + ":" + tltime.substring(2,4) + ":" + "0" +SecTime;
+//                         } else {
+//                             tltime = tltime.substring(0,2) + ":" + tltime.substring(2,4) + ":" + SecTime;
+//                         }
+//                    } else {
+//                        tltime = tltime.substring(0,2) + ":" + tltime.substring(2,4) + ":" + tltime.substring(4);
+//                    }
                     tltime = data.substring(38, 44);
                     tltime = tltime.substring(0,2) + ":" + tltime.substring(2,4) + ":" + tltime.substring(4);
                     tltcode = data.substring(44, 46);
                     tltcode = tltcode
                             .replace("EB", "Pembayaran          ")
+//                            .replace("5E", "Pembayaran          ")
                             .replace("EC", "Topup Online        ")
-                            .replace("EF", "Aktivasi Deposit    ")
+//                            .replace("27", "Topup Online        ")
+                            .replace("EF", "Update Saldo        ")
                             .replace("ED", "Void                ")
                             .replace("5F", "Reaktivasi          ")
                             .replace("FA", "Redeem              ");

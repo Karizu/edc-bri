@@ -450,8 +450,28 @@ public class ESCPOSApi {
         if (svrTime.length()==6) {
             strTime = grabTime(d, svrTime);
         }
+
         printCommandsSmall("DATE/TIME    : " + strDate + " " + strTime + "\n");
-        printCommandsSmall("BATCH        : " + batchNumber);
+
+        int batch = Integer.parseInt(batchNumber);
+        int batchNo = batch - 1;
+        String batchNum = String.format("%06d", batchNo);
+        printCommandsSmall("BATCH        : " + batchNum);
+//        String bacthNum = String.valueOf(batchNo);
+//        if(bacthNum.length()==1){
+//            printCommandsSmall("BATCH        : " + "00000" + bacthNum);
+//        } else if (bacthNum.length()==2){
+//            printCommandsSmall("BATCH        : " + "0000" + bacthNum);
+//        } else if (bacthNum.length()==3){
+//            printCommandsSmall("BATCH        : " + "000" + bacthNum);
+//        } else if (bacthNum.length()==4){
+//            printCommandsSmall("BATCH        : " + "00" + bacthNum);
+//        } else if (bacthNum.length()==5){
+//            printCommandsSmall("BATCH        : " + "0" + bacthNum);
+//        } else {
+//            printCommandsSmall("BATCH        : " + bacthNum);
+//        }
+//        printCommandsSmall("BATCH        : " + batchNumber);
         printCommands("\n");
         for(PrintSize pz : data){
             Log.d("zzzz",pz.getMessage());
@@ -631,6 +651,7 @@ public class ESCPOSApi {
         printCommands(LEFT_ALIGN);
         printCommandsSmall(addSpaceBetween("TERMINAL ID     : ", tid, false) + "\n");
         printCommandsSmall(addSpaceBetween("MERCHANT ID     : ", mid, false) + "\n");
+        printCommandsSmall("\n");
         Date d = new Date();
         printCommandsSmall("PRINT DATE/TIME : " + printDate(d) + " " + printTime(d) + "\n");
         if (!stan.equals("")) {

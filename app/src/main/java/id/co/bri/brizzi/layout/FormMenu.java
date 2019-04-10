@@ -2188,7 +2188,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         String stan = "";
 
         String array_sID[] = {"00001",
-                "549410", "54B110", "54A100", "541100", "542110", "542210", "543110", "543210",
+                "549410", "54B110", "54A100", "541100", "542110", "542210", "543110", "543210", "5C2100",
                 "549110", "514100", "531000", "532110", "532210", "549210", "549310",
                 "544100", "544310", "544330", "544410", "544430", "544510", "544530", "544610",
                 "545100", "545200", "545300", "545400", "545500", "545600", "570000", "572000",
@@ -2200,9 +2200,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
 
                 "610000", "620000", "630000",
 
-                "211000", "220000", "221000",
+                "211000", "220000", "221000", "230000", "231000",
                 // 14032018 #2
-//                "230000", "231000", "910000","521000","523000","590000",
+//                 "910000","521000","523000","590000",
                 "291000", "2A1000", "2B0000", "2B1000", "2D1000", "2A2000",
                 "920000", "930000", "940000"};
         Log.d("PRINT ARRAY", "DILUAR FOR");
@@ -2224,6 +2224,14 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
         } else {
             Log.d("PRINT ARRAY", "Dalam else");
             stan = "000000";
+        }
+
+        if (formId.equals("231000F")){
+            stan = "000000";
+        }
+
+        if (formId.equals("522100F")){
+            stan = StringLib.fillZero(String.valueOf(msgStan), 6);
         }
 
         data.add(new PrintSize(FontSize.EMPTY, "\n"));
@@ -2354,7 +2362,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                             value = value.substring(value.indexOf("]") + 1);
                         }
 
-                        data.add(new PrintSize(size, value + "\n"));
+                                   data.add(new PrintSize(size, value + "\n"));
                     }
 //                    data.add(new PrintSize(FontSize.EMPTY, "\n"));
                 }

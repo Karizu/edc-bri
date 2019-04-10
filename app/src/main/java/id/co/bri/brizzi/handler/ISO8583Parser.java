@@ -61,6 +61,7 @@ public class ISO8583Parser {
     private String serviceId;
     private String messageId;
     private String message;
+    private int msgSequence = 0;
     private int ParseMode;
     private String mti;
     private String stan;
@@ -145,8 +146,8 @@ public class ISO8583Parser {
     }
 
     public static byte[] hexStringToByteArray(String s) {
-        if ((s.length()%2)!=0) {
-            s = s+"F";
+        if ((s.length() % 2) != 0) {
+            s = s + "F";
         }
         int len = s.length();
         byte[] data = new byte[len / 2];
@@ -308,12 +309,12 @@ public class ISO8583Parser {
                 msgScrap = msgScrap.substring(CUTHERE * 2);
             }
             if (elementValue.contains("'")) {
-                elementValue = elementValue.replaceAll("'","''") + " ";
+                elementValue = elementValue.replaceAll("'", "''") + " ";
             }
             IsoBitValue[thisBit.getInt(thisBit.getColumnIndex("iso_bit_uid"))] = elementValue;
             thisBit.close();
             Log.i("ISO_DUMP", "Bit " + String.valueOf(bitPK));
-            Log.i("ISO_DUMP", (currentLength.equals("")?"":"["+currentLength+"]") + elementValue);
+            Log.i("ISO_DUMP", (currentLength.equals("") ? "" : "[" + currentLength + "]") + elementValue);
         }
         Log.i("ISO_DUMP", "Reply for STAN : " + IsoBitValue[11]);
         helperDb.close();
@@ -416,9 +417,20 @@ public class ISO8583Parser {
         if (stanSeq != null) {
             stanSeq.moveToFirst();
             elogId = stanSeq.getInt(0);
-            elogId+=1;
+            elogId += 1;
         }
         stanSeq.close();
+
+        int seqId = 1;
+        String getEseqId = "select max(stan) last_id from edc_log";
+        Cursor sSeq = clientDB.rawQuery(getEseqId, null);
+        if (sSeq != null) {
+            sSeq.moveToFirst();
+            seqId = sSeq.getInt(0);
+            seqId += 1;
+        }
+        sSeq.close();
+
         String elog = "insert or replace into edc_log " +
                 "(log_id, service_id, stan, track2, amount) values (" +
                 String.valueOf(elogId) + ",'" + serviceId + "', '" +
@@ -469,11 +481,11 @@ public class ISO8583Parser {
                 String valueFromDB;
                 int bitId = bitDefCursor.getInt(bitDefCursor.getColumnIndex("iso_bit_uid"));
                 Log.i("ISO_DUMP", "BIT " + String.valueOf(bitId));
+                String rowData;
 
                 if (bitId == 41 || bitId == 42) {
                     //pass
-                }
-                else {
+                } else {
                     switch (valMode) {
                         case ValueFromParam:
                             //dynamic value
@@ -499,20 +511,20 @@ public class ISO8583Parser {
                                 }
                                 metaList.close();
 //                                Log.d("MSG", msg.toString());
-                                if (serviceId.equals("A54331") && String.valueOf(bitId).equals("35")){
+                                if (serviceId.equals("A54331") && String.valueOf(bitId).equals("35")) {
                                     elementValue = mpart[0];// mpart[0];
                                 }
 //                                else if (serviceId.equals("A54331") && String.valueOf(bitId).equals("52")){
 //                                    elementValue = "E8A3B62B50A29D5A";
 //                                }
-                                else{
+                                else {
                                     elementValue = (String) msg.get(lookupId);
                                     if (lookupId.equals("no_va")) {
                                         elementValue += "    ";
                                     }
                                 }
 
-                                  Log.d("PICK", elementValue);
+                                Log.d("PICK", elementValue);
                             } else {
                                 addList.moveToFirst();
                                 do {
@@ -622,6 +634,13 @@ public class ISO8583Parser {
                             break;
                     }
                 }
+//                if (bitId == 48 && serviceId.equals("A63001")){
+//                    int saldo = Integer.parseInt(elementValue.substring(0, 16));
+//                    String fee = elementValue.substring(16);
+//                    int saldoA = saldo - 297000;
+//                    String saldoAkhir = String.valueOf(saldoA);
+//                    elementValue = saldoAkhir + fee;
+//                }
                 if (bitId == 48 && serviceId.equals("A54311")) {
                     elementValue = StringUtils.rightPad(elementValue, 60);
                 }
@@ -629,7 +648,7 @@ public class ISO8583Parser {
                     elementValue = StringUtils.rightPad(elementValue, 60);
                 }
                 if (bitId == 48 && serviceId.equals("A54322")) {
-                    elementValue = elementValue+"C010002"+msg.get("nominal");
+                    elementValue = elementValue + "C010002" + msg.get("nominal");
                 }
                 if (bitId == 48 && serviceId.equals("A54331")) {
                     elementValue = elementValue + " " + msg.get("tx_ref");
@@ -644,11 +663,31 @@ public class ISO8583Parser {
                 if (bitId == 48 && serviceId.equals("A53211")) {
                     elementValue = StringUtils.rightPad(elementValue, 60);
                 }
+                if (bitId == 48 && serviceId.equals("A28100")) {
+                    rowData = msg.get("rowdata").toString();
+                    if (rowData.length() > 900) {
+                        elementValue = elementValue.substring(0, 900);
+                    }
+                }
+
+                if (bitId == 48 && serviceId.equals("A54B11")) {
+                    String eV1, eV2;
+                    eV1 = elementValue.substring(0, 5);
+                    eV2 = elementValue.substring(7);
+                    elementValue = eV1+eV2+"  ";
+                }
+
                 //log.info(elementValue);
                 if (bitId == 35) {
                     elog = elog.replace("bit35", elementValue);
                     elementValue = elementValue.replace("=".charAt(0), "D".charAt(0));
                 }
+
+
+//                if (bitId == 35 && serviceId.equals("A52210")) {
+//                        elementValue = elementValue.substring(0, 27);
+//                }
+
                 // -- Add cent to bit 4
                 if (bitId == 4) {
                     long e4log = 0;
@@ -658,7 +697,7 @@ public class ISO8583Parser {
                     if (elementValue.matches("-?\\d+(\\.\\d+)?")) {
                         e4log = Long.valueOf(elementValue);
                     }
-                    if (serviceId.equals("A54322")||serviceId.equals("A54331")||serviceId.equals("A5C220")||serviceId.equals("A5C230")) {
+                    if (serviceId.equals("A54322") || serviceId.equals("A54331") || serviceId.equals("A5C220") || serviceId.equals("A5C230")) {
 //                        e4log = (e4log - 2500) * 100;
                         e4log = (e4log) * 100;
                     }
@@ -666,21 +705,27 @@ public class ISO8583Parser {
 //                    if (serviceId.equals("A54312")) {
 //                        elementValue = elementValue.substring(2) + "00";
 //                    }
-                    if (elementValue.length()<12) {
+                    if (elementValue.length() < 12) {
                         elementValue = padRight(elementValue, 12, '0');
 //                        elementValue = elementValue.substring(2) + "00";
-                        if (!serviceId.equals("A54312") ) {
+                        if (!serviceId.equals("A54312")) {
                             elementValue = elementValue.substring(2) + "00";
                         }
                     }
                     // Fixed Nominal Bansos
                     if (serviceId.equals("A92001")) {
-                        elementValue = "00" + elementValue.substring(0,10);
+                        elementValue = "00" + elementValue.substring(0, 10);
                     }
                     if (serviceId.equals("A93001")) {
-                        elementValue = "00" + elementValue.substring(0,10);
+                        elementValue = "00" + elementValue.substring(0, 10);
                     }
                 }
+//                ISO8583Parser rpParser = null;
+//                String[] replyValues = rpParser.getIsoBitValue();
+//                if (serviceId.equals("A92001")) {
+//                    replyValues[4] = "00" + replyValues[4].substring(0,10);
+//                }
+
 
 //               && !serviceId.equals("A92001") && !serviceId.equals("A93001")
 //                                && !serviceId.equals("A92000") && !serviceId.equals("A93000")
@@ -701,9 +746,9 @@ public class ISO8583Parser {
                 }
                 byte[] cBitValue = assignElement(bitId, elementValue);
                 tmp.write(cBitValue);
-                Log.i("ISO_DUMP", (currentLength.equals("")?"":"["+currentLength+"]") + elementValue);
-                if (bitId==4) {
-                    if (Long.parseLong(elementValue)>0) {
+                Log.i("ISO_DUMP", (currentLength.equals("") ? "" : "[" + currentLength + "]") + elementValue);
+                if (bitId == 4) {
+                    if (Long.parseLong(elementValue) > 0) {
                         reversable = true;
                     }
                 }
@@ -722,40 +767,67 @@ public class ISO8583Parser {
 //                "A54800", "A59000", "A54331", "A71001", "A72000", "A72001", "A73000", "A61000",
 //                "A62000", "A63000", "A2A100","A29100","A23100", "A22000","A23000","A22100","A2B000","A2B100"};
 
+//        String array[] = {"L00001",
+//                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54321", "A54341", "A5C210",
+//                "A54911", "A51410", "A53221", "A54921", "A54931",
+//                "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
+//                "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
+//                "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
+//                "A54C53", "A54C54", "A52210", "A52220", "A54950", "A54800", "A54710", "A54720",
+//
+//                "A71001", "A72000", "A72001", "A73000",
+//
+//                "A61000", "A62000", "A63000",
+//
+//                "A21100", "A22000", "A22100", "A23000", "A23100",
+//                "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
+//                "A92000", "A93000", "A94000"};
+
         String array[] = {"L00001",
-                "A54941", "A54B11", "A54A10", "A54110", "A54211", "A54221", "A54311" , "A54321", "A54341", "A5C210",
-                "A54911", "A51410", "A53100", "A53221", "A54921", "A54931",
-                "A54410", "A54431", "A54433", "A54441", "A54443", "A54451", "A54453", "A54461",
-                "A54510", "A54520", "A54530", "A54540", "A54550", "A54560", "A57000", "A57200",
-                "A57400", "A58000", "A54421", "A54423", "A54C10", "A54C20", "A54C51", "A54C52",
-                "A54C53", "A54C54", "A52210", "A52220", "A54950", "A54710",
-                "A54720", "A54800",
+                "", "", "", "", "", "", "", "", "",
+                "", "", "", "", "",
+                "", "", "", "", "", "", "", "",
+                "", "", "", "", "", "", "", "",
+                "", "", "", "", "", "", "", "",
+                "", "", "", "", "", "", "", "",
 
-                "A71001", "A72000", "A72001", "A73000",
+                "", "", "", "",
 
-                "A61000", "A62000", "A63000",
+                "", "", "", "",
 
-                "A21100", "A22000", "A22100", "A23000", "A23100",
-                "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
-                "A92000", "A93000", "A94000"};
+                "", "", "", "", "",
+                "", "", "", "", "",
+                "", "", ""};
 
-//                "A91000", "A52100","A52300","A59000", "A53211",};
+//                "A91000", "A52100","A52300","A59000", "A53100", "A53211", "A54311" ,,  };
         boolean matched_array = false;
-        for(int i=0; i < array.length; i++){
-            if(serviceId.equals(array[i])){
+        for (int i = 0; i < array.length; i++) {
+            if (serviceId.equals(array[i])) {
                 matched_array = true;
                 i = array.length;
             }
         }
-        if (!matched_array){
+        if (!matched_array) {
             Log.d("ELOG", "Inserted by ISO8583Parser : " + elog);
             clientDB.execSQL(elog);
             String uStanSeq = "update holder set "
                     + "seq = " + stan;
+            String invNum = "update holder set invnum = case when invnum = 999999 then 0 else invnum + 1 end ";
 //            writeDebugLog("UPDATING", "HOLDER (1255)");
 //                writeDebugLog("By ", serviceid);
             clientDB.execSQL(uStanSeq);
+            clientDB.execSQL(invNum);
         }
+
+        if (serviceId.equals("A2C200")) {
+//            int numId = elogId + 10;
+//            System.out.println("numId = "+numId);
+
+            String uStanSeq = "update holder set "
+                    + "seq = " + elogId;
+            clientDB.execSQL(uStanSeq);
+        }
+
 //        clientDB.execSQL(elog);
         byte[] results = tmp.toByteArray();
         bitDefCursor.close();
@@ -899,7 +971,7 @@ public class ISO8583Parser {
                                     }
                                     cmt.close();
                                     elementValue = elementValue.concat(addValue);
-                                    Log.d("ADD",addValue);
+                                    Log.d("ADD", addValue);
                                 } while (addList.moveToNext());
                             }
                             addList.close();
@@ -957,6 +1029,11 @@ public class ISO8583Parser {
                 if (bitId == 35) {
                     elementValue = elementValue.replace("=".charAt(0), "D".charAt(0));
                 }
+
+//                if (bitId == 35 && serviceId.equals("A52210")) {
+//                    elementValue = elementValue.substring(0, 27);
+//                }
+
                 // -- Add cent to bit 4
                 if (bitId == 4) {
                     elementValue = elementValue.substring(2) + "00";
@@ -980,7 +1057,7 @@ public class ISO8583Parser {
                 }
                 byte[] cBitValue = assignElement(bitId, elementValue);
                 tmp.write(cBitValue);
-                Log.i("ISO_DUMP", (currentLength.equals("")?"":"["+currentLength+"]") + elementValue);
+                Log.i("ISO_DUMP", (currentLength.equals("") ? "" : "[" + currentLength + "]") + elementValue);
             } while (bitDefCursor.moveToNext());
         }
         byte[] results = tmp.toByteArray();
@@ -1023,13 +1100,13 @@ public class ISO8583Parser {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String tgl = simpleDateFormat.format(date);
         String edclog = "select log_id from edc_log " +
-                "where service_id = '"+serviceId+"' " +
-                "and stan = '"+stan+"' " +
-                "and date(rqtime) = '"+tgl+"'";
+                "where service_id = '" + serviceId + "' " +
+                "and stan = '" + stan + "' " +
+                "and date(rqtime) = '" + tgl + "'";
 //        Log.d("ELOG", "Qry : "+edclog);
         Cursor eLog = clientDB.rawQuery(edclog, null);
         int elogId = 0;
-        if (eLog!=null) {
+        if (eLog != null) {
             if (eLog.moveToFirst()) {
                 elogId = eLog.getInt(eLog.getColumnIndex("log_id"));
 //                Log.d("ELOG", "Elog found");
@@ -1039,10 +1116,10 @@ public class ISO8583Parser {
         String updAmount = "";
         Long plnAmt = 0L;
 //        String[] plnSvc = {"A54312","A54322","A54331"};
-        String[] plnSvc = {"A54322","A54331"};
-        if (IsoBitValue[4]!=null) {
+        String[] plnSvc = {"A54322", "A54331"};
+        if (IsoBitValue[4] != null) {
             Long longAmount = Long.parseLong(IsoBitValue[4]);
-            if (longAmount>0) {
+            if (longAmount > 0) {
                 updAmount = ", amount = " + String.valueOf(longAmount);
             }
 //            if (Arrays.asList(plnSvc).contains(serviceId)) {
@@ -1053,7 +1130,7 @@ public class ISO8583Parser {
 //                    updAmount = ", amount = " + String.valueOf(plnAmt);
 //                }
 //            }
-             if (serviceId.equals("A54312") || serviceId.equals("A54322") || serviceId.equals("A54342")) {
+            if (serviceId.equals("A54312") || serviceId.equals("A54322") || serviceId.equals("A54342")) {
                 Log.d("TEST", "MASUK");
                 updAmount = ", amount = " + String.valueOf(longAmount * 100);
             }
@@ -1064,18 +1141,18 @@ public class ISO8583Parser {
 //                updAmount = ", amount = " + String.valueOf(longAmount*100);
 //            }
         }
-        if(!responseCode.equals("00") && elogId != 0){
-            String deleteelog = "delete from edc_log where log_id = "+String.valueOf(elogId);
-            Log.d("DELETE ELOG", "UPD : "+deleteelog);
+        if (!responseCode.equals("00") && elogId != 0) {
+            String deleteelog = "delete from edc_log where log_id = " + String.valueOf(elogId);
+            Log.d("DELETE ELOG", "UPD : " + deleteelog);
             clientDB.execSQL(deleteelog);
             String uStanSeq = "update holder set "
                     + "seq = " + Integer.toString((Integer.parseInt(stan) - 1));
 //            writeDebugLog("UPDATING", "HOLDER (1255)");
 //                writeDebugLog("By ", serviceid);
             clientDB.execSQL(uStanSeq);
-        }else if (elogId != 0){
-            String updRCelog = "update edc_log set rc = '"+responseCode+"' "+updAmount+" where log_id = "+String.valueOf(elogId);
-            Log.d("ELOG", "UPD : "+updRCelog);
+        } else if (elogId != 0) {
+            String updRCelog = "update edc_log set rc = '" + responseCode + "' " + updAmount + " where log_id = " + String.valueOf(elogId);
+            Log.d("ELOG", "UPD : " + updRCelog);
             clientDB.execSQL(updRCelog);
         }
         JSONObject resultJSON = new JSONObject();
@@ -1085,20 +1162,25 @@ public class ISO8583Parser {
         SimpleDateFormat stf = new SimpleDateFormat("HHmmss");
         String localDate = sdf.format(d);
         String localTime = stf.format(d);
-        if (IsoBitValue[37]!=null) {
+        if (IsoBitValue[37] != null) {
             resultJSON.put("server_ref", IsoBitValue[37]);
         }
-        if (IsoBitValue[12]!=null) {
-            resultJSON.put("server_time", IsoBitValue[12]);
+        if (!serviceId.equals("A26100")) {
+            if (IsoBitValue[12] != null) {
+                resultJSON.put("server_time", IsoBitValue[12]);
+            } else {
+                resultJSON.put("server_time", localTime);
+            }
         } else {
             resultJSON.put("server_time", localTime);
         }
-        if (IsoBitValue[13]!=null) {
+
+        if (IsoBitValue[13] != null) {
             resultJSON.put("server_date", IsoBitValue[13]);
         } else {
             resultJSON.put("server_date", localDate);
         }
-        if (IsoBitValue[38]!=null) {
+        if (IsoBitValue[38] != null) {
             resultJSON.put("server_air", IsoBitValue[38]);
             resultJSON.put("server_appr", IsoBitValue[38]);
         }
@@ -1115,14 +1197,14 @@ public class ISO8583Parser {
                 resultJSON.put("msg_rc", responseCode);
                 resultJSON.put("msg_resp", msgRC);
                 resultJSON.put("msg_rc_48", IsoBitValue[48]);
-                if (cRC!=null) {
+                if (cRC != null) {
                     cRC.close();
                 }
 //                Log.d("ISO8583P", "SID : " + serviceId);
 //                Log.d("ISO8583P", "RC  : " + responseCode);
-                if (!((serviceId.equals("A54322")&&responseCode.equals("02"))
-                        ||(serviceId.equals("A54322")&&responseCode.equals("68"))
-                        ||(serviceId.equals("A56000")&&responseCode.equals("68")))) {
+                if (!((serviceId.equals("A54322") && responseCode.equals("02"))
+                        || (serviceId.equals("A54322") && responseCode.equals("68"))
+                        || (serviceId.equals("A56000") && responseCode.equals("68")))) {
                     return resultJSON;
                 }
             } else {
@@ -1131,14 +1213,14 @@ public class ISO8583Parser {
                 resultJSON.put("msg_rc", responseCode);
                 resultJSON.put("msg_resp", "Server response code :" + responseCode + "");
                 resultJSON.put("msg_rc_48", IsoBitValue[48]);
-                if (cRC!=null) {
+                if (cRC != null) {
                     cRC.close();
                 }
 //                Log.d("ISO8583P", "SID : "+serviceId);
 //                Log.d("ISO8583P", "RC  : "+responseCode);
-                if (!((serviceId.equals("A54322")&&responseCode.equals("02"))
-                        ||(serviceId.equals("A54322")&&responseCode.equals("02"))
-                        ||(serviceId.equals("A56000")&&responseCode.equals("68")))) {
+                if (!((serviceId.equals("A54322") && responseCode.equals("02"))
+                        || (serviceId.equals("A54322") && responseCode.equals("02"))
+                        || (serviceId.equals("A56000") && responseCode.equals("68")))) {
                     return resultJSON;
                 }
             }
@@ -1172,7 +1254,7 @@ public class ISO8583Parser {
                     if (subBit.equals(fieldName)) {
                         sbValue = "";
                         if (fieldName.equals("flight_data")) {
-                            sbLength = sbLength*flightCounter;
+                            sbLength = sbLength * flightCounter;
                         }
                         Log.d("ERR", fieldName);
                         Log.d("ERR", String.valueOf(bitContainer));
@@ -1180,11 +1262,11 @@ public class ISO8583Parser {
                             try {
                                 sbValue = IsoBitValue[bitContainer].substring(prefixLength, prefixLength + sbLength);
                             } catch (Exception e) {
-                                Log.e("ISO8583P", "Value of Bit " +String.valueOf(bitContainer) + " is too short.");
+                                Log.e("ISO8583P", "Value of Bit " + String.valueOf(bitContainer) + " is too short.");
                                 try {
                                     sbValue = IsoBitValue[bitContainer].substring(prefixLength);
                                 } catch (Exception ex) {
-                                    Log.e("ISO8583P", "Value of Bit " +String.valueOf(bitContainer) + " even not in range.");
+                                    Log.e("ISO8583P", "Value of Bit " + String.valueOf(bitContainer) + " even not in range.");
                                     sbValue = "";
                                 }
                             }
@@ -1192,16 +1274,16 @@ public class ISO8583Parser {
                         if (fieldName.equals("flight_data")) {
                             flightContent = sbValue;
                         }
-                        if (fieldName.equals("flight_count")&&sbValue.matches("-?\\d+(\\.\\d+)?")) {
+                        if (fieldName.equals("flight_count") && sbValue.matches("-?\\d+(\\.\\d+)?")) {
                             flightCounter = Integer.valueOf(sbValue);
                         }
-                        if (fieldName.equals("periode_input")&&serviceId.startsWith("A581")) {
+                        if (fieldName.equals("periode_input") && serviceId.startsWith("A581")) {
                             String parsedValue = "";
-                            if (parsedValue.length()>1) {
+                            if (parsedValue.length() > 1) {
                                 parsedValue += sbValue.substring(0, 2);
                             }
                             parsedValue += "/";
-                            if (parsedValue.length()>5) {
+                            if (parsedValue.length() > 5) {
                                 parsedValue += sbValue.substring(4);
                             }
                             sbValue = parsedValue;
@@ -1241,7 +1323,7 @@ public class ISO8583Parser {
                             String nomstr = String.valueOf(plnAmt);
                             int nomlen = nomstr.length();
                             if (sbValue.charAt(0) > nomstr.charAt(0)) {
-                                nomlen = nomlen -1;
+                                nomlen = nomlen - 1;
                             }
                             sbValue = sbValue.substring(0, nomlen); //+ "00";
                         }
@@ -1294,7 +1376,7 @@ public class ISO8583Parser {
         return timef.format(date);
     }
 
-    private String getInvoiceNumber(){
+    private String getInvoiceNumber() {
         SQLiteDatabase clientDB = null;
         helperDb.openDataBase();
         try {
@@ -1305,7 +1387,8 @@ public class ISO8583Parser {
         Cursor c = clientDB.rawQuery("select invnum from holder", null);
 
         int invNo = 0;
-        if (c != null) { c.moveToFirst();
+        if (c != null) {
+            c.moveToFirst();
             invNo = c.getInt(0);
         }
         c.close();
@@ -1455,18 +1538,44 @@ public class ISO8583Parser {
         }
         String bitFormat = cMT.getString(cMT.getColumnIndex("meta_alias"));
         cMT.close();
+
         // Fixed Bni
         if (bitFormat.equals("z")) {
             padTo = "L";
             padder = "0";
         }
+
+//        if (bitFormat.equals("z")) {
+//            if (serviceId.equals("A52210")){
+//                padTo = "L";
+//                padder = " ";
+//            } else {
+//                padTo = "L";
+//                padder = "0";
+//            }
+//        }
+
         switch (bitLength) {
             case LLVAR:
-                String valLength1 = String.format("%02d", bitValue.length());
-                elementValue = new byte[bitValue.length() + 1];
-                System.arraycopy(hexStringToByteArray(valLength1), 0, elementValue, 0, 1);
-                System.arraycopy(bitValue.getBytes(), 0, elementValue, 1, bitValue.length());
-                currentLength = valLength1;
+                if (bitFormat.equals("z")) { //Fixed Bni
+                    bitLength=bitValue.length();
+                    String bitLengthChar = String.valueOf(bitLength);
+                    if ((bitLength % 2) > 0) {
+                        bitLength += 1;
+                        bitValue = padLeft(bitValue, bitLength, "0".charAt(0));
+                    }
+                    elementValue = new byte[(bitLength / 2) + 1];
+                    elementValue[0] = (byte) ((Character.digit(bitLengthChar.charAt(0), 16) << 4) + (Character.digit(bitLengthChar.charAt(1), 16)));
+                    for (int i = 0; i < bitLength; i += 2) {
+                        elementValue[(i / 2) + 1] = (byte) ((Character.digit(bitValue.charAt(i), 16) << 4) + Character.digit(bitValue.charAt(i + 1), 16));
+                    }
+                } else {
+                    String valLength1 = String.format("%02d", bitValue.length());
+                    elementValue = new byte[bitValue.length() + 1];
+                    System.arraycopy(hexStringToByteArray(valLength1), 0, elementValue, 0, 1);
+                    System.arraycopy(bitValue.getBytes(), 0, elementValue, 1, bitValue.length());
+                    currentLength = valLength1;
+                }
                 break;
             case LLLVAR:
                 if (bitFormat.equals("b")) {
@@ -1567,9 +1676,9 @@ public class ISO8583Parser {
         Log.d("DATEDIFF", earlier.toString());
         Log.d("DATEDIFF", later.toString());
         long timeDiff = Math.abs(later.getTimeInMillis() - earlier.getTimeInMillis());
-        Log.d("DATEDIFF", "ms diff : "+String.valueOf(timeDiff));
+        Log.d("DATEDIFF", "ms diff : " + String.valueOf(timeDiff));
         diff = TimeUnit.MILLISECONDS.toDays(timeDiff);
-        Log.d("DATEDIFF", "day diff : "+String.valueOf(diff));
+        Log.d("DATEDIFF", "day diff : " + String.valueOf(diff));
         return diff;
     }
 

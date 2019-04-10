@@ -45,13 +45,14 @@ public class  CommonConfig {
     public static final String BRANCH = "303514";
     public static final String USERNAME_ADMIN = "admin";
     public static final String PASS_ADMIN = "admin";
-    public static final String DEV_SOCKET_IP = "172.18.37.12"; //"10.35.65.209";//
+    public static final String PASS_SETTINGS = "1234";
+    public static final String DEV_SOCKET_IP = "172.21.64.83"; //"10.35.65.209";//172.21.64.83//172.18.37.12
     public static final String DEV_SOCKET_PORT = "5707"; //"1402";//
     public static final String DEFAULT_DISCOUNT_TYPE = "Rupiah";
     public static final String DEFAULT_DISCOUNT_RATE = "0";
     public static final String EXPD = "2111";
-    public static final String DEV_TERMINAL_ID = "26104042"; //"00000023"; //"00000004";
-    public static final String DEV_MERCHANT_ID = "000001355891000"; //"000001210000020";
+    public static final String DEV_TERMINAL_ID = "26077634"; //"00000023"; //"00000004";
+    public static final String DEV_MERCHANT_ID = "000001370076089"; //"000001210000020";
     public static final String INIT_MERCHANT_NAME = "DUMMY BRILINK 2 DBO";//"GTA DEVICE";
     public static final String INIT_MERCHANT_ADDRESS1 = "GTA TEST DEVICE";
     public static final String INIT_MERCHANT_ADDRESS2 = "GTI LANTAI 7";
@@ -138,7 +139,7 @@ public class  CommonConfig {
         icons.put("Settings", R.drawable.mb_info_mutasi);
         //ICON BRIZZI
         icons.put("Info Saldo", R.drawable.mb_info_saldo);
-        icons.put("Info Deposit", R.drawable.mb_info_saldo);
+        icons.put("Info Tertunda", R.drawable.mb_info_saldo);
         //END ICON BRIZZI
         return icons;
     }

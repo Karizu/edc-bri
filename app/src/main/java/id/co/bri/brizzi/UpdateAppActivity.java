@@ -76,44 +76,129 @@ public class UpdateAppActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, final int which) {
                         switch (which) {
                             case DialogInterface.BUTTON_POSITIVE:
-                                txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
-                                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-                                StrictMode.setThreadPolicy(policy);
-                                try {
+                                Context ctx = UpdateAppActivity.this;
+                                if (JsonCompHandler.hasUnsettleData(ctx)) {
+                                    AlertDialog.Builder warn = new AlertDialog.Builder(ctx);
+                                    warn.setTitle("Gagal");
+                                    warn.setMessage("Tidak dapat melakukan update, masih terdapat data transaksi yang belum dilakukan settelement");
+                                    warn.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    }).show();
+                                } else {
+                                    txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
+                                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                                    StrictMode.setThreadPolicy(policy);
+                                    try {
 
-//                                    final JSONObject json = JsonCompHandler.checkUpdate(UpdateAppActivity.this);
+                                        //                                    final JSONObject json = JsonCompHandler.checkUpdate(UpdateAppActivity.this);
 
-                                    PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                                    String version = pInfo.versionName;
-                                    Log.i("ANDROID_VER", version);
-//                                    Log.i("JSON_CHECK", json.toString());
-                                    if (/*!json.getString("software").equals(version)*/true) {
-                                        final ProgressDialog mProgressDialog;
-                                        mProgressDialog = new ProgressDialog(UpdateAppActivity.this);
-                                        mProgressDialog.setMessage("Synchronizing data.\nDon't turn off your device");
-                                        mProgressDialog.setIndeterminate(true);
-                                        mProgressDialog.show();
-                                        Thread t1 = new Thread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                try {
-                                                    JsonCompHandler.checkVer(UpdateAppActivity.this.getApplication());
-                                                    mProgressDialog.dismiss();
-                                                    String ns = Context.NOTIFICATION_SERVICE;
-                                                    NotificationManager nMgr = (NotificationManager) UpdateAppActivity.this.getSystemService(ns);
-                                                    nMgr.cancel(method);
-                                                    JsonCompHandler.fiturSuccess(UpdateAppActivity.this.getApplication());
-                                                    Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
-                                                    startActivity(intent);
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
+                                        PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                                        String version = pInfo.versionName;
+                                        Log.i("ANDROID_VER", version);
+                                        //                                    Log.i("JSON_CHECK", json.toString());
+                                        if (/*!json.getString("software").equals(version)*/true) {
+                                            final ProgressDialog mProgressDialog;
+                                            mProgressDialog = new ProgressDialog(UpdateAppActivity.this);
+                                            mProgressDialog.setMessage("Synchronizing data.\nDon't turn off your device");
+                                            mProgressDialog.setIndeterminate(true);
+                                            mProgressDialog.show();
+                                            Thread t1 = new Thread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    try {
+                                                        JsonCompHandler.checkVer(UpdateAppActivity.this.getApplication());
+                                                        mProgressDialog.dismiss();
+                                                        String ns = Context.NOTIFICATION_SERVICE;
+                                                        NotificationManager nMgr = (NotificationManager) UpdateAppActivity.this.getSystemService(ns);
+                                                        nMgr.cancel(method);
+                                                        JsonCompHandler.fiturSuccess(UpdateAppActivity.this.getApplication());
+                                                        Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                                        startActivity(intent);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
                                                 }
-                                            }
-                                        });
-                                        t1.start();
+                                            });
+                                            t1.start();
+                                        }
+                                    } catch (PackageManager.NameNotFoundException e) {
+                                        e.printStackTrace();
                                     }
-                                } catch (PackageManager.NameNotFoundException e) {
-                                    e.printStackTrace();
+                                }
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                break;
+                        }
+                    }
+                };
+
+                builder.setTitle("Konfirmasi update fitur");
+
+                break;
+            case 1182://UPDATE MENU
+                click = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, final int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Context ctx = UpdateAppActivity.this;
+                                if (JsonCompHandler.hasUnsettleData(ctx)) {
+                                    AlertDialog.Builder warn = new AlertDialog.Builder(ctx);
+                                    warn.setTitle("Gagal");
+                                    warn.setMessage("Tidak dapat melakukan update, masih terdapat data transaksi yang belum dilakukan settelement");
+                                    warn.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    }).show();
+                                } else {
+                                    txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
+                                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                                    StrictMode.setThreadPolicy(policy);
+                                    try {
+
+                                        //                                    final JSONObject json = JsonCompHandler.checkUpdate(UpdateAppActivity.this);
+
+                                        PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                                        String version = pInfo.versionName;
+                                        Log.i("ANDROID_VER", version);
+                                        //                                    Log.i("JSON_CHECK", json.toString());
+                                        if (/*!json.getString("software").equals(version)*/true) {
+                                            final ProgressDialog mProgressDialog;
+                                            mProgressDialog = new ProgressDialog(UpdateAppActivity.this);
+                                            mProgressDialog.setMessage("Synchronizing data.\nDon't turn off your device");
+                                            mProgressDialog.setIndeterminate(true);
+                                            mProgressDialog.show();
+                                            Thread t1 = new Thread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    try {
+                                                        JsonCompHandler.checkVer(UpdateAppActivity.this.getApplication());
+                                                        mProgressDialog.dismiss();
+                                                        String ns = Context.NOTIFICATION_SERVICE;
+                                                        NotificationManager nMgr = (NotificationManager) UpdateAppActivity.this.getSystemService(ns);
+                                                        nMgr.cancel(method);
+                                                        JsonCompHandler.fiturSuccess(UpdateAppActivity.this.getApplication());
+                                                        Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                                        startActivity(intent);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            });
+                                            t1.start();
+                                        }
+                                    } catch (PackageManager.NameNotFoundException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                                 break;
                             case DialogInterface.BUTTON_NEGATIVE:
@@ -133,36 +218,121 @@ public class UpdateAppActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
                             case DialogInterface.BUTTON_POSITIVE:
-                                txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
-                                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-                                StrictMode.setThreadPolicy(policy);
                                 try {
-
-                                    final JSONObject json = JsonCompHandler.checkUpdate(UpdateAppActivity.this);
-
-                                    PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                                    String version = pInfo.versionName;
-                                    Log.i("ANDROID_VER", version);
-                                    Log.i("JSON_CHECK", json.toString());
-                                    if (/*!json.getString("software").equals(version)*/true) {
-                                        if (new File(DownloadSoftware.FILE_NAME).exists()) {
-                                            String hash = StringLib.fileToMD5(DownloadSoftware.FILE_NAME);
-                                            Log.i("FILE_HASH", hash);
-                                            if (hash.equals(json.getString("hash"))) {
-                                                install();
-                                            } else {
-                                                downloadNewUpdate();
+                                    Context ctx = UpdateAppActivity.this;
+                                    if (JsonCompHandler.hasUnsettleData(ctx)) {
+                                        AlertDialog.Builder warn = new AlertDialog.Builder(ctx);
+                                        warn.setTitle("Gagal");
+                                        warn.setMessage("Tidak dapat melakukan update, masih terdapat data transaksi yang belum dilakukan settelement");
+                                        warn.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                                startActivity(intent);
                                             }
-                                        } else {
-                                            downloadNewUpdate();
+                                        }).show();
+                                    } else {
+                                        txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
+                                        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                                        StrictMode.setThreadPolicy(policy);
+                                        try {
+
+                                            final JSONObject json = JsonCompHandler.checkUpdate(UpdateAppActivity.this);
+
+                                            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                                            String version = pInfo.versionName;
+                                            Log.i("ANDROID_VER", version);
+                                            Log.i("JSON_CHECK", json.toString());
+                                            if (/*!json.getString("software").equals(version)*/true) {
+                                                if (new File(DownloadSoftware.FILE_NAME).exists()) {
+                                                    String hash = StringLib.fileToMD5(DownloadSoftware.FILE_NAME);
+                                                    Log.i("FILE_HASH", hash);
+                                                    if (hash.equals(json.getString("hash"))) {
+                                                        install();
+                                                    } else {
+                                                        downloadNewUpdate();
+                                                    }
+                                                } else {
+                                                    downloadNewUpdate();
+                                                }
+                                            }
+                                        } catch (PackageManager.NameNotFoundException e) {
+                                            e.printStackTrace();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
                                         }
+
                                     }
-                                } catch (PackageManager.NameNotFoundException e) {
-                                    e.printStackTrace();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                } catch (Exception e) {
+                                    Log.i("UPDS", "Error " + e.getMessage());
+                                }
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                break;
+                        }
+                    }
+                };
+                builder.setTitle("Konfirmasi update software");
+                break;
+            case 1183://Update Software
+                click = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                try {
+                                    Context ctx = UpdateAppActivity.this;
+                                    if (JsonCompHandler.hasUnsettleData(ctx)) {
+                                        AlertDialog.Builder warn = new AlertDialog.Builder(ctx);
+                                        warn.setTitle("Gagal");
+                                        warn.setMessage("Tidak dapat melakukan update, masih terdapat data transaksi yang belum dilakukan settelement");
+                                        warn.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(UpdateAppActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        }).show();
+                                    } else {
+                                        txtConnecting = (HelveticaTextView) findViewById(R.id.txtConnecting);
+                                        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                                        StrictMode.setThreadPolicy(policy);
+                                        try {
+
+                                            final JSONObject json = JsonCompHandler.checkUpdate(UpdateAppActivity.this);
+
+                                            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                                            String version = pInfo.versionName;
+                                            Log.i("ANDROID_VER", version);
+                                            Log.i("JSON_CHECK", json.toString());
+                                            if (/*!json.getString("software").equals(version)*/true) {
+                                                if (new File(DownloadSoftware.FILE_NAME).exists()) {
+                                                    String hash = StringLib.fileToMD5(DownloadSoftware.FILE_NAME);
+                                                    Log.i("FILE_HASH", hash);
+                                                    if (hash.equals(json.getString("hash"))) {
+                                                        install();
+                                                    } else {
+                                                        downloadNewUpdate();
+                                                    }
+                                                } else {
+                                                    downloadNewUpdate();
+                                                }
+                                            }
+                                        } catch (PackageManager.NameNotFoundException e) {
+                                            e.printStackTrace();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                } catch (Exception e) {
+                                    Log.i("UPDS", "Error " + e.getMessage());
                                 }
                                 break;
                             case DialogInterface.BUTTON_NEGATIVE:
@@ -212,7 +382,7 @@ public class UpdateAppActivity extends AppCompatActivity {
                         }
                     }
                 };
-                builder.setTitle("Konfirmasi update setting");
+                builder.setTitle("Konfirmasi Update");
                 break;
             case 9876://Update Setting
                 click = new DialogInterface.OnClickListener() {
@@ -252,7 +422,7 @@ public class UpdateAppActivity extends AppCompatActivity {
                 break;
         }
         builder.setMessage("Lakukan update sekarang?");
-        if (method==1181) {
+        if (method==1181 || method==1182 || method==1183) {
             builder.setMessage("Lakukan update sekarang?\n\nPastikan settlement telah dilakukan. Update tidak dapat dilakukan apabila terdapat transaksi yang belum settlement.");
         }
         if (method==9876) {

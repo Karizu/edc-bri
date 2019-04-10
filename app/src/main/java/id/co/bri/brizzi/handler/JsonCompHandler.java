@@ -66,7 +66,7 @@ public class JsonCompHandler {
         String hostname = preferences.getString("hostname", CommonConfig.HTTP_REST_URL);
         String serialNum = Build.SERIAL;
         // Create an unbound socket
-//        Log.d("SN_DEVICE",serialNum);
+        Log.d("SN_DEVICE",serialNum);
         URL url = new URL("http://" + hostname + "/device/" + serialNum + "/checkVer");
         InputStream is = url.openStream();
         try {
@@ -133,6 +133,7 @@ public class JsonCompHandler {
             String merchantAddr1 = preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1);
             String merchantAddr2 = preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2);
             String passSettlement = preferences.getString("pass_settlement", CommonConfig.DEFAULT_SETTLEMENT_PASS);
+            String passSettings = preferences.getString("pass_settings", CommonConfig.PASS_SETTINGS);
             String minDeduct = preferences.getString("minimum_deduct", CommonConfig.DEFAULT_MIN_BALANCE_BRIZZI);
             String maxDeduct = preferences.getString("maximum_deduct", CommonConfig.DEFAULT_MAX_MONTHLY_DEDUCT);
             boolean isNeedUpdate = false;
@@ -166,13 +167,22 @@ public class JsonCompHandler {
             if (!passSettlement.equals(json.getString("pass_settlement"))) {
                 isNeedUpdate = true;
             }
+            if (!passSettings.equals(json.getString("pass_settings"))) {
+                isNeedUpdate = true;
+            }
             if (!minDeduct.equals(json.getString("minimum_deduct"))) {
                 isNeedUpdate = true;
             }
             if (!maxDeduct.equals(json.getString("maximum_deduct"))) {
                 isNeedUpdate = true;
             }
-            if (isNeedUpdate) {
+
+//            if(!isNeedUpdate){
+//                mNotificationManager.cancel(1181);
+//                settingSuccess(ctx);
+//            }
+
+            if (isNeedUpdate || !isNeedUpdate) {
                 Log.i("SSS", "Need update setting");
                 if (mlr.hasUnsettledData(ctx)) {
                     Log.i("SSS", "Pending update setting, unsettled data");
@@ -213,6 +223,7 @@ public class JsonCompHandler {
                     preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
                     preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
                     preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
+                    preferencesSetting.edit().putString("pass_settings", json.getString("pass_settings")).apply();
                     preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
                     preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
                     preferencesSetting.edit().putString("port", json.getString("port")).apply();

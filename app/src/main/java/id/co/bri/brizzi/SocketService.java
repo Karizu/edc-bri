@@ -64,15 +64,19 @@ public class SocketService extends Service implements WebSocketClient.Listener {
     private boolean DEBUG_MODE = CommonConfig.DEBUG_MODE;
     private static MenuListResolver mlr = new MenuListResolver();
     public enum MessageMethod {
-        LOGIN, LOGOUT, UPDATE_SOFTWARE, UPDATE_MENU,UPDATE_SETTINGS, MESSAGE, HEARTBEAT, PENDING_MESSAGE;
+        LOGIN, LOGOUT, UPDATE_SOFTWARE, UPDATE_MENU,UPDATE_SETTINGS, MESSAGE, HEARTBEAT, PENDING_MESSAGE, TEST_CONNECTION;
     }
 
     public enum MessageType {
-        TOAST, NOTIFICATION, NOTIFICATION_STICKY, NOTIFICATION_TOAST, NOTIFICATION_STICKY_TOAST;
+        TOAST, NOTIFICATION, NOTIFICATION_STICKY, NOTIFICATION_TOAST, NOTIFICATION_STICKY_TOAST, TEST_CONNECTION;
     }
 
     public enum MessageStatus {
-        DELIVERED, FAILED, DEVICE_NOT_ACTIVE, DEVICE_NOT_REGISTERED, SEND, LOGIN_SUCCESS, LOGIN_FAILED;
+        DELIVERED, FAILED, DEVICE_NOT_ACTIVE, DEVICE_NOT_REGISTERED, DEVICE_REGISTERED, SEND, LOGIN_SUCCESS, LOGIN_FAILED, TEST_CONNECTION;
+    }
+
+    public void clientConnect(){
+        client.connect();
     }
 
     private void reConnect() {
@@ -84,7 +88,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                                 retryConnect = 0;
                             }
                             retryConnect++;
-//                            Log.d(TAG, "Retry connect #" + retryConnect);
+                            Log.d(TAG, "Retry connect #" + retryConnect);
                             SharedPreferences preferences = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
                             client = new WebSocketClient(URI.create("ws://" + preferences.getString("hostname",CommonConfig.WEBSOCKET_URL) + "/push"), SocketService.this, extraHeaders);
                             client.connect();
@@ -164,12 +168,11 @@ public class SocketService extends Service implements WebSocketClient.Listener {
 
     @Override
     public void onConnect() {
-//        Log.d(TAG, "WEBSOCKET CONNECTED");
+        Log.d(TAG, "WEBSOCKET CONNECTED");
         isConnect = true;
         if (!scheduler.isShutdown()) {
             scheduler.shutdown();
             retryConnect = 0;
-
         }
         doLogin();
     }
@@ -225,12 +228,14 @@ public class SocketService extends Service implements WebSocketClient.Listener {
 
     @Override
     public void onMessage(String message) {
-//        Log.d(TAG, message);
+        Log.d(TAG, message);
         try {
             JSONObject response = new JSONObject(message);
             MessageMethod method = MessageMethod.valueOf(response.getString("method"));
             MessageStatus status = MessageStatus.valueOf(response.getString("status"));
             String m = response.getString("message");
+            boolean isNeedUpdateMenu = false;
+            boolean isNeedUpdateSoftware = false;
             switch (method) {
                 case LOGIN:
                     if (status == MessageStatus.LOGIN_SUCCESS) {
@@ -250,20 +255,30 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                         boolean regstate = preferencesSetting.getBoolean("registered", false);
                         if (rspmsg.startsWith("EDC tidak terdaftar")) {
                             preferencesSetting.edit().putBoolean("registered", false).apply();
-                            if (!regstate){
-                                reloadApp();
-//                                Log.d(TAG, "Reload Success");
+                            if (!regstate) {
+//                                reloadApp();
+                                Log.d(TAG, "Reload Success");
 //                                deleteCache(this);
                             }
                         }
+                    }
+                    else if (status == MessageStatus.DEVICE_REGISTERED) {
+                        isLogin = true;
+                        showNotification(response);
+                        SharedPreferences preferencesSetting = getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
+                        preferencesSetting.edit().putBoolean("registered", true).apply();
+                        client.connect();
+                        Log.d(TAG, "Reload Success");
                     }
                     break;
                 case MESSAGE:
                     showNotification(response);
                     break;
                 case UPDATE_SOFTWARE:
+                    isNeedUpdateSoftware = true;
+                    break;
                 case UPDATE_MENU:
-                    updateNotif(m, method);
+                    isNeedUpdateMenu = true;
                     break;
                 case HEARTBEAT:
                     if (isConnect) {
@@ -273,12 +288,132 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                         doLogin();
                     }
                     break;
+                case TEST_CONNECTION:
+                    if (isConnect) {
+                        JSONObject object = new JSONObject();
+                        object.put("snDevice", serialNum);
+                        object.put("method", MessageMethod.TEST_CONNECTION.name());
+                        object.put("timestamp", new Date().getTime());
+                        object.put("status", MessageStatus.SEND);
+                        JSONObject addInfo = new JSONObject();
+                        Log.d("TEST_CON", object.toString());
+                        client.send(object.toString());
+                    } else {
+                        client.connect();
+                        doLogin();
+                    }
+
+                    break;
                 case LOGOUT:
                     break;
                 case UPDATE_SETTINGS:
                     JSONObject json = response.getJSONObject("additionalInfo");
                     updateSettings(json);
                     break;
+            }
+
+            if (isNeedUpdateMenu) {
+                if (mlr.hasUnsettledData(this)) {
+                    if (mNotificationManager == null) {
+                        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    }
+                    Intent intent = new Intent(this, UpdateAppActivity.class);
+                    intent.putExtra("method", 1182);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification.Builder builder = new Notification.Builder(this)
+                            .setContentTitle("Informasi")
+                            .setContentIntent(pendingIntent)
+                            .setContentText("Update Fitur EDC telah tersedia, silahkan lakukan settlement sebelum memasangkan update")
+                            .setSmallIcon(R.drawable.logo_bri_002)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.if_email));
+                    Notification n;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        n = builder.build();
+                    } else {
+                        n = builder.getNotification();
+                    }
+                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+                    mNotificationManager.notify(1182, n);
+                } else {
+
+                    if (mNotificationManager == null) {
+                        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    }
+                    Intent intent = new Intent(this, UpdateAppActivity.class);
+                    intent.putExtra("method", 123);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification.Builder builder = new Notification.Builder(this)
+                            .setContentTitle("Update Fitur")
+                            .setContentIntent(pendingIntent)
+                            .setContentText("Update Fitur telah tersedia")
+                            .setSmallIcon(R.drawable.ic_autorenew_white_24dp)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_autorenew_white_24dp));
+                    Notification n;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        n = builder.build();
+                    } else {
+                        n = builder.getNotification();
+                    }
+                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+                    mNotificationManager.notify(123, n);
+                }
+            }
+
+            if (isNeedUpdateSoftware) {
+                if (mlr.hasUnsettledData(this)) {
+                    if (mNotificationManager == null) {
+                        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    }
+                    Intent intent = new Intent(this, UpdateAppActivity.class);
+                    intent.putExtra("method", 1183);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification.Builder builder = new Notification.Builder(this)
+                            .setContentTitle("Informasi")
+                            .setContentIntent(pendingIntent)
+                            .setContentText(m)
+                            .setSmallIcon(R.drawable.logo_bri_002)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.if_email));
+                    Notification n;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        n = builder.build();
+                    } else {
+                        n = builder.getNotification();
+                    }
+                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+                    mNotificationManager.notify(1183, n);
+                } else {
+
+                    updateNotif(m, method);
+
+//                    if (mNotificationManager == null) {
+//                        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//                    }
+//                    Intent intent = new Intent(this, UpdateAppActivity.class);
+//                    intent.putExtra("method", 1234);
+//                    PendingIntent pendingIntent = PendingIntent.getActivity(this,
+//                            (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//                    Notification.Builder builder = new Notification.Builder(this)
+//                            .setContentTitle("Update Software")
+//                            .setContentIntent(pendingIntent)
+//                            .setContentText("Update Software telah tersedia")
+//                            .setSmallIcon(R.drawable.ic_autorenew_white_24dp)
+//                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_autorenew_white_24dp));
+//                    Notification n;
+//
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                        n = builder.build();
+//                    } else {
+//                        n = builder.getNotification();
+//                    }
+//                    n.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+//                    mNotificationManager.notify(1234, n);
+                }
             }
 
         } catch (JSONException e) {
@@ -306,6 +441,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
             String merchantAddr1 = preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1);
             String merchantAddr2 = preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2);
             String passSettlement = preferences.getString("pass_settlement", CommonConfig.DEFAULT_SETTLEMENT_PASS);
+            String passSettings = preferences.getString("pass_settings", CommonConfig.PASS_SETTINGS);
             String minDeduct = preferences.getString("minimum_deduct", CommonConfig.DEFAULT_MIN_BALANCE_BRIZZI);
             String maxDeduct = preferences.getString("maximum_deduct", CommonConfig.DEFAULT_MAX_MONTHLY_DEDUCT);
             boolean isNeedUpdate = false;
@@ -339,13 +475,22 @@ public class SocketService extends Service implements WebSocketClient.Listener {
             if (!passSettlement.equals(json.getString("pass_settlement"))) {
                 isNeedUpdate = true;
             }
+            if (!passSettings.equals(json.getString("pass_settings"))) {
+                isNeedUpdate = true;
+            }
             if (!minDeduct.equals(json.getString("minimum_deduct"))) {
                 isNeedUpdate = true;
             }
             if (!maxDeduct.equals(json.getString("maximum_deduct"))) {
                 isNeedUpdate = true;
             }
-            if (isNeedUpdate) {
+
+//            if(!isNeedUpdate){
+//                mNotificationManager.cancel(1181);
+//                settingSuccess();
+//            }
+
+            if (isNeedUpdate || !isNeedUpdate) {
                 if (mlr.hasUnsettledData(this)) {
                     if (mNotificationManager == null) {
                         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -389,7 +534,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
 //                    preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
 //                    preferencesSetting.edit().putString("port", json.getString("port")).apply();
 //                    settingSuccess();
-//                    //reloadApp();
+                    //reloadApp();
 
                     if (mNotificationManager == null) {
                         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -446,7 +591,6 @@ public class SocketService extends Service implements WebSocketClient.Listener {
     }
 
     public void reloadApp() {
-
         System.exit(1);
     }
 
@@ -483,6 +627,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
         preferencesSetting.edit().putString("diskon_id", json.getString("diskon_id")).apply();
         preferencesSetting.edit().putString("diskon", json.getString("diskon")).apply();
         preferencesSetting.edit().putString("pass_settlement", json.getString("pass_settlement")).apply();
+        preferencesSetting.edit().putString("pass_settings", json.getString("pass_settings")).apply();
         preferencesSetting.edit().putString("minimum_deduct", json.getString("minimum_deduct")).apply();
         preferencesSetting.edit().putString("maximum_deduct", json.getString("maximum_deduct")).apply();
         preferencesSetting.edit().putString("port", json.getString("port")).apply();
@@ -523,6 +668,9 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                     e.printStackTrace();
                 }
             }
+//            if (reason.startsWith("recvfrom")){
+//                client.connect();
+//            }
         }
     }
 
@@ -562,6 +710,7 @@ public class SocketService extends Service implements WebSocketClient.Listener {
                 case NOTIFICATION_TOAST:
                     bundle.putString("message", message.getString("message"));
                     data.setData(bundle);
+                    mNotificationManager.cancel(12345);
                     mHandler.sendMessage(data);
                     mNotificationManager.notify(12345, n);
                     break;

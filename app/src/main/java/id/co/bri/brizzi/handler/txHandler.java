@@ -5,8 +5,11 @@
  */
 package id.co.bri.brizzi.handler;
 
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -17,6 +20,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.util.Log;
 
@@ -53,10 +57,13 @@ import java.util.List;
 import java.util.Locale;
 
 import id.co.bri.brizzi.ActivityList;
+import id.co.bri.brizzi.SocketService;
 import id.co.bri.brizzi.common.CommonConfig;
 import id.co.bri.brizzi.common.StringLib;
 import id.co.bri.brizzi.layout.FormMenu;
 import id.co.bri.brizzi.module.listener.ChannelClient;
+
+import static android.support.v7.widget.StaggeredGridLayoutManager.TAG;
 
 /**
  * @author Ahmad
@@ -110,11 +117,31 @@ public class txHandler {
 
     public void setContext(Context context) {
         this.ctx = context;
+
+        this.ctx.bindService(new Intent(this.ctx, SocketService.class), myConnection, Context.BIND_AUTO_CREATE);
     }
+    private SocketService myServiceBinder;
+
+    public ServiceConnection myConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName className, IBinder binder) {
+            myServiceBinder = ((SocketService.LocalBinder) binder).getServerInstance();
+        }
+
+        public void clientConnect(){
+            myServiceBinder.clientConnect();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+//            Log.d("ServiceConnection","disconnected");
+            myServiceBinder = null;
+        }
+    };
 
     //Main handler for service request (transaction API)
     public JSONObject processTransaction(Context context, String content) throws JSONException, Exception, IOException {
         //prepare return object
+
         SharedPreferences cekstatus = ctx.getSharedPreferences(CommonConfig.SETTINGS_FILE, Context.MODE_PRIVATE);
         boolean deviceRegistered = false;
         boolean lastKeyChanged = false;
@@ -161,6 +188,8 @@ public class txHandler {
         boolean isInitBrizzi = txElements[2].equals("A21100");
         boolean isNoInput = txElements[2].equals("A95000");
         boolean isNoInput2 = txElements[2].equals("A5C110");
+        boolean isNoInput3 = txElements[2].equals("A24100");
+        boolean isNoInput4 = txElements[2].equals("A24200");
         boolean isBrizziSettlement = txElements[2].equals("A28100");
         boolean isBrizziVoid = txElements[2].equals("A2C100");
         boolean isTunaiVoid = txElements[2].equals("A64000");
@@ -240,7 +269,7 @@ public class txHandler {
                             idlist.append(",");
                         }
                         j++;
-                    } while (j<15&&sData.moveToNext());
+                    } while (j<50&&sData.moveToNext());
                     i++;
                     String iServiceData = "insert or replace into service_data (message_id, name, value) "
                             + "values ('" + jmsg.get("msg_id") + "', 'rowdata', '"
@@ -296,7 +325,7 @@ public class txHandler {
                                 "\"type\":\"3\",\"title\":\"Settlement\"}}");
                     }
                 } while (sData.moveToNext());
-                String baris = String.valueOf(((i-1)*15)+j);
+                String baris = String.valueOf(((i-1)*50)+j);
                 idlist.append(") ");
                 int ts = (int) totalSettlement;
                 String stringTs = StringLib.strToCurr(String.valueOf(ts), "Rp");
@@ -409,7 +438,7 @@ public class txHandler {
                     "and (lower(settled) <> 't' or settled is null) and rc = '00' " +
                     "and (lower(reversed) <> 't' or reversed is null) " +
                     "and date(rqtime) = date('now') " +
-                    "and cast(stan as integer) = " + trace_number + " order by rqtime desc";
+                    "and cast(stan as integer) = " + "'" + trace_number + "'" + " order by rqtime desc";
             Cursor sData = clientDB.rawQuery(qry, null);
             StringBuilder stringBuilder = new StringBuilder();
             boolean onProgress = false;
@@ -465,9 +494,8 @@ public class txHandler {
                     }
                     stanSeq.close();
                 }
-                //msgSequence = Integer.valueOf(stanvoid);
-
-                //String trace_no = String.format("%06d", msgSequence);
+                msgSequence = Integer.valueOf(stanvoid);
+//                String trace_no = String.format("%06d", msgSequence);
                 String trace_no = generateStan();
                 if (!serviceid.equals("A2C100") && !serviceid.equals("A2C200") && !serviceid.equals("A2C000") && !serviceid.equals("A2C100C")) {
                     String uStanSeq = "update holder set " + "seq = " + trace_no;
@@ -1023,9 +1051,6 @@ public class txHandler {
 //                            d = d/100;
 //                        }
                         d = d/100;
-//                        if (clab.startsWith("Pembayaran PLN Pascabayar")) {
-//                            d = d / 100;
-//                        }
                         cval = formatter.format(d);
                         cval = StringLib.strToCurr(String.valueOf(d), "Rp");
                     }
@@ -1237,12 +1262,6 @@ public class txHandler {
 //                            }
 //                        }
                         d = d/100;
-//                        if (cTx.startsWith("Pembayaran PLN Pascabayar")) {
-//                            d = d / 100;
-//                        }
-//                        if (!cTx.startsWith("Pembayaran PLN")) {
-//                            d = d/100;
-//                        }
                         cAmo = formatter.format(d);
                         cAmo = StringLib.strToCurr(String.valueOf(d), "Rp");
                     }
@@ -1409,7 +1428,7 @@ public class txHandler {
 
         //get request data
         String reqData = getData(rqContent);
-        if (reqData.equals("") && !isLogon && !isNoInput && !isNoInput2) {
+        if (reqData.equals("") && !isLogon && !isNoInput && !isNoInput2 && isNoInput3 && isNoInput4) {
             return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Data transaksi tidak lengkap\",\n" +
                     "\"value\":\"Data transaksi tidak lengkap\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
                     "\"type\":\"3\",\"title\":\"Gagal\"}}");
@@ -1431,15 +1450,17 @@ public class txHandler {
         String[] requestData = reqData.split("\\|");
         Log.wtf("req",reqData);
         Log.wtf("meta", String.valueOf(metaCount));
-        if (requestData.length != metaCount) {
+        //handle popup unk
+
+            if (requestData.length != metaCount) {
 //            if (txElements[2].startsWith("A53"))
-            Log.e("TX", "Request field count does not matched");
-            jmsg.put("msg_rc", "05");
-            jmsg.put("msg_resp", "Jumlah data transaksi tidak sesuai");
-            MenuListResolver mlr = new MenuListResolver();
-            JSONObject replyJSON = mlr.loadMenu(context, "000000F", jmsg);
-            return replyJSON;
-        }
+                Log.e("TX", "Request field count does not matched");
+                jmsg.put("msg_rc", "05");
+                jmsg.put("msg_resp", "Jumlah data transaksi tidak sesuai");
+                MenuListResolver mlr = new MenuListResolver();
+                JSONObject replyJSON = mlr.loadMenu(context, "000000F", jmsg);
+                return replyJSON;
+            }
 
         // temp var for validation
         String[] serviceMeta = new String[metaCount];
@@ -1551,9 +1572,11 @@ public class txHandler {
         /*if ((serviceid == "A27100") || (serviceid == "A92001") || (serviceid == "A93001") || (serviceid == "A94001")){
             reversable = true;
         }*/
+        if (serviceid.equals("A27100")){
+            reversable = true;
+        }
 
-        if (serviceid.equals("A27100") ||
-                serviceid.equals("A25100") ||
+        if (serviceid.equals("A25100") ||
                 serviceid.equals("A92001") ||
                 serviceid.equals("A93001") ||
                 serviceid.equals("A94001") ||
@@ -1617,6 +1640,11 @@ public class txHandler {
 //                    clientDB.execSQL(uStanSeq);
                 }
             }
+            // Fixed Summary Pembelian Bansos
+            if (serviceid.equals("A92001")) {
+                    replyValues[4] = "00" + replyValues[4].substring(0,10);
+                }
+
             rpParser.setServiceId(serviceid);
             rpParser.setMessageId((String) jmsg.get("msg_id"));
             rpParser.setResponseCode(msg_rc);
@@ -1673,11 +1701,13 @@ public class txHandler {
 
                         "A61000", "A62000", "A63000", "A52100", "A5C210",
 
-                        "A21100", "A22000", "A22100", "A23000",
+                        "A2C200",
+
+                        "A21100", "A22000", "A22100", "A23000", "A23100",
                         "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                         "A91000", "A92000", "A93000", "A94000"};
 
-//                "A23100", "A52100", "A52210",
+//                 "A52100", "A52210",
 
 //                boolean matched_array = false;
                 for(int i=0; i < array.length; i++){
@@ -1688,6 +1718,7 @@ public class txHandler {
                 }
                 if (!matched_array){
                     String getStanSeq = "select seq msgSequence from holder";
+
 //                        String getStanSeq = "select cast(max(stan) as number) as msgSequence " +
 //                                "from edc_log where date(rqtime) = date('now') and rc = '00' ";
                     Cursor stanSeq = clientDB.rawQuery(getStanSeq, null);
@@ -1812,25 +1843,34 @@ public class txHandler {
                         writeDebugLog("LOGON", "Status : "+String.valueOf(ret));
                         cekstatus.edit().putBoolean("lastkeychanged", true).apply();
                         String trace = generateStan();
-                        String uStanSeq = "update holder set "+"seq= "+trace;
-                        writeDebugLog("UPDATING", "HOLDER(1473)");
-                        clientDB.execSQL(uStanSeq);
-                        clientDB.close();
+//                        String uStanSeq = "update holder set "+"seq= "+trace;
+//                        writeDebugLog("UPDATING", "HOLDER(1473)");
+//                        clientDB.execSQL(uStanSeq);
+//                        clientDB.close();
                         helperDb.close();
                     } catch (Exception e) {
                         //teu bisa update
                         Log.e("LOGON", e.getMessage());
                     } finally {
                         PINPadInterface.close();
+//                        myServiceBinder.clientConnect();
                     }
 
                     return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Logon Succesfull\",\n" +
                             "\"value\":\"Logon Succesfull\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"F0003\",\"seq\":0}]},\"id\":\"F000002\",\n" +
                             "\"type\":\"2\",\"title\":\"Sukses\"}}");
                 }
-// Nambah stan info depo & saldo 
-                if(screenResponse.equals("231000F")){
-                    String updInv = "update holder set seq = case when seq = 999999 then 0 else seq + 1 end ";
+// Nambah stan info depo & saldo
+//                if(screenResponse.equals("231000F")){
+//                    String updInv = "update holder set seq = case when seq = 999999 then 0 else seq + 1 end ";
+//                    clientDB.execSQL(updInv);
+//                }
+
+                if(screenResponse.equals("920000F")
+                        || screenResponse.equals("921000F")
+                        || screenResponse.equals("930000F")
+                        || screenResponse.equals("931000F")){
+                    String updInv = "update holder set invnum = case when invnum = 999999 then 0 else invnum + 1 end ";
                     clientDB.execSQL(updInv);
                 }
 

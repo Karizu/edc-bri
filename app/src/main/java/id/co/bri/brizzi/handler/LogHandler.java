@@ -128,8 +128,10 @@ public class LogHandler {
                     "A61000", "A62000", "A63000",
                     //penambahan serviceid
                     "A25100",
-// "A2C100", "A2C200", "A2C100C",
-                    "A21100", "A22000", "A22100", "A23000", "A23100",
+
+                    "A2C100", "A2C200",
+// , "A2C100C",
+                    "A21100", "A22000", "A22100", "A23100", "A23000",
                     "A29100", "A2A100", "A2B000", "A2B100", "A2D100",
                     "A91000", "A92000", "A93000", "A94000"};
             boolean matched_array = false;
@@ -274,7 +276,7 @@ public class LogHandler {
         clientDB.execSQL(saveStack);
 
         if(rc.equals("00")){
-            String updlnv = "update holder set invnum = case when invnum = 999999 then 0 else invnum + 1 end ";
+            String updlnv = "update holder set invnum = case when invnum = 999999 then 0 else invnum + 1 end";
             clientDB.execSQL(updlnv);
         }
         clientDB.close();

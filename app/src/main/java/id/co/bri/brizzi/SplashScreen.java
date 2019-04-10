@@ -190,6 +190,7 @@ public class SplashScreen extends Activity {
                     String merchantAddr1 = preferences.getString("merchant_address1",CommonConfig.INIT_MERCHANT_ADDRESS1);
                     String merchantAddr2 = preferences.getString("merchant_address2",CommonConfig.INIT_MERCHANT_ADDRESS2);
                     String passSettlement = preferences.getString("pass_settlement", CommonConfig.DEFAULT_SETTLEMENT_PASS);
+                    String passSettings = preferences.getString("pass_settings", CommonConfig.PASS_SETTINGS);
                     String minDeduct = preferences.getString("minimum_deduct", CommonConfig.DEFAULT_MIN_BALANCE_BRIZZI);
                     String maxDeduct = preferences.getString("maximum_deduct", CommonConfig.DEFAULT_MAX_MONTHLY_DEDUCT);
                     preferences.edit().putString("ip",ip).apply();
@@ -204,6 +205,7 @@ public class SplashScreen extends Activity {
                     preferences.edit().putString("merchant_address1",merchantAddr1).apply();
                     preferences.edit().putString("merchant_address2",merchantAddr2).apply();
                     preferences.edit().putString("pass_settlement", passSettlement).apply();
+                    preferences.edit().putString("pass_settings", passSettings).apply();
                     preferences.edit().putString("minimum_deduct", minDeduct).apply();
                     preferences.edit().putString("maximum_deduct", maxDeduct).apply();
                     //end of inject

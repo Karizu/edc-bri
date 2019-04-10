@@ -1,6 +1,7 @@
 package id.co.bri.brizzi;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Dialog;
@@ -71,6 +72,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
     private android.widget.TextView txtConnectedWifi;
     private CheckBox debugMode;
     private Button scanWifiButton, apnSettingsButton, openSetting;
+    private Activity context;
     private RelativeLayout wifiLayout;
     private Switch wifiSwitch;
     private Spinner spinnerDiskonId;
@@ -163,6 +165,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
         mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         wifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @SuppressLint("MissingPermission")
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 // do something, the isChecked will be
                 // true if the switch is in the On position
@@ -187,6 +190,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
         registerReceiver(wifiReceiver,new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
 
         wifiScanReceiver = new BroadcastReceiver(){
+            @SuppressLint("MissingPermission")
             @Override
             public void onReceive(Context c, Intent intent){
                 if(mWifiManager != null && isWantToScanWiFi) {
@@ -218,7 +222,8 @@ public class AdminActivity extends Activity implements View.OnClickListener {
         openSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                launchCall();
+//                launchCall();
+                callLoginDialog();
             }
         });
 
@@ -282,6 +287,46 @@ public class AdminActivity extends Activity implements View.OnClickListener {
                     Toast.makeText(AdminActivity.this, "Permission Denied!", Toast.LENGTH_SHORT).show();
                 }
         }
+    }
+
+    private void callLoginDialog(){
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_login);
+        dialog.setTitle("Login");
+
+        // get the Refferences of views
+        final EditText editTextUserName = (EditText) dialog.findViewById(R.id.editTextUserNameToLogin);
+        final EditText editTextPassword = (EditText) dialog.findViewById(R.id.editTextPasswordToLogin);
+        android.widget.Button btnSignIn = (android.widget.Button) dialog.findViewById(R.id.buttonSignIn);
+
+        // Set On ClickListener
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+
+                // get The User name and Password
+                String userName = editTextUserName.getText().toString();
+                String password = editTextPassword.getText().toString();
+                String stored = preferences.getString("pass_settings", CommonConfig.PASS_SETTINGS);
+
+                // fetch the Password form database for respective user name
+
+
+                // check if the Stored password matches with  Password entered by user
+                if (password.equals(stored) && userName.equals(CommonConfig.USERNAME_ADMIN)) {
+                    Toast.makeText(getApplicationContext(), "Login Successfull", Toast.LENGTH_LONG).show();
+                    dialog.dismiss();
+                    startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+                } else {
+                    Toast.makeText(getApplicationContext(), "User Name and Does Not Matches", Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+
+
+        dialog.show();
     }
 
     private void showExplanation(String title,

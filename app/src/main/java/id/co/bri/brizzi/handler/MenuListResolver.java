@@ -282,6 +282,9 @@ public class MenuListResolver {
                                             &&(menuId.startsWith("543120F"))) {
                                         d = d*100;
                                     }
+//                                    if (menuId.equals("630001F") && tidyFieldname.startsWith("nom_fee")) {
+//                                        d = d/100;
+//                                    }
                                     if (menuId.equals("2A1000F") && tidyFieldname.startsWith("nom")) {
                                         d = d/100;
                                     }
@@ -460,8 +463,8 @@ public class MenuListResolver {
                                     int i = 0;
                                     int restlength = rest.length();
                                     i = i + 3;
-                                    while (i < restlength - 18){
-                                        valuePrint += rest.substring(i, i+4) + " ";
+                                    while (i < restlength - 11){
+                                        valuePrint += rest.substring(i, i+4) + "     ";
                                         i = i + 4;
                                         if ((i+20)>restlength){
                                             valuePrint += rest.substring(i, i+(restlength-i)) + "\n";
@@ -483,7 +486,7 @@ public class MenuListResolver {
                                     int i = 0;
                                     int restlength = rest.length();
                                     i = i + 3;
-                                    while (i < restlength - 18){
+                                    while (i < restlength - 17){
                                         valuePrint += rest.substring(i, i+5) + "     ";
                                         i = i + 5;
                                         if ((i+25)>restlength){
@@ -940,7 +943,9 @@ public class MenuListResolver {
 
                                 }
 
-                                if (tidyFieldname.equals("pembelian_bansos")&&menuId.equals("920000F") ) {
+                                if (tidyFieldname.equals("pembelian_bansos")&&menuId.equals("920000F")
+                                        || tidyFieldname.equals("data_trx_bansos_tunai")&&menuId.equals("930000F")
+                                        || tidyFieldname.equals("data_trx_bansos_rek")&&menuId.equals("940000F")) {
 //                                    String parsedValues = parseBansosData(valuePrint);
 //                                    Log.d("FPRS", parsedValues);
 //                                    System.out.println("BANSOS TEST");
@@ -1015,9 +1020,10 @@ public class MenuListResolver {
 //                                            valuePrint += spli[i] + "\n";
 //                                        }
                                     }
-
                                 }
-                                if (tidyFieldname.equals("info_bansos") || tidyFieldname.equals("data_trx_bansos")
+                                if (tidyFieldname.equals("info_bansos")
+                                        || tidyFieldname.equals("data_trx_bansos_rek")&&menuId.equals("941000F")
+                                        || tidyFieldname.equals("data_trx_bansos_tunai")&&menuId.equals("931000F")
                                         || (tidyFieldname.equals("pembelian_bansos")&&menuId.equals("921000F"))
                                         || (tidyFieldname.equals("pln_pascabayar")&&menuId.equals("54311FF"))
                                         || (tidyFieldname.equals("pln_prabayar")&&menuId.equals("54321FF"))
@@ -1025,6 +1031,7 @@ public class MenuListResolver {
                                         || (tidyFieldname.equals("pln_nontaglis")&&menuId.equals("54380FF"))
                                         || (tidyFieldname.equals("pembayaran_multipayment")&&menuId.equals("5C200FF"))
                                         || (tidyFieldname.equals("pembayaran_multipayment")&&menuId.equals("5C210FF"))) {
+
 //                                    String parsedValues = parseBansosData(valuePrint);
 //                                    Log.d("FPRS", parsedValues);
 //                                    System.out.println("BANSOS TEST");
@@ -1063,6 +1070,7 @@ public class MenuListResolver {
                                     if (menuId.equals("5C200FF")||menuId.equals("5C210FF")){
                                         skipFooter = true;
                                     }
+
 //                                    if (menuId.equals("54311FF")||menuId.equals("54321FF")||menuId.equals("543310F")||menuId.equals("54380FF")){
 //                                        skipFooter = true;
 //                                    }
@@ -1121,6 +1129,7 @@ public class MenuListResolver {
                                             || menuId.equals("54311FF")
                                             || menuId.equals("5C200FF")
                                             || menuId.equals("5C210FF")
+                                            || menuId.equals("910000F")
                                             || menuId.equals("931000F")
                                             || menuId.equals("921000F")
                                             || menuId.equals("941000F")){
@@ -1143,6 +1152,8 @@ public class MenuListResolver {
 
                                     content = content.replaceAll("([T]\\d{6})", "TAGMARK$1");
 
+
+
                                     spli = content.split("TAGMARK");
                                     int maxTagLength = 0;
                                     for (int i = 0; i < spli.length; i++) {
@@ -1154,10 +1165,12 @@ public class MenuListResolver {
                                                 int splitlength = Integer.valueOf(splittag.substring(4));
                                                 if (splitlength > maxTagLength) {
                                                     maxTagLength = splitlength;
+
                                                 }
                                             }
                                         }
                                     }
+
                                     for (int i = 0; i < spli.length; i++) {
 //                                        System.out.println(spli[i]);
                                         if (spli[i].startsWith("T")) {
@@ -1169,16 +1182,29 @@ public class MenuListResolver {
                                             String visibleTTag = splittag.substring(3, 4);
                                             String visibleDTag = !valuetag.equals("") ? valuetag.substring(3, 4) : "0";
 
-                                            int indexTag = splitval.lastIndexOf("D", 17);
-                                            int indexTagD = indexTag + 7;
-                                            String valueTagD = splitval.substring(indexTag, indexTagD);
-                                            String TagD = valueTagD.substring(3,4);
+                                            String TagD = "";
+                                            int indexTag = 0;
+                                            if(!menuId.equals("910000F")){
+                                                if (!splitval.startsWith("BL/TH") && !splitval.startsWith("NAMAD")){
+                                                    indexTag = splitval.lastIndexOf("D", 20);
+                                                } else {
+                                                    indexTag = splitval.lastIndexOf("D", 10);
+                                                }
+                                                int indexTagD = indexTag + 7;
+                                                String valueTagD = splitval.substring(indexTag, indexTagD);
+                                                TagD = valueTagD.substring(3,4);
+                                            } else {
+                                                indexTag = splitval.lastIndexOf("D", 20);
+                                                int indexTagD = indexTag + 7;
+                                                String valueTagD = splitval.substring(indexTag, indexTagD);
+                                                TagD = valueTagD.substring(3,4);
+                                            }
 
                                             boolean notVisibleTag = (visibleTTag.equals("0") && visibleDTag.equals("0"));
                                             if (!notVisibleTag) {
                                                 String[] cSpli = splitval.split("[D]\\d{6}");
                                                 if (cSpli.length == 2) {
-                                                    if (!cSpli[0].trim().equals("") && !cSpli[1].trim().equals("")) {
+                                                    if (!cSpli[0].trim().equals("")) {
 
                                                         if (TagD.equals("2")){
                                                             valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
@@ -1188,7 +1214,6 @@ public class MenuListResolver {
                                                             valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
                                                             valuePrint +=  "[B]" + cSpli[1] + "\n";
                                                         }
-
                                                         else if (TagD.equals("4")) {
                                                             valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + "\n";
                                                             valuePrint +=  "[C][B]" + cSpli[1] + "\n";
@@ -1202,6 +1227,7 @@ public class MenuListResolver {
 //                                                        }
                                                         else{
                                                             valuePrint += String.format("%1$-" + maxTagLength + "s", cSpli[0]) + " : " + cSpli[1] + "\n";
+                                                            Log.d("maxTagLength", String.valueOf(maxTagLength));
                                                         }
                                                     }
                                                     else if (!visibleDTag.equals("") && (menuId.equals("54311FF")||menuId.equals("54321FF")
@@ -1291,9 +1317,14 @@ public class MenuListResolver {
                         }
 
                         String action_url = "";
+                        String dataL = "";
+
                         if (!screen.isNull("action_url")){
                             action_url = screen.get("action_url").toString();
                         }
+//                        if (!replyJSON.isNull("ldata")){
+//                            dataL = replyJSON.get("ldata").toString();
+//                        }
 //                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_rc_48") != null){
 //                            valuePrint = jValue.getString("msg_rc_48");
 //                            valuePrint = valuePrint.replace("RC03","");
@@ -1305,15 +1336,32 @@ public class MenuListResolver {
 //                                valuePrint += spli[i] + "\n";
 //                            }
 //                        }
+//
+                        String var = "";
+                        if(menuId.equals("000000F")){
+                            if(!jValue.getString("msg_resp").startsWith("Do") && !jValue.getString("msg_resp").startsWith("Time")){
+                                try {
+                                    var = jValue.getString("msg_rc_48");
+                                } catch (Exception e) {
+                                    var = "";
+                                }
+                                Log.d("msg_resp", jValue.getString("msg_resp"));
+                            } else {
+                                var = "";
+                                Log.d("msg_resp",jValue.getString("msg_resp"));
+                            }
+                        }
 
-                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_rc_48") != null){
-                            if (!jValue.getString("msg_rc_48").startsWith("RC") && !jValue.getString("msg_rc_48").startsWith("L")){
+                        if (menuId.equals("000000F") && jValue != null && jValue.getString("msg_resp") != null){
+                            if (!var.startsWith("RC") && !var.startsWith("L")){
                                 valuePrint = jValue.getString("msg_resp");
                                 valuePrint = valuePrint.replace("RC03","");
                             } else {
                                 valuePrint = jValue.getString("msg_rc_48");
                                 valuePrint = valuePrint.replace("RC03","");
                             }
+//                            valuePrint = jValue.getString("msg_resp");
+//                            valuePrint = valuePrint.replace("RC03","");
                             String res = valuePrint;
                             valuePrint = "";
                             String[] spli = res.split("[L]\\d{4}");

@@ -74,7 +74,7 @@ public class ActivityList extends Activity {
                 default:
                     super.handleMessage(message);
             }
-      }
+        }
     };
     Messenger flagReceiver = new Messenger(flagHandler);
 
@@ -214,18 +214,18 @@ public class ActivityList extends Activity {
     @Override
     public void onBackPressed() {
 //       Log.d("BACK", "PRESSED");
-       try {
-           try {
-               unbindService(myConnection);
-               unbindService(serviceConnection);
-           } catch (Exception e) {
+        try {
+            try {
+                unbindService(myConnection);
+                unbindService(serviceConnection);
+            } catch (Exception e) {
 
-           }
-           super.onBackPressed();
-       } catch (Exception e) {
-           Log.e("BACK", "ERROR");
-         //
-       }
+            }
+            super.onBackPressed();
+        } catch (Exception e) {
+            Log.e("BACK", "ERROR");
+            //
+        }
     }
 
     public void attachFooter(LinearLayout footerLayout) {
