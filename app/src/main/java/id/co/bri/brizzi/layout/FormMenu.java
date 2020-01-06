@@ -1072,7 +1072,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                             if (v instanceof EditText) {
                                 EditText editText = (EditText) v;
 //                                Log.d("TOPUP_ELE",editText.getText().toString());
-                                if(editText.getText().toString().equals("")){
+                                if(editText.getText().toString().equals("")) {
                                     continue;
                                 }
                                 if(!editText.isEditText() && editText.isNumber()){
@@ -1080,12 +1080,20 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                                 }
                                 if(editText.isEditText()&& editText.isNumber()){
                                     if(id.equals(TapCard.TOPUP_DEPOSIT) || id.equals(TapCard.TOPUP_ONLINE)){
-                                        cardData.setTopupAmount(editText.getText().toString());
+                                        if (editText.getText().toString().equals("")){
+                                            editText.setError("Field tidak boleh kosong");
+                                        } else {
+                                            cardData.setTopupAmount(editText.getText().toString());
+                                        }
                                         Log.d("TOPUP_NOM",editText.getText().toString());
                                         btnText = "Kirim";
 
                                     }else if(id.equals(TapCard.PEMBAYARAN_NORMAL) || id.equals(TapCard.PEMBAYARAN_DISKON)){
-                                        cardData.setDeductAmount(editText.getText().toString());
+                                        if (editText.getText().toString().equals("")){
+                                            editText.setError("Field tidak boleh kosong");
+                                        } else {
+                                            cardData.setDeductAmount(editText.getText().toString());
+                                        }
                                     }
                                 }
 
@@ -1556,7 +1564,7 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
             // set prompts.xml to alertdialog builder
             alertDialogBuilder.setView(promptsView);
             // create alert dialog
-            final AlertDialog alertTap = alertDialogBuilder.create();
+                final AlertDialog alertTap = alertDialogBuilder.create();
 
             WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
             lp.copyFrom(alertTap.getWindow().getAttributes());

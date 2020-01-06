@@ -293,6 +293,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             }
         }
     };
+    private String mStatus;
 
     public TapCard(Context context) {
         super(context);
@@ -513,6 +514,26 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         try {
             JSONObject obj = new JSONObject(result);
             JSONArray arr = obj.getJSONObject("screen").getJSONObject("comps").getJSONArray("comp");
+            if (arr != null && arr.length() > 0){
+                JSONObject compValues = arr.getJSONObject(0);
+                JSONArray compValue = compValues.getJSONObject("comp_values").getJSONArray("comp_value");
+                if (compValue != null && compValue.length() > 0){
+                    JSONObject value = compValue.getJSONObject(0);
+                    if (value != null && value.getString("value") != null && value.getString("value").equals("Server response code :OV")){
+                        setMessage("Tidak dapat melakukan topup,\nSaldo kartu melebihi limit");
+                        cleanUpFailedVoidLog();
+                        btnOk.setVisibility(VISIBLE);
+                        return;
+                    }
+                    else if (value != null && value.getString("value") != null && value.getString("value").equals("Server response code :OV")){
+                        setMessage("Tidak dapat melakukan topup,\nMelebihi limit topup bulanan");
+                        cleanUpFailedVoidLog();
+                        btnOk.setVisibility(VISIBLE);
+                        return;
+                    }
+                }
+            }
+
             if(obj.getJSONObject("screen").getString("id").equals("000000F")){
                 String resp = arr.getJSONObject(0).getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0).getString("value").trim();
                 setMessage(resp);
@@ -520,6 +541,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 btnOk.setVisibility(VISIBLE);
                 return;
             }
+
+
             String resp = arr.getJSONObject(0).getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0).getString("value").trim();
             String date = StringLib.getDDMMYY();
             String time = StringLib.getStringTime();
@@ -583,17 +606,20 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 double d = Double.parseDouble(az);
                 cData.setHostResponse(rnd);
                 cData.setTopupAmount(String.valueOf((int) d));
-                if (Integer.parseInt(cData.getCardBalanceInt())+(int) d>1000000) {
-//                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
-                    tx.reverseLastTransaction(context);
-                    setMessage("Aktif deposit akan melebihi limit");
-                    Log.e(TAG, "Aktif Deposit Over Limit");
-                    btnOk.setVisibility(VISIBLE);
-                    return;
-                } else {
-                    setMessage("Processing Next Step");
-                    Log.e(TAG, "Aktif Deposit Not Over Limit");
-                }
+//                TODO: -
+//                Dont't use this methor, because the host already set the right/max amount
+//
+//                if (Integer.parseInt(cData.getCardBalanceInt())+(int) d>1000000) {
+////                    sendReversal(cData.getRandomSam24B(), cData.getCardBalanceInt(), cData.getCardNumber(), cData.getPin(), cData.getMsgSI());
+//                    tx.reverseLastTransaction(context);
+//                    setMessage("Aktif deposit akan melebihi limit");
+//                    Log.e(TAG, "Aktif Deposit Over Limit");
+//                    btnOk.setVisibility(VISIBLE);
+//                    return;
+//                } else {
+//                    setMessage("Processing Next Step");
+//                    Log.e(TAG, "Aktif Deposit Not Over Limit");
+//                }
                 date = StringLib.getDDMMYY();
                 time = StringLib.getStringTime();
                 cData.settTime(time);
@@ -694,19 +720,19 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             btnOk.setVisibility(VISIBLE);
             return;
         }
-        try {
-            if (Integer.parseInt(cData.getCardBalanceInt())>1000000) {
-                setMessage("Isi ulang akan melebihi limit");
-                Log.e(TAG, "Topup Over Limit");
-                btnOk.setVisibility(VISIBLE);
-                return;
-            }
-        } catch (Exception e) {
-            setMessage("Terjadi kesalahan.\nERROR [05]");
-            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
-            btnOk.setVisibility(VISIBLE);
-            return;
-        }
+//        try {
+//            if (Integer.parseInt(cData.getCardBalanceInt())>1000000) {
+//                setMessage("Isi ulang akan melebihi limit");
+//                Log.e(TAG, "Topup Over Limit");
+//                btnOk.setVisibility(VISIBLE);
+//                return;
+//            }
+//        } catch (Exception e) {
+//            setMessage("Terjadi kesalahan.\nERROR [05]");
+//            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+//            btnOk.setVisibility(VISIBLE);
+//            return;
+//        }
         String vStat = cData.getValidationStatus();
         if (!vStat.equals("00")) {
             return;
@@ -1172,7 +1198,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
 
             formListener.onSuccesListener(formReponse);
         } catch (Exception e) {
-            setMessage(e.getMessage());
+//            setMessage(e.getMessage());
             setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             e.printStackTrace();
             CardResponse = cc.transmitCmd("A7");
@@ -1329,6 +1355,8 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 if (CardResponse != null) {
                     if (CardResponse.length() > 0) {
                         if (CardResponse.length() > 2) {
+                            String status = cardStatus.getString(BrizziCiStatus.RC.name());
+                            Log.d("Status", status);
                             contentValues.put("rc", cardStatus.getString(BrizziCiStatus.RC.name()));
                             contentValues.put("response", CardResponse);
                         } else {
@@ -1609,11 +1637,11 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 return null;
             }
         } catch (JSONException e) {
-            setMessage(e.getMessage());
+            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             cData.setValidationStatus("88");
             e.printStackTrace();
         } catch (Exception e) {
-            setMessage(e.getMessage());
+            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             cData.setValidationStatus("87");
             e.printStackTrace();
             return cData;
@@ -1970,19 +1998,19 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             btnOk.setVisibility(VISIBLE);
             return;
         }
-        try {
-            if (Integer.parseInt(cData.getTopupAmount())+Integer.parseInt(cData.getCardBalanceInt())>1000000) {
-                setMessage("Isi ulang akan melebihi limit");
-                Log.e(TAG, "Topup Over Limit");
-                btnOk.setVisibility(VISIBLE);
-                return;
-            }
-        } catch (Exception e) {
-            setMessage("Terjadi kesalahan.\nERROR [05]");
-            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
-            btnOk.setVisibility(VISIBLE);
-            return;
-        }
+//        try {
+//            if (Integer.parseInt(cData.getTopupAmount())+Integer.parseInt(cData.getCardBalanceInt())>1000000) {
+//                setMessage("Isi ulang akan melebihi limit");
+//                Log.e(TAG, "Topup Over Limit");
+//                btnOk.setVisibility(VISIBLE);
+//                return;
+//            }
+//        } catch (Exception e) {
+//            setMessage("Terjadi kesalahan.\nERROR [05]");
+//            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+//            btnOk.setVisibility(VISIBLE);
+//            return;
+//        }
         String vStat = cData.getValidationStatus();
         if (!vStat.equals("00")) {
             return;
@@ -4054,6 +4082,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
 //                if (isPasive&&status.equals("Aktif")) {
 //                    status = "Pasif";
 //                }
+                mStatus = ciStatus.getString(BrizziCiStatus.Status.name()).equals("6161") ? "Aktif" : "Close";
                 resp.append(status + "\n");
                 printSizes.add(new PrintSize(FontSize.NORMAL, "Status Aktif        : " + status + "\n"));
                 printSizes.add(new PrintSize(FontSize.EMPTY, "\n"));
@@ -4101,94 +4130,334 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
         setMessage("Silahkan Tunggu");
         btnOk.setVisibility(GONE);
         printPanelVisibility(GONE);
+
         try {
             String CardResponse = "";
             String SamResponse = "";
             String cmd = "";
-            StringBuilder result = new StringBuilder();
-            //  1. Card � Get Last Log Position
-            CardResponse = cc.transmitCmd("BD02000000010000");
-            ContentValues contentValues = new ContentValues();
-            contentValues.put("id_aid_log", cData.getBrizziIdLog());
-            contentValues.put("device", 1);
-            contentValues.put("cmd", "BD02000000010000");
-            if (CardResponse != null) {
-                if (CardResponse.length() > 0) {
-                    if (CardResponse.length() > 2) {
-                        contentValues.put("rc", CardResponse.substring(0, 2));
-                        contentValues.put("response", CardResponse);
-                    } else {
-                        contentValues.put("rc", CardResponse);
+
+            //Fix PrintLog Kartu Close
+            String aid = smc.sendCmd(StringLib.hexStringToByteArray("00A4040C09A00000000000000011"));
+            ContentValues contentvalues = new ContentValues();
+            contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+            contentvalues.put("device", 0);
+//            contentValues.put("cmd", "90BD000007BD0000000017000000");
+            contentvalues.put("cmd", "00A4040C09A00000000000000011");
+            contentvalues.put("rc", aid);
+            contentvalues.put("timestamp", new Date().getTime());
+            tx.insertIntoCmdLog(contentvalues);
+            if (aid.equals("9000")) {
+                CardResponse = cc.transmitCmd("5A010000");
+                contentvalues = new ContentValues();
+                contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+                contentvalues.put("device", 1);
+                contentvalues.put("cmd", "5A010000");
+                if (CardResponse.length() > 2) {
+                    contentvalues.put("rc", CardResponse.substring(0, 2));
+                    contentvalues.put("response", CardResponse);
+                } else {
+                    contentvalues.put("rc", CardResponse);
+                }
+                contentvalues.put("timestamp", new Date().getTime());
+                tx.insertIntoCmdLog(contentvalues);
+                writeDebugLog(TAG, "cmd:5A010000 || " + CardResponse);
+                // 3. Card � Get Card Number
+                cmd = cc.getCommand(0, 23);
+                CardResponse = cc.transmitCmd(cmd);
+                JSONObject ciHeader = parseCiHeader(CardResponse);
+                contentvalues = new ContentValues();
+                contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+                contentvalues.put("device", 1);
+                contentvalues.put("cmd", cmd);
+                if (CardResponse != null) {
+                    if (CardResponse.length() > 0) {
+                        if (CardResponse.length() < 24) {
+                            contentvalues.put("rc", ciHeader.getString(BrizziCiHeader.RC.name()));
+                            contentvalues.put("response", CardResponse);
+                        } else {
+                            contentvalues.put("rc", ciHeader.getString(BrizziCiHeader.RC.name()));
+                        }
                     }
                 }
-            }
-            contentValues.put("timestamp", new Date().getTime());
-            tx.insertIntoCmdLog(contentValues);
-//            writeDebugLog(TAG, "cmd: BD02000000010000 || " + CardResponse);
-            if (CardResponse.length() == 2) {
-//                setMessage("Terjadi kesalahan.\nERROR [" + CardResponse + "]");
-                Log.e(TAG, "Select Get Last Log Position, RESPONSE not OK" + CardResponse);
-                setMessage("Transaksi Gagal. \nPosisi Log Terakhir tidak terbaca");
-                setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
-//                return;
-            }
-            //  2. Card � Get Log Data
-            cmd = "BB01000000000000";
-            CardResponse = cc.transmitCmd(cmd);
-//            writeDebugLog(TAG, "cmd: " + cmd + " || " + CardResponse);
-            String rc = "BE";
-            String rv = "";
-            if (CardResponse != null) {
-                if (CardResponse.length() > 0) {
-                    if (CardResponse.length() > 2) {
-                        rc = CardResponse.substring(0, 2);
-                        rv = CardResponse.substring(2);
-                    } else {
-                        rc = CardResponse;
+                contentvalues.put("timestamp", new Date().getTime());
+                tx.insertIntoCmdLog(contentvalues);
+                if (CardResponse.length() < 24) {
+                    setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+                    Log.e(TAG, "Error when Get Card number, response " + CardResponse);
+                    btnOk.setVisibility(VISIBLE);
+                    return;
+                }
+                String CardNumber = CardResponse.substring(8, 8 + 16);
+                String PersoDate3B = CardResponse.substring(24, 30);
+                String PersoDate = DATE_TOCOMP.format(DATE.parse(PersoDate3B));
+//                String PersoDate = DATE_TOCOMP.format(DATE_TOCARD.parse(PersoDate3B));
+
+                contentvalues = new ContentValues();
+                contentvalues.put("card_number", CardNumber);
+                tx.updateAidById(contentvalues, cData.getBrizziIdLog());
+                cData.setCardNumber(CardNumber);
+                writeDebugLog(TAG, "cmd:" + cmd + " || " + CardResponse + " CardNumber:" + CardNumber);
+
+                // 4. Card � Get Card Status
+                CardResponse = cc.transmitCmd("BD01000000200000");
+                JSONObject ciStatus = parseCiStatus(CardResponse);
+                contentvalues = new ContentValues();
+                contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+                contentvalues.put("device", 1);
+                contentvalues.put("cmd", "BD01000000200000");
+                if (CardResponse != null) {
+                    if (CardResponse.length() > 0) {
+                        if (CardResponse.length() > 2) {
+                            contentvalues.put("rc", CardResponse.substring(0, 2));
+                            contentvalues.put("response", CardResponse);
+                        } else {
+                            contentvalues.put("rc", CardResponse);
+                        }
                     }
                 }
-            }
-            if (rc.equals("BE")) {
-                setMessage("Transaction Log is Empty");
-                btnOk.setVisibility(VISIBLE);
-            } else {
-                if (rc.equals("AF")) {
-                    result.append(rv);
-                    while (rc.equals("AF")) {
-                        cmd = "AF";
-                        CardResponse = cc.transmitCmd(cmd);
-//                        writeDebugLog(TAG, "cmd: " +cmd + " || " + CardResponse);
-                        rc = "BE";
-                        rv = "";
-                        if (CardResponse != null) {
-                            if (CardResponse.length() > 0) {
-                                if (CardResponse.length() > 2) {
-                                    rc = CardResponse.substring(0, 2);
-                                    rv = CardResponse.substring(2);
-                                } else {
-                                    rc = CardResponse;
-                                }
+                contentvalues.put("timestamp", new Date().getTime());
+                tx.insertIntoCmdLog(contentvalues);
+
+                cData.setCardStatus(CardResponse.substring(8, 12).equals("6161"));
+                writeDebugLog(TAG, "cmd:BD0100000200000 || " + CardResponse);
+//Cek Pasif
+                boolean isPasive = false;
+                try {
+                    CardResponse = cc.transmitCmd("5A030000");
+
+                    contentvalues = new ContentValues();
+                    contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+                    contentvalues.put("device", 1);
+                    contentvalues.put("cmd", "5A030000");
+                    if (CardResponse != null) {
+                        if (CardResponse.length() > 0) {
+                            if (CardResponse.length() > 2) {
+                                contentvalues.put("rc", CardResponse.substring(0, 2));
+                                contentvalues.put("response", CardResponse);
+                            } else {
+                                contentvalues.put("rc", CardResponse);
                             }
                         }
-                        if (rc.equals("AF")||rc.equals("00")) {
-                            result.append(rv);
+                    }
+                    contentvalues.put("timestamp", new Date().getTime());
+                    tx.insertIntoCmdLog(contentvalues);
+
+                    if (!CardResponse.startsWith("00")) {
+                        setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+                        Log.e(TAG, "Select AID 3, RESPONSE " + CardResponse);
+                        return;
+                    }
+//                    writeDebugLog(TAG, "cmd: 5A030000 || " + CardResponse);
+                    // 6. Card � Request Key Card
+                    CardResponse = cc.transmitCmd("0A00");
+
+                    contentvalues = new ContentValues();
+                    contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+                    contentvalues.put("device", 1);
+                    contentvalues.put("cmd", "0A00");
+                    String rc = "";
+                    String rv = "";
+                    int rctr = 0;
+                    if (CardResponse != null) {
+                        if (CardResponse.length() > 0) {
+                            if (CardResponse.length() > 2) {
+                                rc = CardResponse.substring(0, 2);
+                                rv = CardResponse.substring(2);
+                                contentvalues.put("rc", rc);
+                                contentvalues.put("response", rv);
+                            } else {
+                                contentvalues.put("rc", CardResponse);
+                            }
                         }
                     }
-                    formReponse = new JSONObject();
-                    formReponse.put("screen",formatTxLog(result.toString()));
-//                    writeDebugLog(TAG, formReponse.toString());
-                    btnOk.setVisibility(VISIBLE);
-                    printPanelVisibility(VISIBLE);
-                    formReponse.put("server_date", svrDt);
-                    formReponse.put("server_time", svrTm);
-                    formReponse.put("card_type", cardType);
-                    formReponse.put("nomor_kartu", cardNumber());
-                    formListener.onSuccesListener(formReponse);
-                } else {
-//                    setMessage("Error Response Unknown [code : " + rc + "]");
-                    setMessage("Transaksi Gagal.\nData log pada kartu tidak terbaca");
+//                    writeDebugLog(TAG, "0A00 (" + String.valueOf(rctr) + "x) || " + rv);
+                    contentvalues.put("timestamp", new Date().getTime());
+                    tx.insertIntoCmdLog(contentvalues);
+
+                    if (!CardResponse.startsWith("AF")) {
+                        setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+                        Log.e(TAG, "Error when request key card, response " + CardResponse);
+                        return;
+                    }
+                    String Keycard = rv;
+//                    writeDebugLog(TAG, "cmd: 0A00 || " + Keycard);
+                    // 7. Card � Get UID
+//                    writeDebugLog(TAG, "UID || " + cData.getUid());
+//                    cmd = "90BD000007" + CardNumber + cData.getUid() + "BD0000000017000000" + Keycard;
+                    cmd = "80B0000020" + CardNumber + cData.getUid() + "FF0000030080000000" + Keycard;
+                    SamResponse = smc.sendCmd(StringLib.hexStringToByteArray(cmd));
+                    contentvalues = new ContentValues();
+                    contentvalues.put("id_aid_log", cData.getBrizziIdLog());
+                    contentvalues.put("device", 0);
+                    contentvalues.put("cmd", cmd);
+                    if (SamResponse != null) {
+//                        writeDebugLog(TAG, SamResponse);
+                        if (SamResponse.length() > 0) {
+                            if (SamResponse.length() > 2) {
+                                contentvalues.put("rc", SamResponse);
+                                contentvalues.put("response", SamResponse);
+                            } else {
+                                contentvalues.put("rc", SamResponse);
+                            }
+                        }
+                    }
+                    contentvalues.put("timestamp", new Date().getTime());
+                    tx.insertIntoCmdLog(contentvalues);
+                    if (!SamResponse.startsWith("6D")) {
+//                        writeDebugLog(TAG, "SAM Authenticate Key : " + SamResponse);
+                        String RandomKey16B = SamResponse.substring(32, SamResponse.length() - 4);
+//                        writeDebugLog(TAG, "Randomkey16B : " + RandomKey16B);
+                        // 9. Card � Authenticate Card
+                        CardResponse = cc.transmitCmd("AF" + RandomKey16B);
+                        String RandomNumber8B = CardResponse.substring(2);
+                        cData.setRandomNumber8B(RandomNumber8B);
+//                        writeDebugLog(TAG, "cmd: AF+" + RandomKey16B + " || " + CardResponse + " || RandomNumber8B: " + RandomNumber8B);
+                        //  10. Card � Get Last Transaction Date
+                        CardResponse = cc.transmitCmd("BD03000000070000");
+
+                        if (CardResponse.length() == 2) {
+                            isPasive = false;
+                        } else {
+                            cData.setLastTransDate(CardResponse.substring(2, 8));
+                            Calendar startCalendar = Calendar.getInstance();
+                            try {
+                                startCalendar.setTime(DATE_TOCARD.parse(cData.getLastTransDate()));
+//                                startCalendar.setTime(DATE_TOCARD.parse("150801"));//Test Pasif
+                            } catch (ParseException e) {
+
+                            }
+                            Calendar endCalendar = Calendar.getInstance();
+                            Long dayDiff = ISO8583Parser.getDateDiff(startCalendar, endCalendar);
+                            if (dayDiff > 365&&!cData.getLastTransDate().equals("000000")) {
+                                isPasive = true;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    isPasive = false;
+                }
+
+                StringBuilder resp = new StringBuilder();
+                JSONObject objResp = new JSONObject();
+                objResp.put("messageId", "1234");
+                objResp.put("no_kartu", cardNumber());
+
+                printSizes.clear();
+                resp.append("Informasi Kartu Brizzi Anda\n\n");
+                printSizes.add(new PrintSize(FontSize.TITLE, "Informasi Kartu Brizzi Anda\n"));
+                printSizes.add(new PrintSize(FontSize.EMPTY, "\n"));
+                resp.append("No Kartu         : " + cardNumber(ciHeader.getString(BrizziCiHeader.CardNumber.name())) + "\n");
+                printSizes.add(new PrintSize(FontSize.NORMAL, "No Kartu            : " +
+                        cardNumber(ciHeader.getString(BrizziCiHeader.CardNumber.name())) + "\n"));
+                objResp.put("perso_date", PersoDate);
+                resp.append("Issue Date : " + PersoDate + "\n");
+                String tgl = DATE_TOCOMP.format(DATE.parse(ciStatus.getString(BrizziCiStatus.ActivationCode.name())));
+                objResp.put("tgl_aktivasi", tgl);
+                resp.append("Tanggal Aktifasi : " + tgl + "\n");
+                printSizes.add(new PrintSize(FontSize.NORMAL, "Tanggal Aktifasi    : " + tgl + "\n"));
+//                tgl = DATE_TOCOMP.format(DATE.parse(ciHeader.getString(BrizziCiHeader.ExpireDate.name())));
+                tgl = ciHeader.getString(BrizziCiHeader.BranchIssue.name());
+                objResp.put("aktif_sd", tgl);
+                resp.append("Aktif s/d        : " + tgl + "\n");
+                printSizes.add(new PrintSize(FontSize.NORMAL, "Aktif s/d           : " + tgl + "\n"));
+                String status = ciStatus.getString(BrizziCiStatus.Status.name()).equals("6161") ? "Aktif" : "Close";
+//                if (isPasive&&status.equals("Aktif")) {
+//                    status = "Pasif";
+//                }
+                mStatus = ciStatus.getString(BrizziCiStatus.Status.name()).equals("6161") ? "Aktif" : "Close";
+                resp.append(status + "\n");
+            }
+//            JSONObject ciStatus = parseCiStatus(CardResponse);
+            if (mStatus.equals("Close")){
+                setMessage("Transaksi Gagal. \nStatus Kartu Close");
+                btnOk.setVisibility(VISIBLE);
+            } else {
+                StringBuilder result = new StringBuilder();
+                //  1. Card � Get Last Log Position
+                CardResponse = cc.transmitCmd("BD02000000010000");
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("id_aid_log", cData.getBrizziIdLog());
+                contentValues.put("device", 1);
+                contentValues.put("cmd", "BD02000000010000");
+                if (CardResponse != null) {
+                    if (CardResponse.length() > 0) {
+                        if (CardResponse.length() > 2) {
+                            contentValues.put("rc", CardResponse.substring(0, 2));
+                            contentValues.put("response", CardResponse);
+                        } else {
+                            contentValues.put("rc", CardResponse);
+                        }
+                    }
+                }
+                contentValues.put("timestamp", new Date().getTime());
+                tx.insertIntoCmdLog(contentValues);
+//            writeDebugLog(TAG, "cmd: BD02000000010000 || " + CardResponse);
+                if (CardResponse.length() == 2) {
+//                setMessage("Terjadi kesalahan.\nERROR [" + CardResponse + "]");
+                    Log.e(TAG, "Select Get Last Log Position, RESPONSE not OK" + CardResponse);
+                    setMessage("Transaksi Gagal. \nPosisi Log Terakhir tidak terbaca");
                     setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+//                return;
+                }
+                //  2. Card � Get Log Data
+                cmd = "BB01000000000000";
+                CardResponse = cc.transmitCmd(cmd);
+//            writeDebugLog(TAG, "cmd: " + cmd + " || " + CardResponse);
+                String rc = "BE";
+                String rv = "";
+                if (CardResponse != null) {
+                    if (CardResponse.length() > 0) {
+                        if (CardResponse.length() > 2) {
+                            rc = CardResponse.substring(0, 2);
+                            rv = CardResponse.substring(2);
+                        } else {
+                            rc = CardResponse;
+                        }
+                    }
+                }
+
+                if (rc.equals("BE")) {
+                    setMessage("Transaction Log is Empty");
                     btnOk.setVisibility(VISIBLE);
+                } else {
+                    if (rc.equals("AF")) {
+                        result.append(rv);
+                        while (rc.equals("AF")) {
+                            cmd = "AF";
+                            CardResponse = cc.transmitCmd(cmd);
+//                        writeDebugLog(TAG, "cmd: " +cmd + " || " + CardResponse);
+                            rc = "BE";
+                            rv = "";
+                            if (CardResponse != null) {
+                                if (CardResponse.length() > 0) {
+                                    if (CardResponse.length() > 2) {
+                                        rc = CardResponse.substring(0, 2);
+                                        rv = CardResponse.substring(2);
+                                    } else {
+                                        rc = CardResponse;
+                                    }
+                                }
+                            }
+                            if (rc.equals("AF")||rc.equals("00")) {
+                                result.append(rv);
+                            }
+                        }
+                        formReponse = new JSONObject();
+                        formReponse.put("screen",formatTxLog(result.toString()));
+//                    writeDebugLog(TAG, formReponse.toString());
+                        btnOk.setVisibility(VISIBLE);
+                        printPanelVisibility(VISIBLE);
+                        formReponse.put("server_date", svrDt);
+                        formReponse.put("server_time", svrTm);
+                        formReponse.put("card_type", cardType);
+                        formReponse.put("nomor_kartu", cardNumber());
+                        formListener.onSuccesListener(formReponse);
+                    } else {
+//                    setMessage("Error Response Unknown [code : " + rc + "]");
+                        setMessage("Transaksi Gagal.\nData log pada kartu tidak terbaca");
+                        setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
+                        btnOk.setVisibility(VISIBLE);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -4527,7 +4796,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 }
             }
         } catch (Exception e) {
-            setMessage(e.getMessage());
+            setMessage("Tidak dapat melakukan transaksi\nSilahkan coba beberapa saat lagi");
             btnOk.setVisibility(VISIBLE);
             return e.getMessage();
         }
@@ -4859,7 +5128,7 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
             while (alldata.length() > 63) {
                 String data = alldata.substring(0, 64);
                 writeDebugLog(TAG, "Row : " + data);
-                if (!data.startsWith("3")){
+                if (!data.startsWith("3") && !data.startsWith("0")){
                     String dt = data.substring(0, 2);
                     String dataRow = alldata.substring(2, 64);
                     data = dataRow + dt;
@@ -5069,11 +5338,15 @@ public class TapCard extends RelativeLayout implements ReqListener, FinishedPrin
                 "(select max(log_id) from edc_log)";
         Cursor eLast = clientDB.rawQuery(getLast, null);
         String lastServiceId = "";
-        if (eLast!=null) {
-            eLast.moveToFirst();
-            lastServiceId = eLast.getString(0);
+        try {
+            if (eLast!=null) {
+                eLast.moveToFirst();
+                lastServiceId = eLast.getString(0);
+                eLast.close();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
-        eLast.close();
         if (lastServiceId.equals("A2C200")) {
             writeDebugLog("MSGLOG", "update false service (4745)");
             String iMsgLog = "update messagelog set service_id = 'X2C200' where log_id = " +

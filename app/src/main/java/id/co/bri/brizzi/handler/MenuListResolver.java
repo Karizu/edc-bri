@@ -50,7 +50,7 @@ public class MenuListResolver {
         try {
             helperDb.openDataBase();
             clientDB = helperDb.getActiveDatabase();
-            String Select = "select * from screen where screen_id='"+menuId+"'";
+                String Select = "select * from screen where screen_id='"+menuId+"'";
             t = clientDB.rawQuery(Select, null);
             JSONObject screen = new JSONObject();
             if (t.moveToFirst()) {
@@ -1340,9 +1340,15 @@ public class MenuListResolver {
                         String var = "";
                         if(menuId.equals("000000F")){
                             if(!jValue.getString("msg_resp").startsWith("Do") && !jValue.getString("msg_resp").startsWith("Time")){
-                                try {
-                                    var = jValue.getString("msg_rc_48");
-                                } catch (Exception e) {
+
+                                if (!jValue.getString("msg_resp").startsWith("Belum Absen") && !jValue.getString("msg_resp").startsWith("Sudah Absen")
+                                        && !jValue.getString("msg_resp").startsWith("Format Error")){
+                                    try {
+                                        var = jValue.getString("msg_rc_48");
+                                    } catch (Exception e) {
+                                        var = "";
+                                    }
+                                } else {
                                     var = "";
                                 }
                                 Log.d("msg_resp", jValue.getString("msg_resp"));
@@ -1589,7 +1595,15 @@ public class MenuListResolver {
 
     private String parseFlightRow(String inRow) {
         String outRow = "\n";
-        String seat = String.valueOf(Integer.parseInt(inRow.substring(0,2))) + " seat";
+        String seat = " ";
+        try {
+            seat = String.valueOf(Integer.parseInt(inRow.substring(0,2))) + " seat";
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        if (seat.equals(" ")){
+            seat = inRow.substring(0,2) + " seat";
+        }
         String carrier = inRow.substring(2,4);
         String flightClass = inRow.substring(4,5);
         String flightFrom = inRow.substring(5,8);
@@ -1601,7 +1615,7 @@ public class MenuListResolver {
             flightNum = inRow.substring(11, 15);
             flightDate = inRow.substring(15, 17) + "/" + inRow.substring(17, 19);
             flightTime = inRow.substring(19, 21) + ":" + inRow.substring(21, 23);
-        }
+        }   
         outRow += carrier + " " + flightNum + " " + flightClass + " " + flightFrom + "-" +
                 flightDest + " " + flightDate + " " + flightTime + " : " + seat;
 //        Log.d("FROW" , outRow);

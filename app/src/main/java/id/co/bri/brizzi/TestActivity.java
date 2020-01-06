@@ -43,20 +43,18 @@ import id.co.bri.brizzi.handler.ConAsync;
 import id.co.bri.brizzi.module.CardData;
 import id.co.bri.brizzi.module.listener.ReqListener;
 
-;
-
 public class TestActivity extends Activity implements ReqListener {
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
     private ConAsync con;
     public final String TAG = "BRIZZI";
-    private Button btnPrintImage, btnPrintStruk, btnTap,btnSmartCard;
+    private Button btnPrintImage, btnPrintStruk, btnTap, btnSmartCard;
     private ContactlessControler cc;
     private CardData cData = new CardData();
     private AlertDialog alertTap;
     private AlertDialog dialogChoice;
     private ListAdapter brizziChoice;
     private TextView alertMessage;
-    private List<String> pilihan = new ArrayList<>(Arrays.asList("CEK SALDO","TOPUP","GET KEY","PEMBAYARAN_NORMAL","AKTIF"));
+    private List<String> pilihan = new ArrayList<>(Arrays.asList("CEK SALDO", "TOPUP", "GET KEY", "PEMBAYARAN_NORMAL", "AKTIF"));
     private SmartCardController smc;
     private Handler handler = new Handler() {
         @Override
@@ -66,26 +64,24 @@ public class TestActivity extends Activity implements ReqListener {
             int nEventID = bundle.getInt("nEventID");
             int dataEvenLeng = bundle.getInt("nEventDataLength");
             byte[] dataByteArray = bundle.getByteArray("arryEventData");
-            String uid= bundle.getString("uid");
+            String uid = bundle.getString("uid");
             cData.setUid(uid);
             Log.i(TAG, "TAP PLEASE");
-            if(cData.getWhatToDo().equals("CekSaldo")){
+            if (cData.getWhatToDo().equals("CekSaldo")) {
                 cekSaldo();
-            }else if(cData.getWhatToDo().equals("Topup")){
+            } else if (cData.getWhatToDo().equals("Topup")) {
                 cData.setTopupAmount("25000");
                 topup();
-            }else if(cData.getWhatToDo().equals("Getkey")){
+            } else if (cData.getWhatToDo().equals("Getkey")) {
                 getKey();
-            }else if(cData.getWhatToDo().equals("Deduct")){
+            } else if (cData.getWhatToDo().equals("Deduct")) {
                 deduct();
-            }else if(cData.getWhatToDo().equals("AKTIF")){
+            } else if (cData.getWhatToDo().equals("AKTIF")) {
                 aktif();
             }
 
         }
     };
-
-
 
 
     @Override
@@ -107,13 +103,13 @@ public class TestActivity extends Activity implements ReqListener {
 //                printStruk(v);
 //            }
 //        });
-//        btnTap = (Button) findViewById(R.id.btn_tap);
-//        btnTap.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                doTap(v);
-//            }
-//        });
+        btnTap = (Button) findViewById(R.id.btn_tap);
+        btnTap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doTap(v);
+            }
+        });
 //        btnSmartCard = (Button) findViewById(R.id.btnSmartCard);
 //        btnSmartCard.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -133,11 +129,11 @@ public class TestActivity extends Activity implements ReqListener {
 //                        .setAction("Action", null).show();
 //            }
 //        });
-//
-//        LayoutInflater li = LayoutInflater.from(this);
-//        View promptsView = li.inflate(R.layout.swipe_dialog, null);
-//        alertMessage = (TextView) promptsView.findViewById(R.id.pinPass);
-//        alertMessage.setText("SILAHKAN TAP KARTU ANDA");
+        cData.setWhatToDo("Topup");
+        LayoutInflater li = LayoutInflater.from(this);
+        View promptsView = li.inflate(R.layout.swipe_dialog, null);
+        alertMessage = (TextView) promptsView.findViewById(R.id.pinPass);
+        alertMessage.setText("SILAHKAN TAP KARTU ANDA");
 //        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 //        // set prompts.xml to alertdialog builder
 //        alertDialogBuilder.setView(promptsView);
@@ -351,7 +347,7 @@ public class TestActivity extends Activity implements ReqListener {
     }
 
     private void printStruk(View v) {
-        if(false){
+        if (false) {
             PrinterInterface.PrinterEnd();
             PrinterInterface.PrinterClose();
         }
@@ -359,59 +355,59 @@ public class TestActivity extends Activity implements ReqListener {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile("/sdcard/Pictures/bri-small.jpg");
         List<PrintSize> data = new ArrayList<>();
-        data.add(new PrintSize(FontSize.NORMAL,"Informasi Saldo"+"\n"));
+        data.add(new PrintSize(FontSize.NORMAL, "Informasi Saldo" + "\n"));
         data.add(new PrintSize(FontSize.EMPTY, "\n"));
         FontSize size = FontSize.NORMAL;
         String lbl = "Nama : ";
         String value = "[2]Muhammad Indra";
-        if(lbl.startsWith("[")){
+        if (lbl.startsWith("[")) {
             String tag = lbl.substring(1, lbl.indexOf("]"));
-            if(tag.matches(".*\\d+.*")){
+            if (tag.matches(".*\\d+.*")) {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = tag.substring(1);
-                    tag = "BOLD_"+tag;
+                    tag = "BOLD_" + tag;
 
-                }else{
-                    tag = "NORMAL_"+tag.substring(1);
+                } else {
+                    tag = "NORMAL_" + tag.substring(1);
                 }
-            }else{
+            } else {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = "BOLD";
 
-                }else{
+                } else {
                     tag = "NORMAL";
                 }
             }
-            Log.i("zzzz",tag);
+            Log.i("zzzz", tag);
             size = FontSize.valueOf(tag);
-            lbl = lbl.substring(lbl.indexOf("]")+1);
+            lbl = lbl.substring(lbl.indexOf("]") + 1);
         }
         data.add(new PrintSize(size, lbl));
-        if(value.startsWith("[")){
+        if (value.startsWith("[")) {
             String tag = value.substring(1, value.indexOf("]"));
-            if(tag.matches(".*\\d+.*")){
+            if (tag.matches(".*\\d+.*")) {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = tag.substring(1);
-                    tag = "BOLD_"+tag;
+                    tag = "BOLD_" + tag;
 
-                }else{
-                    tag = "NORMAL_"+tag;
+                } else {
+                    tag = "NORMAL_" + tag;
                 }
-            }else{
+            } else {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = "BOLD";
 
-                }else{
+                } else {
                     tag = "NORMAL";
                 }
             }
-            Log.i("zzzz",tag);
+            Log.i("zzzz", tag);
             size = FontSize.valueOf(tag);
-            value = value.substring(value.indexOf("]")+1);
+            value = value.substring(value.indexOf("]") + 1);
         }
         data.add(new PrintSize(size, value + "\n"));
         data.add(new PrintSize(FontSize.EMPTY, "\n"));
@@ -419,78 +415,78 @@ public class TestActivity extends Activity implements ReqListener {
         size = FontSize.NORMAL;
         lbl = "[3]Sisa Saldo : ";
         value = "Rp. 1.234.567";
-        if(lbl.startsWith("[")){
+        if (lbl.startsWith("[")) {
             String tag = lbl.substring(1, lbl.indexOf("]"));
-            if(tag.matches(".*\\d+.*")){
+            if (tag.matches(".*\\d+.*")) {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = tag.substring(1);
-                    tag = "BOLD_"+tag;
+                    tag = "BOLD_" + tag;
 
-                }else{
-                    tag = "NORMAL_"+tag;
+                } else {
+                    tag = "NORMAL_" + tag;
                 }
-            }else{
+            } else {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = "BOLD";
 
-                }else{
+                } else {
                     tag = "NORMAL";
                 }
             }
-            Log.i("zzzz",tag);
+            Log.i("zzzz", tag);
             size = FontSize.valueOf(tag);
             lbl = lbl.substring(lbl.indexOf("]") + 1);
         }
-        data.add(new PrintSize(size,lbl));
-        if(value.startsWith("[")){
+        data.add(new PrintSize(size, lbl));
+        if (value.startsWith("[")) {
             String tag = value.substring(1, value.indexOf("]"));
-            if(tag.matches(".*\\d+.*")){
+            if (tag.matches(".*\\d+.*")) {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = tag.substring(1);
-                    tag = "BOLD_"+tag;
+                    tag = "BOLD_" + tag;
 
-                }else{
-                    tag = "NORMAL_"+tag;
+                } else {
+                    tag = "NORMAL_" + tag;
                 }
-            }else{
+            } else {
 
-                if(tag.startsWith("B")){
+                if (tag.startsWith("B")) {
                     tag = "BOLD";
 
-                }else{
+                } else {
                     tag = "NORMAL";
                 }
             }
-            Log.i("zzzz",tag);
+            Log.i("zzzz", tag);
             size = FontSize.valueOf(tag);
             value = value.substring(value.indexOf("]") + 1);
         }
-        data.add(new PrintSize(size,value+"\n"));
+        data.add(new PrintSize(size, value + "\n"));
         data.add(new PrintSize(FontSize.EMPTY, "\n"));
         ESCPOSApi.printStruk(bitmap, data);
     }
 
     @Override
     public void onReqCompleted(String result) {
-        Log.i("BRIZZI","HOST RESPONSE "+result);
-        try{
+        Log.i("BRIZZI", "HOST RESPONSE " + result);
+        try {
             JSONObject obj = new JSONObject(result);
             JSONArray arr = obj.getJSONObject("screen").getJSONObject("comps").getJSONArray("comp");
 
             String resp = arr.getJSONObject(0).getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0).getString("value").trim();
             String date = arr.getJSONObject(2).getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0).getString("value").trim();
-            Log.i(TAG,"HOST RESPONSE DATE "+date);
+            Log.i(TAG, "HOST RESPONSE DATE " + date);
             String time = arr.getJSONObject(3).getJSONObject("comp_values").getJSONArray("comp_value").getJSONObject(0).getString("value").trim();
-            Log.i(TAG,"HOST RESPONSE TIME "+time);
+            Log.i(TAG, "HOST RESPONSE TIME " + time);
             cData.setHostResponse(resp);
             cData.settTime(time);
             cData.settDate("150116");
             nextTopupStep();
-        }catch (JSONException ex){
-            Log.e(TAG,ex.getMessage());
+        } catch (JSONException ex) {
+            Log.e(TAG, ex.getMessage());
         }
     }
 
@@ -564,13 +560,13 @@ public class TestActivity extends Activity implements ReqListener {
         alertDialog.getWindow().setAttributes(lp);
     }
 
-    public void cekSaldo(){
-        Log.i(TAG,"CEK SALDO");
+    public void cekSaldo() {
+        Log.i(TAG, "CEK SALDO");
         String CardResponse = "";
         String SamResponse = "";
         //2. Card � Select AID 1
         String aid = smc.sendCmd(hexStringToByteArray("00A4040C09A00000000000000011"));
-        if(aid.equals("9000")){
+        if (aid.equals("9000")) {
             CardResponse = cc.transmitCmd("5A010000");
             Log.d(TAG, "cmd:5A010000 || " + CardResponse);
             // 3. Card � Get Card Number
@@ -592,7 +588,7 @@ public class TestActivity extends Activity implements ReqListener {
             Log.d(TAG, "UID || " + cData.getUid());
 
             SamResponse = smc.sendCmd(hexStringToByteArray("80B0000020" + CardNumber + cData.getUid() + "FF0000030080000000" + Keycard));
-            if(!SamResponse.startsWith("6D")){
+            if (!SamResponse.startsWith("6D")) {
                 Log.d(TAG, "SAM Authenticate Key : " + SamResponse);
                 String RandomKey16B = SamResponse.substring(SamResponse.length() - 36);
                 RandomKey16B = RandomKey16B.substring(0, RandomKey16B.length() - 4);
@@ -614,18 +610,20 @@ public class TestActivity extends Activity implements ReqListener {
                 Log.d(TAG, "cmd: 6C00 || Balance:  " + cData.getCardBalance4B());
                 Log.d(TAG, "Balance integer: " + HtoI(cData.getCardBalance4B()));
                 StringBuilder sb = new StringBuilder();
-                sb.append("NOMOR KARTU ANDA ="+cData.getCardNumber());
+                sb.append("NOMOR KARTU ANDA =" + cData.getCardNumber());
                 sb.append("\n");
 //                sb.append("SISA SALDO ANDA Rp. "+HtoI(cData.getCardBalance4B()));
-//                alertMessage.setText(sb.toString());
-            }else{
+                alertMessage.setText(sb.toString());
+            } else {
                 Log.e(TAG, "SAM AUTH ERROR : " + SamResponse);
             }
-        }else{
+        } else {
             Log.e(TAG, "AID : " + SamResponse);
         }
     }
+
     private int choice = -1;
+
     private void doTap(View v) {
         dialogChoice = new AlertDialog.Builder(TestActivity.this)
                 .setSingleChoiceItems(brizziChoice, 0, null)
@@ -635,15 +633,15 @@ public class TestActivity extends Activity implements ReqListener {
                         smc.starting(1);
                         cc.searchBegin();
 //                        alertTap.show();
-                        int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
-                        Log.i(TAG,"IS "+selectedPosition);
-                        switch (selectedPosition){
+                        int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                        Log.i(TAG, "IS " + selectedPosition);
+                        switch (selectedPosition) {
                             case 0:
-                                Log.i(TAG,"CEK SALDO SELECTED");
+                                Log.i(TAG, "CEK SALDO SELECTED");
                                 cData.setWhatToDo("CekSaldo");
                                 break;
                             case 1:
-                                Log.i(TAG,"TOPUP SELECTED");
+                                Log.i(TAG, "TOPUP SELECTED");
                                 cData.setWhatToDo("Topup");
                                 cData.settDate("150116");
                                 cData.settTime("161616");
@@ -671,9 +669,9 @@ public class TestActivity extends Activity implements ReqListener {
 
     }
 
-    private void getKey(){
+    private void getKey() {
         String CardResponse = cc.transmitCmd("5A030000");
-        if(!CardResponse.startsWith("00")){
+        if (!CardResponse.startsWith("00")) {
             Log.e(TAG, "Select AID 3 error " + CardResponse);
             return;
         }
@@ -688,7 +686,7 @@ public class TestActivity extends Activity implements ReqListener {
     }
 
     private void topup() {
-        Log.i(TAG,"TOPUP");
+        Log.i(TAG, "TOPUP");
         String CardResponse = "";
         String SamResponse = "";
         cekSaldo();
@@ -697,7 +695,7 @@ public class TestActivity extends Activity implements ReqListener {
         String RandomSam24B = SamResponse.substring(2, SamResponse.length() - 4);
         Log.d(TAG, "cmd: 80B3000013" + cData.getCardNumber() + cData.getUid() + "00000000 || RandomSam24B :" + RandomSam24B);
         // 13. HOST Get Auth Key Topup
-        sendToServer(RandomSam24B + "00000"+cData.getTopupAmount());
+        sendToServer(RandomSam24B + "00000" + cData.getTopupAmount());
 
 //        Log.d(TAG, "cmd: server Reply" + CardResponse + " || keyTopup24B:  " + keyTopup24B + "|  ");
 
@@ -712,7 +710,7 @@ public class TestActivity extends Activity implements ReqListener {
         }
         // 14. Card � Select AID 3
         String CardResponse = cc.transmitCmd("5A030000");
-        if(!CardResponse.startsWith("00")){
+        if (!CardResponse.startsWith("00")) {
             Log.e(TAG, "Select AID 3 error " + CardResponse);
             return;
         }
@@ -739,7 +737,7 @@ public class TestActivity extends Activity implements ReqListener {
         // 16. SAM � Authenticate Topup
         String sendtosam = "80B2000037" + keyTopup24B + cData.getCardNumber() + cData.getUid() + "0000030180000000" + keyCard08B;
         String SamResponse = smc.sendCmd(hexStringToByteArray(sendtosam));
-        if(!SamResponse.endsWith("9000")){
+        if (!SamResponse.endsWith("9000")) {
             Log.e(TAG, "Sam Authenticate Topup error " + SamResponse);
             return;
         }
@@ -748,8 +746,8 @@ public class TestActivity extends Activity implements ReqListener {
         Log.d(TAG, "cmd: RandomKey16B || send: AF" + RandomKey16B);
         // 17. Card � Authenticate Card
         CardResponse = cc.transmitCmd("AF" + RandomKey16B);
-        if(!CardResponse.startsWith("00")){
-            Log.e(TAG,"Authenticate Card error "+CardResponse);
+        if (!CardResponse.startsWith("00")) {
+            Log.e(TAG, "Authenticate Card error " + CardResponse);
             return;
         }
         String RandomNumber8B = CardResponse.substring(2);
@@ -758,12 +756,12 @@ public class TestActivity extends Activity implements ReqListener {
         String topupAmount = ItoH(cData.getTopupAmount()); //--- nilai yg akan di topup
         String transmit = "0C00" + topupAmount + "00";
         CardResponse = cc.transmitCmd(transmit);
-        if(!CardResponse.startsWith("00")){
-            Log.e(TAG,"Credit Balance error "+CardResponse);
+        if (!CardResponse.startsWith("00")) {
+            Log.e(TAG, "Credit Balance error " + CardResponse);
             return;
         }
         String CardBalance4B = CardResponse.substring(2);
-        Log.d(TAG, "cmd: "+transmit+ " || response: " + CardResponse + "| Card Balance = " + CardBalance4B);
+        Log.d(TAG, "cmd: " + transmit + " || response: " + CardResponse + "| Card Balance = " + CardBalance4B);
 //        if (CardResponse.length() < 10) {
 //            Log.e(TAG, "Credit Balance Error "+ CardResponse);
 //            return;
@@ -875,7 +873,7 @@ public class TestActivity extends Activity implements ReqListener {
         return retval;
     }
 
-    private void aktif(){
+    private void aktif() {
         cekSaldo();
         String CardResponse = "";
         String SamResponse = "";
@@ -885,14 +883,14 @@ public class TestActivity extends Activity implements ReqListener {
         // 4. Card � Get Card Status
         CardResponse = cc.transmitCmd("BD01000000200000");
         String cardStatus = CardResponse;
-        Log.i(TAG,"Get Card Status :"+CardResponse);
+        Log.i(TAG, "Get Card Status :" + CardResponse);
         CardResponse = cc.transmitCmd("0A01");
         String Keycard = CardResponse.substring(2);
         Log.i(TAG, "GET KEY : " + CardResponse);
 
         SamResponse = smc.sendCmd(hexStringToByteArray("80B0000020" + cData.getCardNumber()
                 + cData.getUid() + "FF0000030080000000" + Keycard));
-        if(!SamResponse.startsWith("6D")){
+        if (!SamResponse.startsWith("6D")) {
 //            Log.i(TAG, "SamResponse : " + SamResponse);
 //            CardResponse = cc.transmitCmd("AF"+SamResponse);
 //            Log.i(TAG, "cc : " + CardResponse);
@@ -903,7 +901,7 @@ public class TestActivity extends Activity implements ReqListener {
                 Log.i(TAG, "cmd: WRITELOG ERROR RESPONSE " + CardResponse);
                 return;
             }
-            Log.i(TAG,"WRITE STATUS :"+CardResponse);
+            Log.i(TAG, "WRITE STATUS :" + CardResponse);
             CardResponse = cc.transmitCmd("C7");
 
             Log.d(TAG, "cmd: C7 | response: " + CardResponse);
@@ -912,8 +910,8 @@ public class TestActivity extends Activity implements ReqListener {
                 Log.i(TAG, "cmd: C7 ERROR RESPONSE " + CardResponse);
                 return;
             }
-            Log.i(TAG,CardResponse);
-        }else{
+            Log.i(TAG, CardResponse);
+        } else {
             Log.e(TAG, "SAM AUTH ERROR : " + SamResponse);
         }
 
@@ -921,7 +919,7 @@ public class TestActivity extends Activity implements ReqListener {
     }
 
     private void deduct() {
-        Log.i(TAG,"PEMBAYARAN_NORMAL");
+        Log.i(TAG, "PEMBAYARAN_NORMAL");
         String CardResponse = "";
         String SamResponse = "";
         cekSaldo();
@@ -953,8 +951,8 @@ public class TestActivity extends Activity implements ReqListener {
         // 14. Card � Write Log
         String CardBalanceBefore3B = ItoH(cData.getCardBalanceInt());
         int balanceAfter = Integer.parseInt(cData.getCardBalanceInt()) - Integer.parseInt(deductAmount);
-        if(balanceAfter <0){
-            Log.i(TAG,"BALANCE MINUS "+balanceAfter);
+        if (balanceAfter < 0) {
+            Log.i(TAG, "BALANCE MINUS " + balanceAfter);
             return;
         }
         cData.setNewBalance(Integer.toString(balanceAfter));
@@ -963,7 +961,7 @@ public class TestActivity extends Activity implements ReqListener {
         CardResponse = cc.transmitCmd(sendTocard);
         Log.d(TAG, "cmd: " + sendTocard + " | response: " + CardResponse);
         if (!(CardResponse.equals("00"))) {
-            Log.i(TAG,"ERROR RESPONSE "+CardResponse);
+            Log.i(TAG, "ERROR RESPONSE " + CardResponse);
             return;
         }
         CardResponse = cc.transmitCmd("C7");
@@ -996,7 +994,7 @@ public class TestActivity extends Activity implements ReqListener {
 
     public String ItoH(String intval) {
         intval = intval.replace(" ", ""); // 1
-        Log.i(TAG,"TOPUP "+intval);
+        Log.i(TAG, "TOPUP " + intval);
         int iBalance = Integer.parseInt(intval); // 1
         String Hbal = "000000" + Integer.toString(iBalance, 16); // H 1
         Hbal = Hbal.substring(Hbal.length() - 6);
@@ -1004,7 +1002,7 @@ public class TestActivity extends Activity implements ReqListener {
         String Hbal2 = Hbal.substring(2, 6);
         Hbal2 = Hbal2.substring(2, 4) + Hbal2.substring(0, 2);
         String result = Hbal2 + Hbal1;
-        Log.i(TAG,"REVERSE TOPUP "+result);
+        Log.i(TAG, "REVERSE TOPUP " + result);
         return result;
     }
 

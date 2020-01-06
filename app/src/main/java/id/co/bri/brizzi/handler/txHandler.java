@@ -5,6 +5,7 @@
  */
 package id.co.bri.brizzi.handler;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -46,6 +47,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -139,6 +141,7 @@ public class txHandler {
     };
 
     //Main handler for service request (transaction API)
+    @SuppressLint("CommitPrefEdits")
     public JSONObject processTransaction(Context context, String content) throws JSONException, Exception, IOException {
         //prepare return object
 
@@ -146,6 +149,7 @@ public class txHandler {
         boolean deviceRegistered = false;
         boolean lastKeyChanged = false;
         if (cekstatus.contains("registered")) {
+            cekstatus.edit().putBoolean("registered", true).apply();
             deviceRegistered = cekstatus.getBoolean("registered", false);
         }
         if (cekstatus.contains("lastkeychanged")) {
@@ -179,6 +183,7 @@ public class txHandler {
         //get request from msg
         rqContent = (JSONObject) jrequest.get("msg");
 
+        Log.d("MSGG", rqContent.toString());
         //use local function to parse transaction header
         String[] txElements = getTransactionElements(rqContent);
         jmsg.put("msg_id", txElements[0]);
@@ -534,6 +539,14 @@ public class txHandler {
                             "\"value\":\"Tidak mendapat response void\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
                             "\"type\":\"3\",\"title\":\"Void BRIZZI\"}}");
                 } else {
+
+                    //menambahkan popup FF
+                    if (ISO8583Parser.bytesToHex(fromHost).equals("FF")){
+                        return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Terjadi kesalahan pada host\",\n" +
+                                "\"value\":\"Terjadi kesalahan pada host\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+                                "\"type\":\"3\",\"title\":\"Void BRIZZI\"}}");
+                    }
+
                     ISO8583Parser rpParser = new ISO8583Parser(context, "6000070000", ISO8583Parser.bytesToHex(fromHost), 2);
                     String[] replyValues = rpParser.getIsoBitValue();
                     String serverRef = replyValues[37];
@@ -546,7 +559,6 @@ public class txHandler {
                     }
 
                     //Menambahkan popup NV
-
                     if (replyValues[39].equals("00")) {
 
                     return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[" +
@@ -1426,13 +1438,32 @@ public class txHandler {
         clientDB.execSQL(iMsgLog);
         //commit changes
 
+
         //get request data
         String reqData = getData(rqContent);
+
+        //add respon kadaluarsa
+        try {
+            String reqDataTrack2 = rqContent.getString("msg_dt");
+            String validDate = reqDataTrack2.substring(reqDataTrack2.indexOf("=")+1, reqDataTrack2.indexOf("=")+7);
+            Log.d("TAG validDate", validDate);
+            SimpleDateFormat formatValidDate = new SimpleDateFormat("yyMMdd");
+            Date dateValid = formatValidDate.parse(validDate);
+            if (new Date().after(dateValid)) {
+                return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Kartu telah kadaluarsa\",\n" +
+                        "\"value\":\"Kartu telah kadaluarsa\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+                        "\"type\":\"3\",\"title\":\"Gagal\"}}");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         if (reqData.equals("") && !isLogon && !isNoInput && !isNoInput2 && isNoInput3 && isNoInput4) {
             return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Data transaksi tidak lengkap\",\n" +
                     "\"value\":\"Data transaksi tidak lengkap\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
                     "\"type\":\"3\",\"title\":\"Gagal\"}}");
         }
+
         //do process here
         //prepare query for service meta
         String qMeta = "select * from service_meta "

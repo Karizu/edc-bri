@@ -109,28 +109,56 @@ public class ISO8583Parser {
         int LENBITMAP = 16;
         //prepare tmp flow message
         String restMessage = message;
-        //pop length
-        String msgLen = restMessage.substring(0, LENMSGLENGTH);
-        restMessage = restMessage.substring(LENMSGLENGTH);
-        //pop header
-        String msgHeader = restMessage.substring(0, LENMSGHEADER);
-        restMessage = restMessage.substring(LENMSGHEADER);
-        //pop mti
-        this.mti = restMessage.substring(0, LENMTI);
-        restMessage = restMessage.substring(LENMTI);
-        //pop primary bitmap
-        String msgBitmap = restMessage.substring(0, LENBITMAP);
-        restMessage = restMessage.substring(LENBITMAP);
-        List<Integer> bitList = readBitmap(msgBitmap, false);
-        if (bitList.contains(1)) {
-            //if has extended, pop extended bitmap
-            String bmpExtended = restMessage.substring(0, LENBITMAP);
-            restMessage = restMessage.substring(LENBITMAP);
-            bitList.addAll(readBitmap(bmpExtended, true));
+//        String restMessage = "007A609000000602102038010002810002808201000004153918102900063030323630373736333400603139313032393133353633353830383030303030303030303031303030303030303330303630313335303031333038313332383138354136353832380020303033454D4F4E45592020202020202020202020";
+        Log.d("MSG", restMessage);
+        try {
+            //pop length
+            String msgLen = restMessage.substring(0, LENMSGLENGTH);
+            restMessage = restMessage.substring(LENMSGLENGTH);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        updateValueFromBitList(bitList, restMessage);
-        this.stan = IsoBitValue[11];
+        try {
+            //pop header
+            String msgHeader = restMessage.substring(0, LENMSGHEADER);
+            restMessage = restMessage.substring(LENMSGHEADER);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            //pop mti
+            this.mti = restMessage.substring(0, LENMTI);
+            restMessage = restMessage.substring(LENMTI);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String msgBitmap = null;
+
+        try {
+            //pop primary bitmap
+            msgBitmap = restMessage.substring(0, LENBITMAP);
+            restMessage = restMessage.substring(LENBITMAP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            List<Integer> bitList = readBitmap(msgBitmap, false);
+            if (bitList.contains(1)) {
+                //if has extended, pop extended bitmap
+                String bmpExtended = restMessage.substring(0, LENBITMAP);
+                restMessage = restMessage.substring(LENBITMAP);
+                bitList.addAll(readBitmap(bmpExtended, true));
+            }
+
+            updateValueFromBitList(bitList, restMessage);
+            this.stan = IsoBitValue[11];
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -641,6 +669,13 @@ public class ISO8583Parser {
 //                    String saldoAkhir = String.valueOf(saldoA);
 //                    elementValue = saldoAkhir + fee;
 //                }
+                //Topup Online
+                if (bitId == 48 && serviceId.equals("A25100")) {
+                    String eV1, eV2;
+                    eV1 = elementValue.substring(0, 47);
+                    eV2 = elementValue.substring(49);
+                    elementValue = eV1 + eV2 + "  ";
+                }
                 if (bitId == 48 && serviceId.equals("A54311")) {
                     elementValue = StringUtils.rightPad(elementValue, 60);
                 }
@@ -674,10 +709,25 @@ public class ISO8583Parser {
                     String eV1, eV2;
                     eV1 = elementValue.substring(0, 5);
                     eV2 = elementValue.substring(7);
-                    elementValue = eV1+eV2+"  ";
+                    elementValue = eV1 + eV2 + "  ";
                 }
 
                 //log.info(elementValue);
+//                if (bitId == 35) {
+//                    try {
+//                        String validDate = elementValue.substring(17, 23);
+//                        SimpleDateFormat formatValidDate = new SimpleDateFormat("yyMMdd");
+//                        Date dateValid = formatValidDate.parse(validDate);
+//                        if (new Date().after(dateValid)) {
+//                            return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Kartu telah kadaluarsa\",\n" +
+//                                    "\"value\":\"Kartu telah kadaluarsa\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+//                                    "\"type\":\"3\",\"title\":\"Gagal\"}}");
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+
                 if (bitId == 35) {
                     elog = elog.replace("bit35", elementValue);
                     elementValue = elementValue.replace("=".charAt(0), "D".charAt(0));
@@ -1484,10 +1534,15 @@ public class ISO8583Parser {
         if (isExt) {
             startVal = 64;
         }
-        if (bitmap.length() != 16) {
-            Log.e("BMP", "Invalid bitmap");
-            return bl;
+        try {
+            if (bitmap.length() != 16) {
+                Log.e("BMP", "Invalid bitmap");
+                return bl;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         for (int i = 0; i < 8; i++) {
             //String thisbit = String.format("%08s", Integer.toBinaryString(Integer.parseInt(bitmap.substring(i*2, (i*2)+2), 16)));
             String thisbit = padRight(Integer.toBinaryString(Integer.parseInt(bitmap.substring(i * 2, (i * 2) + 2), 16)), 8, "0".charAt(0));
@@ -1558,7 +1613,7 @@ public class ISO8583Parser {
         switch (bitLength) {
             case LLVAR:
                 if (bitFormat.equals("z")) { //Fixed Bni
-                    bitLength=bitValue.length();
+                    bitLength = bitValue.length();
                     String bitLengthChar = String.valueOf(bitLength);
                     if ((bitLength % 2) > 0) {
                         bitLength += 1;

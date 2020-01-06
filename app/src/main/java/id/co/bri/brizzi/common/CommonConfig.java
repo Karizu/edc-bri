@@ -46,7 +46,7 @@ public class  CommonConfig {
     public static final String USERNAME_ADMIN = "admin";
     public static final String PASS_ADMIN = "admin";
     public static final String PASS_SETTINGS = "1234";
-    public static final String DEV_SOCKET_IP = "172.21.64.83"; //"10.35.65.209";//172.21.64.83//172.18.37.12
+    public static final String DEV_SOCKET_IP = "172.18.37.28"; //"10.35.65.209";//172.21.64.83//172.18.37.12
     public static final String DEV_SOCKET_PORT = "5707"; //"1402";//
     public static final String DEFAULT_DISCOUNT_TYPE = "Rupiah";
     public static final String DEFAULT_DISCOUNT_RATE = "0";
