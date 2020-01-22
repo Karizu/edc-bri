@@ -1445,14 +1445,17 @@ public class txHandler {
         //add respon kadaluarsa
         try {
             String reqDataTrack2 = rqContent.getString("msg_dt");
-            String validDate = reqDataTrack2.substring(reqDataTrack2.indexOf("=")+1, reqDataTrack2.indexOf("=")+7);
-            Log.d("TAG validDate", validDate);
-            SimpleDateFormat formatValidDate = new SimpleDateFormat("yyMMdd");
-            Date dateValid = formatValidDate.parse(validDate);
-            if (new Date().after(dateValid)) {
-                return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Kartu telah kadaluarsa\",\n" +
-                        "\"value\":\"Kartu telah kadaluarsa\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
-                        "\"type\":\"3\",\"title\":\"Gagal\"}}");
+            if (reqDataTrack2.contains("=")){
+                String validDate = reqDataTrack2.substring(reqDataTrack2.indexOf("=")+1, reqDataTrack2.indexOf("=")+7);
+                Log.d("TAG reqDataTrack2", reqDataTrack2);
+                Log.d("TAG validDate", validDate);
+                SimpleDateFormat formatValidDate = new SimpleDateFormat("yyMMdd");
+                Date dateValid = formatValidDate.parse(validDate);
+                if (new Date().after(dateValid)) {
+                    return new JSONObject("{\"screen\":{\"ver\":\"1\",\"comps\":{\"comp\":[{\"visible\":true,\"comp_values\":{\"comp_value\":[{\"print\":\"Kartu telah kadaluarsa\",\n" +
+                            "\"value\":\"Kartu telah kadaluarsa\"}]},\"comp_lbl\":\" \",\"comp_type\":\"1\",\"comp_id\":\"P00001\",\"seq\":0}]},\"id\":\"000000F\",\n" +
+                            "\"type\":\"3\",\"title\":\"Gagal\"}}");
+                }
             }
         } catch (Exception e){
             e.printStackTrace();

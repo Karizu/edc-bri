@@ -669,13 +669,37 @@ public class ISO8583Parser {
 //                    String saldoAkhir = String.valueOf(saldoA);
 //                    elementValue = saldoAkhir + fee;
 //                }
+                //Transfer ANtar bank Giro
+                if (bitId == 3 && serviceId.equals("A53221")){
+                    elementValue = "304020";
+                }
+                if (bitId == 63 && serviceId.equals("A53221")) {
+                    elementValue = elementValue+"        ";
+                    Log.d("elementValue", elementValue);
+                }
+                if (bitId == 3 && serviceId.equals("A53222")){
+                    elementValue = "402000";
+                }
+                if (bitId == 63 && serviceId.equals("A53222")) {
+                    elementValue = elementValue+"        ";
+                    Log.d("elementValue", elementValue);
+                }
+                if (bitId == 48 && serviceId.equals("A53222")) {
+                    elementValue = elementValue+"       ";
+                    Log.d("elementValue", elementValue);
+                }
+
+
                 //Topup Online
                 if (bitId == 48 && serviceId.equals("A25100")) {
                     String eV1, eV2;
-                    eV1 = elementValue.substring(0, 47);
-                    eV2 = elementValue.substring(49);
-                    elementValue = eV1 + eV2 + "  ";
+                    eV1 = elementValue.substring(0, 48);
+                    eV2 = elementValue.substring(50);
+                    elementValue = eV1 +eV2;
+                    Log.d("EV1", eV1.length()+"" +"EV2 "+eV2.length()+"");
+                    Log.d("elementValue", elementValue.length()+"");
                 }
+
                 if (bitId == 48 && serviceId.equals("A54311")) {
                     elementValue = StringUtils.rightPad(elementValue, 60);
                 }
@@ -696,8 +720,21 @@ public class ISO8583Parser {
                     elementValue = StringUtils.rightPad(elementValue, 60);
                 }
                 if (bitId == 48 && serviceId.equals("A53211")) {
-                    elementValue = StringUtils.rightPad(elementValue, 60);
+                    if (elementValue.startsWith("002")){
+                        elementValue = StringUtils.rightPad(elementValue, 39);
+                    } else {
+                        elementValue = StringUtils.rightPad(elementValue, 60);
+                    }
                 }
+
+                if (bitId == 48 && serviceId.equals("A53221")) {
+//                    if (elementValue.startsWith("002")){
+//                        elementValue = StringUtils.rightPad(elementValue, 39);
+//                    } else {
+                        elementValue = StringUtils.rightPad(elementValue, 60);
+//                    }
+                }
+
                 if (bitId == 48 && serviceId.equals("A28100")) {
                     rowData = msg.get("rowdata").toString();
                     if (rowData.length() > 900) {

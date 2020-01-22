@@ -282,6 +282,16 @@ public class MenuListResolver {
                                             &&(menuId.startsWith("543120F"))) {
                                         d = d*100;
                                     }
+
+                                    // Tranfer ANtar Bank Giro Nominal Bagi 100
+                                    if (tidyFieldname.startsWith("nominal")
+                                            &&(menuId.startsWith("532210F"))) {
+                                        d = d/100;
+                                    }
+                                    if (tidyFieldname.startsWith("nominal")
+                                            &&(menuId.startsWith("532220F"))) {
+                                        d = d/100;
+                                    }
 //                                    if (menuId.equals("630001F") && tidyFieldname.startsWith("nom_fee")) {
 //                                        d = d/100;
 //                                    }
