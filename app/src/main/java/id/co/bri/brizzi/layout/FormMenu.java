@@ -26,8 +26,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -1732,9 +1734,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         }
                         break;
                     case CommonConfig.ComponentType.EditText:
-                        EditText editText = (EditText) li.inflate(R.layout.edit_text, null);
+                        final EditText editText = (EditText) li.inflate(R.layout.edit_text, null);
                         editText.init(data);
-                        String txt = editText.getText().toString();
+                        final String txt = editText.getText().toString();
                         editText.setTag(seq);
                         editText.setLayoutParams(params);
 
@@ -1749,6 +1751,29 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         }
                         else if (data.getString("comp_lbl").equalsIgnoreCase("Masukan Trace Number : ")) {
                             editText.setMaxLength(7);
+                        } else if (data.getString("comp_lbl").equalsIgnoreCase("Pembayaran : Rp ") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Nominal")) {
+                            editText.addTextChangedListener(new TextWatcher() {
+                                @Override
+                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                                }
+
+                                @Override
+                                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                    if (editText.getText().toString().startsWith("0")){
+                                        editText.setText("");
+                                    }
+                                }
+
+                                @Override
+                                public void afterTextChanged(Editable s) {
+                                    if (editText.getText().toString().startsWith("0")){
+                                        editText.setText("");
+                                    }
+                                }
+                            });
+
                         }
                             baseLayout.addView(editText);
                         break;

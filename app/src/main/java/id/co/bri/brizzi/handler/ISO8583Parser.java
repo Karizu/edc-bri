@@ -1228,6 +1228,13 @@ public class ISO8583Parser {
 //                updAmount = ", amount = " + String.valueOf(longAmount*100);
 //            }
         }
+
+        //Bug Fix RC CP dan TL pada fitur Absen
+        if (serviceId.startsWith("A3") && (IsoBitValue[39].equals("CP") || IsoBitValue[39].equals("TL"))){
+            IsoBitValue[39] = "00";
+            responseCode = "00";
+        }
+
         if (!responseCode.equals("00") && elogId != 0) {
             String deleteelog = "delete from edc_log where log_id = " + String.valueOf(elogId);
             Log.d("DELETE ELOG", "UPD : " + deleteelog);

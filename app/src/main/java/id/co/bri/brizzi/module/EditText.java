@@ -72,6 +72,7 @@ public class EditText extends com.rey.material.widget.EditText implements
             } else {
                 this.setVisibility(View.INVISIBLE);
             }
+
             Object[] compOpts = CommonConfig.getOpt(comp.getString("comp_opt"));
             maxLength = (int) compOpts[CommonConfig.CompOption.MAX_LENGTH];
             minLength = (int) compOpts[CommonConfig.CompOption.MIN_LENGTH];

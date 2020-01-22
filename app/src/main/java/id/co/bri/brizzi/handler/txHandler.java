@@ -1712,7 +1712,7 @@ public class txHandler {
                 ) {
             //jroot.put("msg", jmsg);
             Log.d("MASUK KE MSG_RC", "MASUK DILUAR IF");
-            if (((String) replyJSON.get("msg_rc")).equals("00")) {
+            if (((String) replyJSON.get("msg_rc")).equals("00") || ((String) replyJSON.get("msg_rc")).equals("CP") || ((String) replyJSON.get("msg_rc")).equals("TL")) {
                 Log.d("MASUK KE MSG_RC", "MASUK IF");
                 jroot = mlr.loadMenu(context, "000000D", replyJSON);
 //                String array[] = {"A54911", "A51410", "A53100", "A53211", "A53221", "A54921", "A54931",
@@ -1767,6 +1767,7 @@ public class txHandler {
                             + "seq = " + trace;
                     writeDebugLog("UPDATING", "HOLDER (1473)");
                     clientDB.execSQL(uStanSeq);
+
                 }
             } else {
                 jroot = mlr.loadMenu(context, "000000F", replyJSON);
@@ -2332,7 +2333,7 @@ public class txHandler {
     public String getPrintText() {
         return printText;
     }
-    
+
     public void writeDebugLog(String category, String msg) {
         if (DEBUG_LOG) {
             Date d = new Date();
