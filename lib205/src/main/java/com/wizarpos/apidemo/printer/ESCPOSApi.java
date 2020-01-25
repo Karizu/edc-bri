@@ -356,19 +356,19 @@ public class ESCPOSApi {
         printCommands(CENTER_ALIGN);
         String copyTypeText = "--DUPLICATE COPY--\n";
         if (pcopy==0) {
-            copyTypeText = "--CUSTOMER COPY--\n \n  " + versionNumber + "                " + serialNumber;
+            copyTypeText = "--CUSTOMER COPY--\n \n  " + versionNumber + "           " + serialNumber;
             if (screenLoader.equals("71000FF")||screenLoader.equals("721000F")||screenLoader.equals("731000F")) {
-                copyTypeText = "--AGENT COPY--\n \n  " + versionNumber + "                " + serialNumber;
+                copyTypeText = "--AGENT COPY--\n \n  " + versionNumber + "           " + serialNumber;
             }
         } else if (pcopy==1) {
-            copyTypeText = "--BANK COPY--\n \n  " + versionNumber + "                " + serialNumber;
+            copyTypeText = "--BANK COPY--\n \n  " + versionNumber + "           " + serialNumber;
         } else if (pcopy==2) {
-            copyTypeText = "--MERCHANT COPY--\n \n  " + versionNumber + "                " + serialNumber;
+            copyTypeText = "--MERCHANT COPY--\n \n  " + versionNumber + "           " + serialNumber;
             if (screenLoader.equals("71000FF")||screenLoader.equals("721000F")||screenLoader.equals("731000F")) {
-                copyTypeText = "--CUSTOMER COPY--\n \n  " + versionNumber + "                " + serialNumber;
+                copyTypeText = "--CUSTOMER COPY--\n \n  " + versionNumber + "           " + serialNumber;
             }
         } else {
-            copyTypeText = "--DUPLICATE COPY--\n \n  " + versionNumber + "                " + serialNumber;
+            copyTypeText = "--DUPLICATE COPY--\n \n  " + versionNumber + "           " + serialNumber;
         }
         printCommandsSmall(copyTypeText);
         printCommands("\n");
@@ -491,7 +491,7 @@ public class ESCPOSApi {
                 printCommands(pz);
             }
         }
-        printCommandsSmall("  " + versionNumber + "               " + serialNumber);
+        printCommandsSmall("  " + versionNumber + "           " + serialNumber);
         printCommands("\n");
         printCommands("\n");
         printCommands("\n");
@@ -583,7 +583,7 @@ public class ESCPOSApi {
                 printCommands(pz);
             }
         }
-        printCommandsSmall("  " + versionNumber + "               " + serialNumber);
+        printCommandsSmall("  " + versionNumber + "           " + serialNumber);
         printCommands("\n");
         printCommands("\n");
         printCommands("\n");
@@ -676,7 +676,7 @@ public class ESCPOSApi {
                 printCommands(pz);
             }
         }
-        printCommandsSmall("  " + versionNumber + "               " + serialNumber);
+        printCommandsSmall("  " + versionNumber + "           " + serialNumber);
         printCommands("\n");
         printCommands("\n");
         printCommands("\n");

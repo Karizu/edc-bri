@@ -101,6 +101,10 @@ public class txHandler {
     boolean matched_array = false;
 
     private static txHandler instance;
+    private SQLiteDatabase clientDB;
+    private int logId;
+    private String trace_no;
+    private String[] replyValues;
 
     private txHandler() {
         socket_status = IDLE;
@@ -165,7 +169,7 @@ public class txHandler {
         }
         helperDb = new DataBaseHelper(context);
         EDCLog = new LogHandler(context);
-        SQLiteDatabase clientDB = null;
+        clientDB = null;
         jroot = new JSONObject();
         setHasPrintData(false);
         JSONObject jmsg = new JSONObject();
@@ -687,7 +691,7 @@ public class txHandler {
                             "\"type\":\"3\",\"title\":\"Void Tarik Tunai\"}}");
                 } else {
                     ISO8583Parser rpParser = new ISO8583Parser(context, "6000070000", ISO8583Parser.bytesToHex(fromHost), 2);
-                    String[] replyValues = rpParser.getIsoBitValue();
+                    replyValues = rpParser.getIsoBitValue();
                     String msg_rc = "";
                     if (replyValues[39] != null) {
                         msg_rc = replyValues[39];
@@ -1412,12 +1416,11 @@ public class txHandler {
             return mlr.loadMenu(context, "000000F", jmsg);
         }
         //end of check reversal stack disini pake if
-        String trace_no = generateStan();
+        trace_no = generateStan();
         //create message logger
         writeDebugLog("MSGLOG", "read seq (1141)");
         String getLogId = "select max(log_id) nextseq from messagelog ";
         Cursor cLogId = clientDB.rawQuery(getLogId, null);
-        int logId;
         if (cLogId.moveToFirst()) {
             logId = cLogId.getInt(cLogId.getColumnIndex("nextseq"));
             logId += 1;
@@ -1987,6 +1990,22 @@ public class txHandler {
         writeDebugLog("REVERSAL", hsToHost);
         Thread doReversal = new Thread(new handleReversal(context, hsToHost, EDCLog, elogid));
         doReversal.start();
+        //fix update status data summary after reversal
+        if (serviceid.equals("A25100")){
+            writeDebugLog("EDCLOG", "update status after reversal");
+            try {
+                String stan = String.format("%06d", msgSequence);
+                Log.d("LOG STAN", String.format("%06d", msgSequence));
+                helperDb.openDataBase();
+                clientDB = helperDb.getActiveDatabase();
+                String updDB = "update edc_log set settled = 't' where stan = '"+stan+"';";
+//                String updDB = "delete from edc_log where stan = '"+stan+"';";
+                clientDB.execSQL(updDB);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        clientDB.close();
         return "ReversalRQ";
     }
 

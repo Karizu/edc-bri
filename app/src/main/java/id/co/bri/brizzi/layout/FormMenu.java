@@ -172,6 +172,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
     private Messenger syncMessenger = null;
     private ActivityList parent;
     private boolean isAntiDDOSPrint = true;
+    private String txt;
+    private Button button;
+    private EditText editText;
 
     public FormMenu(Activity context, String id) {
         super(context);
@@ -1734,9 +1737,9 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         }
                         break;
                     case CommonConfig.ComponentType.EditText:
-                        final EditText editText = (EditText) li.inflate(R.layout.edit_text, null);
+                        editText = (EditText) li.inflate(R.layout.edit_text, null);
                         editText.init(data);
-                        final String txt = editText.getText().toString();
+                        txt = editText.getText().toString();
                         editText.setTag(seq);
                         editText.setLayoutParams(params);
 
@@ -1748,21 +1751,23 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         }
                         else if (data.getString("comp_lbl").equals("Nominal Beli")) {
                             editText.setMaxLength(12);
-                        }
-                        else if (data.getString("comp_lbl").equalsIgnoreCase("Masukan Trace Number : ")) {
-                            editText.setMaxLength(7);
-                        } else if (data.getString("comp_lbl").equalsIgnoreCase("Pembayaran : Rp ") ||
-                                data.getString("comp_lbl").equalsIgnoreCase("Nominal")) {
                             editText.addTextChangedListener(new TextWatcher() {
                                 @Override
                                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                                    if (s.equals("")){
+                                        button.setEnabled(false);
+                                    }
                                 }
 
                                 @Override
                                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                                     if (editText.getText().toString().startsWith("0")){
                                         editText.setText("");
+                                    }
+                                    if (editText.getText().toString().equals("")){
+                                        button.setEnabled(false);
+                                    } else {
+                                        button.setEnabled(true);
                                     }
                                 }
 
@@ -1771,9 +1776,57 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                                     if (editText.getText().toString().startsWith("0")){
                                         editText.setText("");
                                     }
+                                    if (editText.getText().toString().equals("")){
+                                        button.setEnabled(false);
+                                    } else {
+                                        button.setEnabled(true);
+                                    }
                                 }
                             });
+                        }
+                        else if (data.getString("comp_lbl").equalsIgnoreCase("Masukan Trace Number : ")) {
+                            editText.setMaxLength(7);
+                        } else if (data.getString("comp_lbl").equalsIgnoreCase("Pembayaran : Rp ") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Nominal") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Masukan Nominal : ") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Masukan Jumlah : ") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Masukan Nominal Bayar : ") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Masukan Amount : ") ||
+                                data.getString("comp_lbl").equalsIgnoreCase("Masukan Nominal Topup : ")) {
 
+                            editText.addTextChangedListener(new TextWatcher() {
+                                @Override
+                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                    if (s.equals("")){
+                                        button.setEnabled(false);
+                                    }
+                                }
+
+                                @Override
+                                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                    if (editText.getText().toString().startsWith("0")){
+                                        editText.setText("");
+                                    }
+
+                                    if (editText.getText().toString().equals("")){
+                                        button.setEnabled(false);
+                                    } else {
+                                        button.setEnabled(true);
+                                    }
+                                }
+
+                                @Override
+                                public void afterTextChanged(Editable s) {
+                                    if (editText.getText().toString().startsWith("0")){
+                                        editText.setText("");
+                                    }
+                                    if (editText.getText().toString().equals("")){
+                                        button.setEnabled(false);
+                                    } else {
+                                        button.setEnabled(true);
+                                    }
+                                }
+                            });
                         }
                             baseLayout.addView(editText);
                         break;
@@ -1793,12 +1846,43 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                         break;
                     case CommonConfig.ComponentType.Button:
                         final String actionURl = comp.has("action_url") ? comp.getString("action_url") : "";
-                        Button button = (Button) li.inflate(R.layout.button, null);
+                        button = (Button) li.inflate(R.layout.button, null);
                         button.init(data);
                         button.setTag(seq);
                         button.setLayoutParams(params);
                         button.setTag(actionURl);
                         button.setOnClickListener(FormMenu.this);
+                        try {
+                            if (editText.getText().toString().equals("")){
+                                button.setEnabled(false);
+                                editText.addTextChangedListener(new TextWatcher() {
+                                    @Override
+                                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                                    }
+
+                                    @Override
+                                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                        if (editText.getText().toString().equals("")) {
+                                            button.setEnabled(false);
+                                        } else {
+                                            button.setEnabled(true);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void afterTextChanged(Editable s) {
+                                        if (editText.getText().toString().equals("")) {
+                                            button.setEnabled(false);
+                                        } else {
+                                            button.setEnabled(true);
+                                        }
+                                    }
+                                });
+                            }
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
                         baseLayout.addView(button);
                         break;
                     case CommonConfig.ComponentType.CheckBox:

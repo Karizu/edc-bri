@@ -66,7 +66,7 @@ public class ISO8583Parser {
     private String mti;
     private String stan;
     private String header = "";
-    private String[] IsoBitValue;
+    public String[] IsoBitValue;
     private String[] IsoBitValueReply;
     private String responseCode = "";
     private Context context;
@@ -74,6 +74,7 @@ public class ISO8583Parser {
     private String serviceName;
     private boolean reversable = false;
     private String currentLength = "";
+    private String STAN;
 
     public ISO8583Parser() {
     }

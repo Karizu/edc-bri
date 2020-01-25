@@ -14,7 +14,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
         versionCode 27
-        versionName "1.0.0.36"
+        versionName "B2016.1.36.6"
     }
     useLibrary 'org.apache.http.legacy'
     buildTypes {
