@@ -2023,8 +2023,6 @@ public class txHandler {
             clientDB.close();
             helperDb.close();
         }
-
-
     }
 
     public long updateAidById(ContentValues contentValues,long id){

@@ -1808,10 +1808,19 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                                         editText.setText("");
                                     }
 
-                                    if (editText.getText().toString().equals("")){
-                                        button.setEnabled(false);
+
+                                    if (!formId.equals("54A111F")){
+                                        if (editText.getText().toString().equals("")){
+                                            button.setEnabled(false);
+                                        } else {
+                                            button.setEnabled(true);
+                                        }
                                     } else {
-                                        button.setEnabled(true);
+                                        if (s.toString().startsWith("0")){
+                                            button.setEnabled(false);
+                                        } else {
+                                            button.setEnabled(true);
+                                        }
                                     }
                                 }
 
@@ -1820,10 +1829,12 @@ public class FormMenu extends ScrollView implements View.OnClickListener, SwipeL
                                     if (editText.getText().toString().startsWith("0")){
                                         editText.setText("");
                                     }
-                                    if (editText.getText().toString().equals("")){
-                                        button.setEnabled(false);
-                                    } else {
-                                        button.setEnabled(true);
+                                    if (!formId.equals("54A111F")){
+                                        if (editText.getText().toString().equals("")){
+                                            button.setEnabled(false);
+                                        } else {
+                                            button.setEnabled(true);
+                                        }
                                     }
                                 }
                             });

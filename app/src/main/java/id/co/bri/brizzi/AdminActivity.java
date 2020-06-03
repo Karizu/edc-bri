@@ -466,7 +466,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
                             PINPadInterface.open();
 
                             int ret = PINPadInterface.updateMasterKey(0, boKey, boKey.length, bnKey, bnKey.length);
-//                            Log.d("PINPAD", "UPD MK STAT : " + String.valueOf(ret));
+                            Log.d("PINPAD", "UPD MK STAT : " + String.valueOf(ret));
                             if (ret > -1) {
                                 Toast.makeText(AdminActivity.this, "Master Key successfully updated", Toast.LENGTH_LONG).show();
                             } else {

@@ -17,6 +17,7 @@ import id.co.bri.brizzi.common.StringLib;
 import id.co.bri.brizzi.handler.DataBaseHelper;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -204,6 +205,21 @@ public class MenuListResolver {
                                         }
                                     }
                                 }
+
+                                if (menuId.equals("549510F") || menuId.equals("549511F")){
+                                    if (tidyFieldname.equals("fee") || tidyFieldname.equals("biaya") || tidyFieldname.equals("total")) {
+                                        try {
+                                            double money = Double.parseDouble(valuePrint);
+                                            NumberFormat formatter = NumberFormat.getCurrencyInstance();
+                                            int vl = formatter.format(money).substring(1).length() - 2;
+                                            valuePrint = formatter.format(money).substring(1, vl);
+                                            Log.d("TAG VL", valuePrint);
+                                        } catch (Exception e){
+                                            //pass
+                                        }
+                                    }
+                                }
+
                                 String mnemonic = "";
                                 if (tidyFieldname.equals("Absen OK")) {
                                     skipComponent = true;
@@ -295,6 +311,12 @@ public class MenuListResolver {
 //                                    if (menuId.equals("630001F") && tidyFieldname.startsWith("nom_fee")) {
 //                                        d = d/100;
 //                                    }
+
+                                    //fix tarik tunai (saldo - fee)
+//                                    if (menuId.equals("630001F") && tidyFieldname.startsWith("saldo")){
+//                                        d = d - 3000;
+//                                    }
+                                    
                                     if (menuId.equals("2A1000F") && tidyFieldname.startsWith("nom")) {
                                         d = d/100;
                                     }
