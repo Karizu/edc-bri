@@ -1063,9 +1063,6 @@ public class txHandler {
                         DecimalFormatSymbols idrFormat = new DecimalFormatSymbols(Locale.getDefault());
                         idrFormat.setDecimalSeparator(',');
                         DecimalFormat formatter = new DecimalFormat("###,###,##0", idrFormat);
-//                        if (!clab.startsWith("Pembayaran PLN") && !clab.startsWith("Pembayaran Non-Taglis")) {
-//                            d = d/100;
-//                        }
                         d = d/100;
                         cval = formatter.format(d);
                         cval = StringLib.strToCurr(String.valueOf(d), "Rp");
@@ -1225,17 +1222,6 @@ public class txHandler {
                         cTx = cTx.substring(10);
                     }
                     String cCard = cList.getString(cList.getColumnIndex("cno"));
-//                    String cExp = cList.getString(cList.getColumnIndex("cexp"));
-//                    if (cExp!=null) {
-//                        if (!cExp.equals("0000") && !cExp.equals("")) {
-//                            cExp = cExp.substring(0,2) + "/" + cExp.substring(2,4);
-//                        } else {
-//                            cExp = "";
-//                        }
-//                    } else {
-//                        cExp = "";
-//                    }
-
                     String cExp = "";
                     if (cCard.length() != 16 && cCard.length() != 19){
                         cExp = cList.getString(cList.getColumnIndex("cexp"));
@@ -1272,17 +1258,11 @@ public class txHandler {
                         DecimalFormatSymbols idrFormat = new DecimalFormatSymbols(Locale.getDefault());
                         idrFormat.setDecimalSeparator(',');
                         DecimalFormat formatter = new DecimalFormat("###,###,##0", idrFormat);
-//                        if (cTx!=null) {
-//                            if (!cTx.startsWith("Pembayaran PLN") && !cTx.startsWith("Pembayaran Non-")) {
-//                                d = d / 100;
-//                            }
-//                        }
                         d = d/100;
                         cAmo = formatter.format(d);
                         cAmo = StringLib.strToCurr(String.valueOf(d), "Rp");
                     }
-//                    clab = cNo+"\t"+cTgl+"\t"+cJam+"\t"+cTx;
-//                    cval = cCard+"\t"+cStan+"\t"+cRc+"\t"+cAmo;
+                    
                     data.add(new PrintSize(FontSize.NORMAL, cTx + "|:"));
                     data.add(new PrintSize(FontSize.NORMAL,":|"+cAmo+"\n"));
                     data.add(new PrintSize(FontSize.NORMAL, cCard + "|:"));
